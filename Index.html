@@ -39,6 +39,9 @@
     const rankingGeral = { abelha: 0, joaninha: 0, vagalume: 0 };
     const historicoAcoes = {};
     
+    // Variável de controle para evitar duplicação
+    let atualizando = false;
+    
     // Funções dinâmicas para data
     function getHoje() {
       return new Date();
@@ -278,6 +281,9 @@
     }
 
     window.atualizarResumo = async function () {
+      if (atualizando) return;
+      atualizando = true;
+      
       const equipes = {
         abelha: ["Brenda", "Carlos", "Kamila", "Matt", "Sarah", "Steh"],
         joaninha: ["Carla", "Clara", "Daniel", "Kaii", "Mich", "Monalisa"],
@@ -327,6 +333,8 @@
       
       atualizarPlacarSemanal();
       verificarEquipeCompleta();
+      
+      atualizando = false;
     }
 
     // Verificar se todos os membros de uma equipe estão focados
@@ -595,6 +603,10 @@
       resetBtn.style.boxShadow = '0 2px 10px rgba(0,0,0,0.2)';
       resetBtn.onclick = resetarTudo;
       document.body.appendChild(resetBtn);
+
+      // NOVAS CHAMADAS: Atualiza resumo e verifica equipes completas
+      await atualizarResumo();
+      verificarEquipeCompleta();
     }
   </script>
   <style>
@@ -701,6 +713,31 @@
       background: rgba(255, 255, 255, 0.1);
     }
     
+    /* EFEITO NEON PERSONALIZADO POR EQUIPE */
+    .equipe-abelha input:checked + label::after {
+      animation: glowCheckAbelha 2s infinite alternate;
+    }
+    @keyframes glowCheckAbelha {
+      from { box-shadow: 0 0 5px #FFD700; }
+      to { box-shadow: 0 0 15px #FFD700; }
+    }
+
+    .equipe-joaninha input:checked + label::after {
+      animation: glowCheckJoaninha 2s infinite alternate;
+    }
+    @keyframes glowCheckJoaninha {
+      from { box-shadow: 0 0 5px #FF6B6B; }
+      to { box-shadow: 0 0 15px #FF6B6B; }
+    }
+
+    .equipe-vagalume input:checked + label::after {
+      animation: glowCheckVagalume 2s infinite alternate;
+    }
+    @keyframes glowCheckVagalume {
+      from { box-shadow: 0 0 5px #27ae60; }
+      to { box-shadow: 0 0 15px #2ecc71; }
+    }
+
     /* Estilos restantes permanecem iguais */
     * {
       box-sizing: border-box;
@@ -1082,57 +1119,6 @@
       bottom: -5px;
       border-radius: 8px;
       z-index: -1;
-      animation: glowCheck 2s infinite alternate;
-    }
-    @keyframes glowCheck {
-      from { box-shadow: 0 0 5px #27ae60; }
-      to { box-shadow: 0 0 15px #2ecc71; }
-    }
-    .tema-noite .membro input:checked + label::after {
-      animation: glowCheckNight 2s infinite alternate;
-    }
-    @keyframes glowCheckNight {
-      from { box-shadow: 0 0 5px #9b59b6; }
-      to { box-shadow: 0 0 15px #8e44ad; }
-    }
-    
-    .medalha-container {
-      position: relative;
-      display: flex;
-      align-items: center;
-      margin-right: 10px;
-    }
-    
-    .medalha {
-      font-size: 1.5rem;
-      width: 30px;
-      height: 30px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      transition: all 0.3s ease;
-    }
-    
-    .com-medalha {
-      transform: scale(1.05);
-    }
-    
-    .escondido {
-      opacity: 0;
-      width: 0;
-      margin: 0;
-    }
-    
-    .dias-badge {
-      background: #3498db;
-      color: white;
-      border-radius: 12px;
-      padding: 2px 8px;
-      font-size: 0.8rem;
-      font-weight: bold;
-      min-width: 30px;
-      text-align: center;
-      transition: all 0.3s ease;
     }
     
     #popup {
@@ -1611,4 +1597,4 @@
   <audio id="som-check" src="https://assets.mixkit.co/sfx/preview/mixkit-unlock-game-notification-253.mp3"></audio>
   <audio id="som-conquista" src="https://assets.mixkit.co/sfx/preview/mixkit-achievement-bell-600.mp3"></audio>
 </body>
-                  </html>
+  </html>
