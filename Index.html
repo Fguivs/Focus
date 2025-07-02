@@ -87,6 +87,10 @@
         presencas[nome] = document.getElementById(nome).checked;
       });
       await setDoc(doc(db, "presencas", getHojeISO()), presencas);
+      
+      // Após salvar, verificar Árvore Épica
+      const totalCheckins = Object.values(presencas).filter(p => p).length;
+      await verificarArvoreEpica(totalCheckins);
     }
 
     async function carregarPresenca() {
@@ -531,6 +535,171 @@
       }
     }
 
+    // ===== NOVAS FUNÇÕES PARA A ÁRVORE ÉPICA =====
+    const fasesArvore = [
+      { dias: 1, nome: "Semente", emoji: "🌱", desc: "A jornada começa com um único dia de foco. Plante sua semente e cultive sua dedicação diária!" },
+      { dias: 15, nome: "Broto", emoji: "🌿", desc: "Com 15 dias consecutivos, seu esforço começa a brotar. Continue regando sua determinação!" },
+      { dias: 60, nome: "Árvore", emoji: "🌳", desc: "60 dias de foco ininterrupto! Sua árvore cresce forte, simbolizando sua consistência e perseverança." },
+      { dias: 180, nome: "Flores", emoji: "🌸", desc: "180 dias de dedicação fazem florescer resultados. Cada flor representa uma conquista em sua jornada!" },
+      { dias: 365, nome: "Frutos", emoji: "🍎", desc: "365 dias de foco contínuo! Colha os frutos do seu trabalho árduo e dedicação inabalável." }
+    ];
+    
+    let arvoreEpica = {
+      consecutivos: 0,
+      ultimoDia: null,
+      faseAtual: 0
+    };
+    
+    async function verificarArvoreEpica(totalCheckins) {
+      const hojeISO = getHojeISO();
+      
+      // Se já processamos hoje, não fazemos nada
+      if (arvoreEpica.ultimoDia === hojeISO) {
+        return;
+      }
+      
+      // Verifica se atingiu o mínimo
+      if (totalCheckins >= 10) {
+        const ultimoDia = arvoreEpica.ultimoDia;
+        const ontem = new Date();
+        ontem.setDate(ontem.getDate() - 1);
+        const ontemISO = ontem.toISOString().slice(0,10);
+        
+        // Se não tem último dia registrado ou se o último dia foi ontem, incrementa
+        if (!ultimoDia || ultimoDia === ontemISO) {
+          arvoreEpica.consecutivos++;
+        } else {
+          // Se não for consecutivo, reinicia contagem
+          arvoreEpica.consecutivos = 1;
+        }
+        
+        arvoreEpica.ultimoDia = hojeISO;
+      } else {
+        // Se não atingiu, resetamos a contagem
+        arvoreEpica.consecutivos = 0;
+        arvoreEpica.ultimoDia = null;
+      }
+      
+      // Atualizar fase atual
+      let novaFase = 0;
+      for (let i = fasesArvore.length - 1; i >= 0; i--) {
+        if (arvoreEpica.consecutivos >= fasesArvore[i].dias) {
+          novaFase = i;
+          break;
+        }
+      }
+      arvoreEpica.faseAtual = novaFase;
+      
+      // Salvar no Firestore
+      const arvoreRef = doc(db, "arvoreEpica", "progresso");
+      await setDoc(arvoreRef, arvoreEpica);
+      
+      // Atualizar a exibição
+      atualizarExibicaoArvore();
+      
+      // Mostrar notificação se mudou de fase
+      if (novaFase > 0 && arvoreEpica.consecutivos === fasesArvore[novaFase].dias) {
+        const somConquista = document.getElementById("som-conquista");
+        somConquista.currentTime = 0;
+        somConquista.play();
+        mostrarPopup("🌳 Árvore Épica", `Parabéns! A árvore evoluiu para: ${fasesArvore[novaFase].nome} ${fasesArvore[novaFase].emoji}`, 5000);
+        dispararConfete();
+      }
+    }
+    
+    async function carregarArvoreEpica() {
+      const arvoreRef = doc(db, "arvoreEpica", "progresso");
+      const docSnap = await getDoc(arvoreRef);
+      
+      if (docSnap.exists()) {
+        arvoreEpica = docSnap.data();
+      } else {
+        // Inicializar com valores padrão
+        arvoreEpica = {
+          consecutivos: 0,
+          ultimoDia: null,
+          faseAtual: 0
+        };
+        await setDoc(arvoreRef, arvoreEpica);
+      }
+      
+      atualizarExibicaoArvore();
+    }
+    
+    function atualizarExibicaoArvore() {
+      const fase = fasesArvore[arvoreEpica.faseAtual];
+      document.getElementById("stage-name").textContent = fase.nome + " " + fase.emoji;
+      document.getElementById("stage-desc").textContent = fase.desc;
+      document.getElementById("dias-consecutivos").textContent = arvoreEpica.consecutivos;
+      
+      // Mostrar a imagem da fase atual e esconder as outras
+      const imagens = ["seed", "sprout", "tree", "flowers", "fruits"];
+      imagens.forEach((img, index) => {
+        const el = document.getElementById(img);
+        if (index === arvoreEpica.faseAtual) {
+          el.style.display = "block";
+        } else {
+          el.style.display = "none";
+        }
+      });
+      
+      // Próxima fase
+      const proximaFase = arvoreEpica.faseAtual < fasesArvore.length - 1 ? fasesArvore[arvoreEpica.faseAtual + 1] : null;
+      if (proximaFase) {
+        const diasFaltando = proximaFase.dias - arvoreEpica.consecutivos;
+        document.getElementById("proxima-fase").textContent = `Faltam ${diasFaltando} dias para ${proximaFase.nome} ${proximaFase.emoji}`;
+      } else {
+        document.getElementById("proxima-fase").textContent = "Você alcançou o nível máximo!";
+      }
+      
+      // Verificar modo noite (após 18h)
+      const agora = new Date();
+      const horas = agora.getHours();
+      const modoNoite = horas >= 18 || horas < 6;
+      
+      // Aplicar modo noite
+      const treeSky = document.querySelector(".tree-sky");
+      if (modoNoite) {
+        treeSky.classList.add("night-mode");
+        treeSky.classList.remove("day-mode");
+        // Criar estrelas se necessário
+        if (document.querySelector('.stars-container').children.length === 0) {
+          criarEstrelas();
+        }
+      } else {
+        treeSky.classList.remove("night-mode");
+        treeSky.classList.add("day-mode");
+      }
+    }
+    
+    function criarEstrelas() {
+      const starsContainer = document.querySelector('.stars-container');
+      const starCount = 100;
+      starsContainer.innerHTML = '';
+      
+      for (let i = 0; i < starCount; i++) {
+        const star = document.createElement('div');
+        star.classList.add('star');
+        
+        // Tamanho aleatório
+        const size = Math.random() * 3 + 1;
+        star.style.width = `${size}px`;
+        star.style.height = `${size}px`;
+        
+        // Posição aleatória
+        star.style.left = `${Math.random() * 100}%`;
+        star.style.top = `${Math.random() * 100}%`;
+        
+        // Atraso de animação
+        star.style.animationDelay = `${Math.random() * 4}s`;
+        
+        // Duração da animação
+        star.style.animationDuration = `${2 + Math.random() * 3}s`;
+        
+        starsContainer.appendChild(star);
+      }
+    }
+
     window.onload = async () => {
       await carregarPresenca();
       await carregarTotalDias();
@@ -604,6 +773,9 @@
       resetBtn.onclick = resetarTudo;
       document.body.appendChild(resetBtn);
 
+      // Carregar Árvore Épica
+      await carregarArvoreEpica();
+      
       // NOVAS CHAMADAS: Atualiza resumo e verifica equipes completas
       await atualizarResumo();
       verificarEquipeCompleta();
@@ -766,7 +938,8 @@
     .tema-manha .global-stats,
     .tema-manha .competicao-container,
     .tema-manha .grupo,
-    .tema-manha .medalha-info {
+    .tema-manha .medalha-info,
+    .tema-manha .arvore-epica-container {
       background: rgba(255, 251, 235, 0.8);
       box-shadow: 0 8px 20px rgba(252, 182, 159, 0.2);
     }
@@ -797,7 +970,8 @@
     .tema-tarde .global-stats,
     .tema-tarde .competicao-container,
     .tema-tarde .grupo,
-    .tema-tarde .medalha-info {
+    .tema-tarde .medalha-info,
+    .tema-tarde .arvore-epica-container {
       background: rgba(255, 247, 230, 0.8);
       box-shadow: 0 8px 20px rgba(253, 160, 133, 0.2);
     }
@@ -828,7 +1002,8 @@
     .tema-noite .global-stats,
     .tema-noite .competicao-container,
     .tema-noite .grupo,
-    .tema-noite .medalha-info {
+    .tema-noite .medalha-info,
+    .tema-noite .arvore-epica-container {
       background: rgba(26, 37, 51, 0.85);
       box-shadow: 0 8px 20px rgba(106, 27, 154, 0.3);
     }
@@ -1242,12 +1417,276 @@
     }
     .tema-noite .funcao-lider { color: #bdc3c7; }
     
+    /* ===== NOVOS ESTILOS PARA A ÁRVORE ÉPICA ===== */
+    .arvore-epica-container {
+      border-radius: 15px;
+      padding: 20px;
+      margin-top: 30px;
+      background: rgba(255, 255, 255, 0.9);
+      box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+    }
+    
+    .tema-noite .arvore-epica-container {
+      background: rgba(43, 57, 87, 0.9);
+    }
+    
+    .arvore-epica-container h2 {
+      text-align: center;
+      margin-bottom: 20px;
+      color: #2C3E50;
+    }
+    
+    .tema-noite .arvore-epica-container h2 {
+      color: #ecf0f1;
+    }
+    
+    .tree-display {
+      position: relative;
+      height: 400px;
+      margin: 20px auto;
+      display: flex;
+      justify-content: center;
+      align-items: flex-end;
+      overflow: hidden;
+      background: transparent;
+      border-radius: 15px;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+    }
+    
+    .tree-sky {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 1;
+      transition: all 1.5s ease;
+    }
+    
+    .tree-sky.day-mode {
+      background: linear-gradient(to bottom, #1e88e5, #4da0ff, #a1c9ff);
+    }
+    
+    .tree-sky.night-mode {
+      background: linear-gradient(to bottom, #0d47a1, #1a237e, #000051);
+    }
+    
+    .sun {
+      position: absolute;
+      top: 50px;
+      right: 100px;
+      width: 60px;
+      height: 60px;
+      background: radial-gradient(circle, #ffeb3b, #ffc107);
+      border-radius: 50%;
+      box-shadow: 0 0 40px #ff9800;
+      z-index: 2;
+      transition: all 2s ease;
+    }
+    
+    .moon {
+      position: absolute;
+      top: 50px;
+      right: 100px;
+      width: 55px;
+      height: 55px;
+      background: radial-gradient(circle, #e0e0e0, #bdbdbd);
+      border-radius: 50%;
+      box-shadow: 0 0 30px rgba(255, 255, 255, 0.8);
+      z-index: 2;
+      opacity: 0;
+      transition: all 2s ease;
+    }
+    
+    .night-mode .sun {
+      opacity: 0;
+    }
+    
+    .night-mode .moon {
+      opacity: 1;
+    }
+    
+    .cloud {
+      position: absolute;
+      background: rgba(255, 255, 255, 0.9);
+      border-radius: 50%;
+      z-index: 3;
+      animation: float-cloud 40s infinite linear;
+    }
+    
+    .cloud-1 {
+      top: 80px;
+      left: -150px;
+      width: 80px;
+      height: 30px;
+      animation-duration: 50s;
+    }
+    
+    .cloud-2 {
+      top: 40px;
+      left: -250px;
+      width: 120px;
+      height: 50px;
+      animation-duration: 60s;
+      animation-delay: 10s;
+    }
+    
+    .cloud-3 {
+      top: 120px;
+      left: -200px;
+      width: 100px;
+      height: 40px;
+      animation-duration: 70s;
+      animation-delay: 20s;
+    }
+    
+    .night-mode .cloud {
+      background: rgba(200, 200, 255, 0.2);
+    }
+    
+    .star {
+      position: absolute;
+      background: rgba(255, 255, 255, 0.8);
+      border-radius: 50%;
+      animation: twinkle 4s infinite alternate;
+      opacity: 0;
+      display: none;
+    }
+    
+    .night-mode .star {
+      opacity: 1;
+      display: block;
+    }
+    
+    .tree-image {
+      position: absolute;
+      bottom: 0;
+      z-index: 10;
+      max-height: 85%;
+      transform-origin: bottom center;
+      filter: drop-shadow(0 10px 20px rgba(0, 0, 0, 0.4));
+      animation: sway 8s infinite ease-in-out;
+    }
+    
+    .ground {
+      position: absolute;
+      bottom: 0;
+      width: 140%;
+      max-width: 800px;
+      height: 80px;
+      background: linear-gradient(to top, #2e7d32 0%, #388e3c 20%, #4caf50 100%);
+      border-radius: 50% 50% 0 0;
+      z-index: 5;
+    }
+    
+    .night-mode .ground {
+      background: linear-gradient(to top, #1b5e20 0%, #2e7d32 20%, #388e3c 100%);
+    }
+    
+    .grass-detail {
+      position: absolute;
+      bottom: 0;
+      width: 100%;
+      height: 15px;
+      background: linear-gradient(to top, rgba(76, 175, 80, 0.8), rgba(56, 142, 60, 0.9));
+      border-radius: 50% 50% 0 0;
+      z-index: 6;
+    }
+    
+    .night-mode .grass-detail {
+      background: linear-gradient(to top, rgba(56, 142, 60, 0.7), rgba(40, 124, 44, 0.8));
+    }
+    
+    .tree-info {
+      background: linear-gradient(135deg, rgba(255, 255, 255, 0.7), rgba(245, 245, 245, 0.8));
+      border-radius: 20px;
+      padding: 20px;
+      margin: 20px auto;
+      max-width: 800px;
+      border: 2px solid rgba(0, 180, 216, 0.4);
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+      text-align: center;
+    }
+    
+    .tema-noite .tree-info {
+      background: linear-gradient(135deg, rgba(13, 27, 42, 0.7), rgba(26, 37, 51, 0.8));
+      border: 2px solid rgba(0, 150, 199, 0.3);
+    }
+    
+    .stage-info {
+      font-size: 2rem;
+      margin-bottom: 10px;
+      font-weight: 700;
+      color: #00b4d8;
+    }
+    
+    .tema-noite .stage-info {
+      color: #90e0ef;
+    }
+    
+    .stage-desc {
+      font-size: 1.2rem;
+      margin: 15px 0;
+      line-height: 1.5;
+      color: #2e7d32;
+    }
+    
+    .tema-noite .stage-desc {
+      color: #c8e6c9;
+    }
+    
+    .progresso-consecutivo {
+      margin-top: 15px;
+      font-size: 1.1rem;
+      padding: 10px;
+      background: rgba(0, 180, 216, 0.1);
+      border-radius: 10px;
+      color: #0077b6;
+    }
+    
+    .tema-noite .progresso-consecutivo {
+      background: rgba(0, 150, 199, 0.15);
+      color: #90e0ef;
+    }
+    
+    @keyframes sway {
+      0% { transform: rotate(-3deg); }
+      50% { transform: rotate(3deg); }
+      100% { transform: rotate(-3deg); }
+    }
+    
+    @keyframes float-cloud {
+      0% { transform: translateX(-100%); opacity: 0; }
+      10% { opacity: 1; }
+      90% { opacity: 1; }
+      100% { transform: translateX(100vw); opacity: 0; }
+    }
+    
+    @keyframes twinkle {
+      0% { opacity: 0.3; transform: scale(0.9); }
+      100% { opacity: 1; transform: scale(1.1); }
+    }
+    
     @media (max-width: 768px) {
       .stats-container { flex-direction: column; }
       .grupos-container { grid-template-columns: 1fr; }
       h1 { font-size: 2rem; }
       #contadorGeral { font-size: 1.5rem; }
       .membros-grid { grid-template-columns: 1fr 1fr; }
+      .tree-display {
+        height: 300px;
+      }
+      .sun, .moon {
+        right: 30px;
+        width: 40px;
+        height: 40px;
+      }
+      .stage-info {
+        font-size: 1.6rem;
+      }
+      .stage-desc {
+        font-size: 1rem;
+      }
     }
     @media (max-width: 480px) {
       body { padding: 15px; }
@@ -1539,6 +1978,41 @@
               <span id="dias-Pimentão" class="dias-badge">0</span>
             </label>
           </div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- NOVA SEÇÃO: Árvore Épica -->
+    <div class="arvore-epica-container">
+      <h2>Árvore Épica</h2>
+      
+      <div class="tree-display">
+        <div class="tree-sky day-mode">
+          <div class="sun"></div>
+          <div class="moon"></div>
+          <div class="cloud cloud-1"></div>
+          <div class="cloud cloud-2"></div>
+          <div class="cloud cloud-3"></div>
+          <div class="stars-container"></div>
+        </div>
+        
+        <div class="ground">
+          <div class="grass-detail"></div>
+        </div>
+        
+        <img id="seed" class="tree-image" src="https://i.ibb.co/7xsw9ZVd/semente.png" alt="Semente">
+        <img id="sprout" class="tree-image" src="https://i.ibb.co/WNcWgWgn/broto.png" alt="Broto" style="display: none;">
+        <img id="tree" class="tree-image" src="https://i.ibb.co/0jS2220Z/arvore.png" alt="Árvore" style="display: none;">
+        <img id="flowers" class="tree-image" src="https://i.ibb.co/HLyF1wFt/flores.png" alt="Flores" style="display: none;">
+        <img id="fruits" class="tree-image" src="https://i.ibb.co/9k6HjBFk/frutos.png" alt="Frutos" style="display: none;">
+      </div>
+      
+      <div class="tree-info">
+        <div class="stage-info" id="stage-name">Semente</div>
+        <div class="stage-desc" id="stage-desc">A jornada começa com um único dia de foco. Plante sua semente e cultive sua dedicação diária!</div>
+        <div class="progresso-consecutivo">
+          <strong>Dias consecutivos: <span id="dias-consecutivos">0</span></strong><br>
+          <span id="proxima-fase"></span>
         </div>
       </div>
     </div>
