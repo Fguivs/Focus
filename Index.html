@@ -567,15 +567,16 @@
     }
   </script>
   <style>
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-    }
+    /* MODIFICAÇÕES SOLICITADAS */
     
-    /* Destaque para o número da semana */
+    /* 1. Adicionar emoji 👑 nos líderes */
+    .grupo:first-child h2::before {
+      content: "👑 ";
+    }
+
+    /* 3. Reduzir tamanho do destaque da semana */
     .destaque-semana {
-      font-size: 1.8rem;
+      font-size: 1.5rem; /* Reduzido de 1.8rem */
       font-weight: bold;
       display: inline-block;
       margin: 0 5px;
@@ -583,6 +584,30 @@
     }
     .tema-tarde .destaque-semana { color: #e67e22; }
     .tema-noite .destaque-semana { color: #9b59b6; }
+    
+    /* 4. Alinhar pontuação à direita */
+    .membro label {
+      display: flex;
+      justify-content: space-between;
+      width: 100%;
+      align-items: center;
+    }
+    .dias-badge {
+      margin-left: auto; /* Empurra para a direita */
+      margin-right: 5px; /* Espaçamento da borda */
+    }
+    
+    /* AJUSTES ADICIONAIS PARA MELHOR VISUALIZAÇÃO */
+    .medalha-container {
+      margin-right: 8px; /* Espaço entre medalha e nome */
+    }
+    
+    /* Estilos restantes permanecem iguais */
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
     
     body {
       font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
@@ -1008,7 +1033,6 @@
       font-weight: bold;
       min-width: 30px;
       text-align: center;
-      margin-left: 8px;
       transition: all 0.3s ease;
     }
     
@@ -1298,6 +1322,16 @@
               <span id="dias-Sarah" class="dias-badge">0</span>
             </label>
           </div>
+          <div class="membro">
+            <input type="checkbox" id="Steh">
+            <label for="Steh">
+              <span class="medalha-container">
+                <span id="medalha-Steh" class="medalha escondido"></span>
+              </span>
+              Steh
+              <span id="dias-Steh" class="dias-badge">0</span>
+            </label>
+          </div>
         </div>
       </div>
       
@@ -1389,6 +1423,16 @@
             </label>
           </div>
           <div class="membro">
+            <input type="checkbox" id="Duda">
+            <label for="Duda">
+              <span class="medalha-container">
+                <span id="medalha-Duda" class="medalha escondido"></span>
+              </span>
+              Duda
+              <span id="dias-Duda" class="dias-badge">0</span>
+            </label>
+          </div>
+          <div class="membro">
             <input type="checkbox" id="Felipe">
             <label for="Felipe">
               <span class="medalha-container">
@@ -1476,4 +1520,4 @@
   <audio id="som-check" src="https://assets.mixkit.co/sfx/preview/mixkit-unlock-game-notification-253.mp3"></audio>
   <audio id="som-conquista" src="https://assets.mixkit.co/sfx/preview/mixkit-achievement-bell-600.mp3"></audio>
 </body>
-</html>
+  </html>
