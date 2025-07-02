@@ -333,6 +333,31 @@
         el.classList.add('destaque');
         setTimeout(() => el.classList.remove('destaque'), 500);
       });
+      
+      // Verificar se todas as equipes estão completas
+      verificarEquipeCompleta();
+    }
+
+    // Verificar se todos os membros de uma equipe estão focados
+    function verificarEquipeCompleta() {
+      const equipes = {
+        abelha: ["Brenda", "Carlos", "Kamila", "Matt", "Sarah", "Steh"],
+        joaninha: ["Carla", "Clara", "Daniel", "Kaii", "Mich", "Monalisa"],
+        vagalume: ["Burigo", "Duda", "Felipe", "Gabrielle", "Pimentão"]
+      };
+      
+      for (const equipe in equipes) {
+        const todosFocados = equipes[equipe].every(membro => 
+          document.getElementById(membro).checked
+        );
+        
+        const grupo = document.getElementById(`equipe-${equipe}`);
+        if (todosFocados) {
+          grupo.classList.add('equipe-completa');
+        } else {
+          grupo.classList.remove('equipe-completa');
+        }
+      }
     }
 
     window.mostrarPopup = function (titulo, mensagem, duracao = 8000) {
@@ -600,6 +625,67 @@
     /* AJUSTES ADICIONAIS PARA MELHOR VISUALIZAÇÃO */
     .medalha-container {
       margin-right: 8px; /* Espaço entre medalha e nome */
+    }
+    
+    /* Estilos para cores por equipe */
+    #equipe-abelha .membro input:checked + label { color: #FFD700; } /* Amarelo */
+    #equipe-joaninha .membro input:checked + label { color: #FF6B6B; } /* Vermelho */
+    #equipe-vagalume .membro input:checked + label { color: #27ae60; } /* Verde */
+    
+    .tema-noite #equipe-abelha .membro input:checked + label { color: #FFD700; }
+    .tema-noite #equipe-joaninha .membro input:checked + label { color: #FF6B6B; }
+    .tema-noite #equipe-vagalume .membro input:checked + label { color: #2ecc71; }
+    
+    /* Animação de equipe completa */
+    .equipe-completa {
+      position: relative;
+      animation: glow 2s infinite alternate;
+      z-index: 1;
+    }
+    
+    @keyframes glow {
+      0% {
+        box-shadow: 0 0 5px rgba(255, 255, 255, 0.7);
+      }
+      100% {
+        box-shadow: 0 0 20px rgba(255, 255, 255, 0.9), 0 0 30px rgba(255, 255, 255, 0.7);
+      }
+    }
+    
+    /* Estilos para área de líder */
+    .lider-equipe {
+      margin-bottom: 15px;
+      padding: 10px;
+      border-radius: 10px;
+      background: rgba(255, 255, 255, 0.2);
+      text-align: center;
+      border: 1px dashed rgba(0,0,0,0.1);
+    }
+    
+    .tema-noite .lider-equipe {
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px dashed rgba(255,255,255,0.1);
+    }
+    
+    .titulo-lider {
+      font-weight: bold;
+      margin-bottom: 5px;
+      color: #7f8c8d;
+      text-transform: uppercase;
+      font-size: 0.9rem;
+    }
+    
+    .tema-noite .titulo-lider {
+      color: #bdc3c7;
+    }
+    
+    .lider-equipe .membro {
+      background: rgba(255, 255, 255, 0.3);
+      margin-top: 8px;
+    }
+    
+    .tema-noite .lider-equipe .membro {
+      background: rgba(255, 255, 255, 0.1);
     }
     
     /* Estilos restantes permanecem iguais */
@@ -971,8 +1057,8 @@
       align-items: center;
       position: relative;
     }
-    .membro input:checked + label { font-weight: bold; color: #27ae60; }
-    .tema-noite .membro input:checked + label { color: #2ecc71; }
+    .membro input:checked + label { font-weight: bold; }
+    .tema-noite .membro input:checked + label { font-weight: bold; }
     
     .membro input:checked + label::after {
       content: "";
@@ -1216,8 +1302,9 @@
     </div>
     
     <div class="grupos-container">
+      <!-- Líder Geral -->
       <div class="grupo">
-        <h2>Líderes</h2>
+        <h2>Líder Geral</h2>
         <div class="membros-grid">
           <!-- Gui (Líder Geral) -->
           <div class="membro">
@@ -1231,8 +1318,20 @@
               <span id="dias-Gui" class="dias-badge">0</span>
             </label>
           </div>
-          
-          <!-- Steh (Líder Abelha) -->
+        </div>
+      </div>
+      
+      <!-- Equipe Abelha -->
+      <div class="grupo" id="equipe-abelha">
+        <h2>🐝 Equipe Abelha</h2>
+        <div class="resumo" id="resumo-abelha">
+          <div>0 focaram hoje!</div>
+          <div>0 pontos na semana</div>
+        </div>
+        
+        <!-- Área do Líder da Equipe Abelha -->
+        <div class="lider-equipe">
+          <div class="titulo-lider">Líder da Equipe</div>
           <div class="membro">
             <input type="checkbox" id="Steh">
             <label for="Steh">
@@ -1240,37 +1339,11 @@
                 <span id="medalha-Steh" class="medalha escondido"></span>
               </span>
               Steh
-              <span class="funcao-lider">(Líder Abelha)</span>
               <span id="dias-Steh" class="dias-badge">0</span>
             </label>
           </div>
-          
-          <!-- Espaço vazio (Joaninha sem líder) -->
-          <div class="membro">
-            <div class="sem-lider">Sem líder (Joaninha)</div>
-          </div>
-          
-          <!-- Duda (Líder Vaga-lume) -->
-          <div class="membro">
-            <input type="checkbox" id="Duda">
-            <label for="Duda">
-              <span class="medalha-container">
-                <span id="medalha-Duda" class="medalha escondido"></span>
-              </span>
-              Duda
-              <span class="funcao-lider">(Líder Vaga-lume)</span>
-              <span id="dias-Duda" class="dias-badge">0</span>
-            </label>
-          </div>
         </div>
-      </div>
-      
-      <div class="grupo" id="equipe-abelha">
-        <h2>🐝 Equipe Abelha</h2>
-        <div class="resumo" id="resumo-abelha">
-          <div>0 focaram hoje!</div>
-          <div>0 pontos na semana</div>
-        </div>
+        
         <div class="membros-grid">
           <div class="membro">
             <input type="checkbox" id="Brenda">
@@ -1322,25 +1395,23 @@
               <span id="dias-Sarah" class="dias-badge">0</span>
             </label>
           </div>
-          <div class="membro">
-            <input type="checkbox" id="Steh">
-            <label for="Steh">
-              <span class="medalha-container">
-                <span id="medalha-Steh" class="medalha escondido"></span>
-              </span>
-              Steh
-              <span id="dias-Steh" class="dias-badge">0</span>
-            </label>
-          </div>
         </div>
       </div>
       
+      <!-- Equipe Joaninha -->
       <div class="grupo" id="equipe-joaninha">
         <h2>🐞 Equipe Joaninha</h2>
         <div class="resumo" id="resumo-joaninha">
           <div>0 focaram hoje!</div>
           <div>0 pontos na semana</div>
         </div>
+        
+        <!-- Área do Líder da Equipe Joaninha (vazia) -->
+        <div class="lider-equipe">
+          <div class="titulo-lider">Líder da Equipe</div>
+          <div class="sem-lider">Sem líder</div>
+        </div>
+        
         <div class="membros-grid">
           <div class="membro">
             <input type="checkbox" id="Carla">
@@ -1405,12 +1476,29 @@
         </div>
       </div>
       
+      <!-- Equipe Vaga-lume -->
       <div class="grupo" id="equipe-vagalume">
         <h2>💡 Equipe Vaga-lume</h2>
         <div class="resumo" id="resumo-vagalume">
           <div>0 focaram hoje!</div>
           <div>0 pontos na semana</div>
         </div>
+        
+        <!-- Área do Líder da Equipe Vaga-lume -->
+        <div class="lider-equipe">
+          <div class="titulo-lider">Líder da Equipe</div>
+          <div class="membro">
+            <input type="checkbox" id="Duda">
+            <label for="Duda">
+              <span class="medalha-container">
+                <span id="medalha-Duda" class="medalha escondido"></span>
+              </span>
+              Duda
+              <span id="dias-Duda" class="dias-badge">0</span>
+            </label>
+          </div>
+        </div>
+        
         <div class="membros-grid">
           <div class="membro">
             <input type="checkbox" id="Burigo">
@@ -1420,16 +1508,6 @@
               </span>
               Burigo
               <span id="dias-Burigo" class="dias-badge">0</span>
-            </label>
-          </div>
-          <div class="membro">
-            <input type="checkbox" id="Duda">
-            <label for="Duda">
-              <span class="medalha-container">
-                <span id="medalha-Duda" class="medalha escondido"></span>
-              </span>
-              Duda
-              <span id="dias-Duda" class="dias-badge">0</span>
             </label>
           </div>
           <div class="membro">
@@ -1520,4 +1598,4 @@
   <audio id="som-check" src="https://assets.mixkit.co/sfx/preview/mixkit-unlock-game-notification-253.mp3"></audio>
   <audio id="som-conquista" src="https://assets.mixkit.co/sfx/preview/mixkit-achievement-bell-600.mp3"></audio>
 </body>
-  </html>
+              </html>
