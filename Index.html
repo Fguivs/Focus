@@ -530,8 +530,10 @@
       const hoje = getHoje();
       const dataHoje = hoje.toLocaleDateString('pt-BR', { weekday: 'long', day: 'numeric', month: 'long' });
       document.getElementById("dataHoje").textContent = dataHoje.charAt(0).toUpperCase() + dataHoje.slice(1);
+      
+      // Atualização para destacar a palavra "Semana" junto com o número
       document.getElementById("info-semana").innerHTML = `
-        <div style="font-weight:bold">Semana <span class="destaque-semana">${semanaAtual.numero}</span></div>
+        <div style="font-weight:bold"><span class="destaque-semana">Semana ${semanaAtual.numero}</span></div>
         <div>(${semanaAtual.inicioFormatado} a ${semanaAtual.fimFormatado})</div>
         <div style="font-size:0.9rem;margin-top:5px;color:#7f8c8d">
           A competição será encerrada sábado (${semanaAtual.fimCompeticao}), às 23:59h.
@@ -609,7 +611,7 @@
     }
     .tema-manha .equipe-competicao {
       background: rgba(255, 251, 235, 0.95);
-      box-shadow: 极速 0 5px 15px rgba(252, 182, 159, 0.2);
+      box-shadow: 0 5px 15px rgba(252, 182, 159, 0.2);
     }
     .tema-manha .membro {
       background: rgba(255, 251, 235, 0.7);
@@ -833,7 +835,7 @@
     }
     
     .equipe-competicao {
-      border-radius: 10极速;
+      border-radius: 10px;
       padding: 15px;
       text-align: center;
       flex: 1;
@@ -978,9 +980,9 @@
     }
     
     .medalha {
-      font-size: 1.5rem; /* Tamanho reduzido */
-      width: 30px;       /* Tamanho reduzido */
-      height: 30px;      /* Tamanho reduzido */
+      font-size: 1.5rem;
+      width: 30px;
+      height: 30px;
       display: flex;
       align-items: center;
       justify-content: center;
@@ -988,8 +990,7 @@
     }
     
     .com-medalha {
-      /* Removido o efeito néon e glow */
-      transform: scale(1.05); /* Apenas leve destaque */
+      transform: scale(1.05);
     }
     
     .escondido {
@@ -1116,6 +1117,22 @@
       100% { transform: scale(1); }
     }
     
+    .sem-lider {
+      font-style: italic;
+      color: #7f8c8d;
+      padding: 8px 12px;
+      width: 100%;
+    }
+    .tema-noite .sem-lider { color: #bdc3c7; }
+    
+    .funcao-lider {
+      font-size: 0.8em;
+      color: #7f8c8d;
+      margin-left: 5px;
+      font-style: italic;
+    }
+    .tema-noite .funcao-lider { color: #bdc3c7; }
+    
     @media (max-width: 768px) {
       .stats-container { flex-direction: column; }
       .grupos-container { grid-template-columns: 1fr; }
@@ -1176,8 +1193,9 @@
     
     <div class="grupos-container">
       <div class="grupo">
-        <h2>Líder</h2>
+        <h2>Líderes</h2>
         <div class="membros-grid">
+          <!-- Gui (Líder Geral) -->
           <div class="membro">
             <input type="checkbox" id="Gui">
             <label for="Gui">
@@ -1185,7 +1203,39 @@
                 <span id="medalha-Gui" class="medalha escondido"></span>
               </span>
               Gui
+              <span class="funcao-lider">(Líder Geral)</span>
               <span id="dias-Gui" class="dias-badge">0</span>
+            </label>
+          </div>
+          
+          <!-- Steh (Líder Abelha) -->
+          <div class="membro">
+            <input type="checkbox" id="Steh">
+            <label for="Steh">
+              <span class="medalha-container">
+                <span id="medalha-Steh" class="medalha escondido"></span>
+              </span>
+              Steh
+              <span class="funcao-lider">(Líder Abelha)</span>
+              <span id="dias-Steh" class="dias-badge">0</span>
+            </label>
+          </div>
+          
+          <!-- Espaço vazio (Joaninha sem líder) -->
+          <div class="membro">
+            <div class="sem-lider">Sem líder (Joaninha)</div>
+          </div>
+          
+          <!-- Duda (Líder Vaga-lume) -->
+          <div class="membro">
+            <input type="checkbox" id="Duda">
+            <label for="Duda">
+              <span class="medalha-container">
+                <span id="medalha-Duda" class="medalha escondido"></span>
+              </span>
+              Duda
+              <span class="funcao-lider">(Líder Vaga-lume)</span>
+              <span id="dias-Duda" class="dias-badge">0</span>
             </label>
           </div>
         </div>
@@ -1246,16 +1296,6 @@
               </span>
               Sarah
               <span id="dias-Sarah" class="dias-badge">0</span>
-            </label>
-          </div>
-          <div class="membro">
-            <input type="checkbox" id="Steh">
-            <label for="Steh">
-              <span class="medalha-container">
-                <span id="medalha-Steh" class="medalha escondido"></span>
-              </span>
-              Steh
-              <span id="dias-Steh" class="dias-badge">0</span>
             </label>
           </div>
         </div>
@@ -1346,16 +1386,6 @@
               </span>
               Burigo
               <span id="dias-Burigo" class="dias-badge">0</span>
-            </label>
-          </div>
-          <div class="membro">
-            <input type="checkbox" id="Duda">
-            <label for="Duda">
-              <span class="medalha-container">
-                <span id="medalha-Duda" class="medalha escondido"></span>
-              </span>
-              Duda
-              <span id="dias-Duda" class="dias-badge">0</span>
             </label>
           </div>
           <div class="membro">
