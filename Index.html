@@ -791,7 +791,7 @@
 
     /* 3. Reduzir tamanho do destaque da semana */
     .destaque-semana {
-      font-size: 1.5rem; /* Reduzido de 1.8rem */
+      font-size: 1.5rem;
       font-weight: bold;
       display: inline-block;
       margin: 0 5px;
@@ -808,19 +808,19 @@
       align-items: center;
     }
     .dias-badge {
-      margin-left: auto; /* Empurra para a direita */
-      margin-right: 5px; /* Espaçamento da borda */
+      margin-left: auto;
+      margin-right: 5px;
     }
     
     /* AJUSTES ADICIONAIS PARA MELHOR VISUALIZAÇÃO */
     .medalha-container {
-      margin-right: 8px; /* Espaço entre medalha e nome */
+      margin-right: 8px;
     }
     
     /* Estilos para cores por equipe */
-    #equipe-abelha .membro input:checked + label { color: #FFD700; } /* Amarelo */
-    #equipe-joaninha .membro input:checked + label { color: #FF6B6B; } /* Vermelho */
-    #equipe-vagalume .membro input:checked + label { color: #27ae60; } /* Verde */
+    #equipe-abelha .membro input:checked + label { color: #FFD700; }
+    #equipe-joaninha .membro input:checked + label { color: #FF6B6B; }
+    #equipe-vagalume .membro input:checked + label { color: #27ae60; }
     
     .tema-noite #equipe-abelha .membro input:checked + label { color: #FFD700; }
     .tema-noite #equipe-joaninha .membro input:checked + label { color: #FF6B6B; }
@@ -908,6 +908,53 @@
     @keyframes glowCheckVagalume {
       from { box-shadow: 0 0 5px #27ae60; }
       to { box-shadow: 0 0 15px #2ecc71; }
+    }
+
+    /* ============ NOVOS ESTILOS SOLICITADOS ============ */
+    /* Redução geral de tamanhos para desktop */
+    @media (min-width: 769px) {
+      /* Reduzir títulos */
+      .competicao-container h2,
+      .grupo h2,
+      .arvore-epica-container h2,
+      .medalha-info h2 {
+        font-size: 1.6rem;
+      }
+      
+      /* Reduzir texto explicativo */
+      .competicao-container p {
+        font-size: 0.85em;
+      }
+      
+      /* Reduzir seção Árvore Épica */
+      .tree-info {
+        padding: 15px;
+      }
+      .stage-info {
+        font-size: 1.8rem;
+      }
+      .stage-desc {
+        font-size: 1.1rem;
+      }
+      .progresso-consecutivo {
+        font-size: 1rem;
+      }
+      
+      /* Reduzir seção Sistema de Medalhas */
+      .medalha-emoji {
+        font-size: 2rem;
+      }
+      .medalha-nome {
+        font-size: 0.95rem;
+      }
+      .medalha-dias {
+        font-size: 0.85rem;
+      }
+      
+      /* Reduzir título "Líder da Equipe" */
+      .titulo-lider {
+        font-size: 0.85rem;
+      }
     }
 
     /* Estilos restantes permanecem iguais */
@@ -1733,9 +1780,9 @@
         </div>
       </div>
       <p style="margin-top: 15px; font-size: 0.9em; color: #7f8c8d;">
-        Competição semanal: Segunda a Sábado<br>
-        Equipe com mais pontos ganha +1 vitória<br>
-        <strong>Empates: todas as equipes empatadas ganham ponto</strong>
+        Competição semanal: Segunda a Sábado.<br>
+        A equipe com mais pontos ao final da competição ganha +1 ponto no ranking de equipes.<br>
+        <strong>Em caso de empate, todas as equipes empatadas ganham +1 ponto.</strong>
       </p>
     </div>
     
