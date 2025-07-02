@@ -88,23 +88,28 @@
     }
 
     async function carregarPresenca() {
-      const docSnap = await getDoc(doc(db, "presencas", getHojeISO()));
-      if (docSnap.exists()) {
-        const data = docSnap.data();
+      const hojeISO = getHojeISO();
+      const docSnap = await getDoc(doc(db, "presencas", hojeISO));
+      
+      // Se não existir documento para hoje, desmarca todas as checkboxes
+      if (!docSnap.exists()) {
         membros.forEach(nome => {
-          if (data[nome]) {
-            document.getElementById(nome).checked = true;
-            estadoAnterior[nome] = true;
-          } else {
-            estadoAnterior[nome] = false;
-          }
-        });
-        atualizarResumo();
-      } else {
-        membros.forEach(nome => {
+          document.getElementById(nome).checked = false;
           estadoAnterior[nome] = false;
         });
+        return;
       }
+
+      const data = docSnap.data();
+      membros.forEach(nome => {
+        if (data[nome]) {
+          document.getElementById(nome).checked = true;
+          estadoAnterior[nome] = true;
+        } else {
+          estadoAnterior[nome] = false;
+        }
+      });
+      atualizarResumo();
     }
 
     async function carregarTotalDias() {
@@ -261,7 +266,6 @@
     }
 
     function atualizarPlacarSemanal() {
-      const semanaAtual = getSemanaAtual();
       document.getElementById("resumo-abelha").innerHTML = `
         <div>${document.querySelectorAll('#equipe-abelha input:checked').length} focaram hoje!</div>
         <div>${pontosSemanais.abelha} pontos na semana</div>
@@ -329,11 +333,6 @@
       const porcentagem = (total / membros.length) * 100;
       progresso.style.width = `${porcentagem}%`;
       
-      document.querySelectorAll('.resumo').forEach(el => {
-        el.classList.add('destaque');
-        setTimeout(() => el.classList.remove('destaque'), 500);
-      });
-      
       // Verificar se todas as equipes estão completas
       verificarEquipeCompleta();
     }
@@ -353,9 +352,9 @@
         
         const grupo = document.getElementById(`equipe-${equipe}`);
         if (todosFocados) {
-          grupo.classList.add('equipe-completa');
+          grupo.classList.add('equipe-completa', equipe);
         } else {
-          grupo.classList.remove('equipe-completa');
+          grupo.classList.remove('equipe-completa', equipe);
         }
       }
     }
@@ -490,6 +489,20 @@
       atualizarResumo();
       if (checkbox.checked) mostrarPopup("🎉 Foco Registrado", `${nome}, parabéns por ter focado hoje!`, 3000);
       else mostrarPopup("ℹ️ Foco Removido", `${nome}, seu foco de hoje foi removido`, 3000);
+
+      // Adicionar destaque apenas no resumo da equipe do membro (exceto Gui)
+      if (nome !== "Gui") {
+        let equipe = "";
+        if (["Brenda", "Carlos", "Kamila", "Matt", "Sarah", "Steh"].includes(nome)) equipe = "abelha";
+        else if (["Carla", "Clara", "Daniel", "Kaii", "Mich", "Monalisa"].includes(nome)) equipe = "joaninha";
+        else if (["Burigo", "Duda", "Felipe", "Gabrielle", "Pimentão"].includes(nome)) equipe = "vagalume";
+        
+        if (equipe) {
+          const resumo = document.getElementById(`resumo-${equipe}`);
+          resumo.classList.add('destaque');
+          setTimeout(() => resumo.classList.remove('destaque'), 500);
+        }
+      }
     }
     
     window.resetarTudo = async function() {
@@ -636,23 +649,30 @@
     .tema-noite #equipe-joaninha .membro input:checked + label { color: #FF6B6B; }
     .tema-noite #equipe-vagalume .membro input:checked + label { color: #2ecc71; }
     
-    /* Animação de equipe completa */
-    .equipe-completa {
-      position: relative;
-      animation: glow 2s infinite alternate;
-      z-index: 1;
+    /* Animação de equipe completa personalizada por equipe */
+    .equipe-completa.abelha {
+      animation: glow-abelha 2s infinite alternate;
+    }
+    .equipe-completa.joaninha {
+      animation: glow-joaninha 2s infinite alternate;
+    }
+    .equipe-completa.vagalume {
+      animation: glow-vagalume 2s infinite alternate;
     }
     
-    @keyframes glow {
-      0% {
-        box-shadow: 0 0 5px rgba(255, 255, 255, 0.7);
-      }
-      100% {
-        box-shadow: 0 0 20px rgba(255, 255, 255, 0.9), 0 0 30px rgba(255, 255, 255, 0.7);
-      }
+    @keyframes glow-abelha {
+      0% { box-shadow: 0 0 5px rgba(255, 215, 0, 0.7); }
+      100% { box-shadow: 0 0 20px rgba(255, 215, 0, 0.9), 0 0 30px rgba(255, 215, 0, 0.7); }
+    }
+    @keyframes glow-joaninha {
+      0% { box-shadow: 0 0 5px rgba(255, 107, 107, 0.7); }
+      100% { box-shadow: 0 0 20px rgba(255, 107, 107, 0.9), 0 0 30px rgba(255, 107, 107, 0.7); }
+    }
+    @keyframes glow-vagalume {
+      0% { box-shadow: 0 0 5px rgba(46, 204, 113, 0.7); }
+      100% { box-shadow: 0 0 20px rgba(46, 204, 113, 0.9), 0 0 30px rgba(46, 204, 113, 0.7); }
     }
     
-    /* Estilos para área de líder */
     .lider-equipe {
       margin-bottom: 15px;
       padding: 10px;
@@ -1598,4 +1618,4 @@
   <audio id="som-check" src="https://assets.mixkit.co/sfx/preview/mixkit-unlock-game-notification-253.mp3"></audio>
   <audio id="som-conquista" src="https://assets.mixkit.co/sfx/preview/mixkit-achievement-bell-600.mp3"></audio>
 </body>
-              </html>
+            </html>
