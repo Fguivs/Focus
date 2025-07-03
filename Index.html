@@ -42,6 +42,9 @@
     // Variável de controle para evitar duplicação
     let atualizando = false;
     
+    // Variável para acompanhar a data atual
+    let dataAtual = '';
+    
     // Funções dinâmicas para data
     function getHoje() {
       return new Date();
@@ -699,8 +702,54 @@
         starsContainer.appendChild(star);
       }
     }
+    
+    // ===== FUNÇÕES PARA VERIFICAÇÃO AUTOMÁTICA DE MUDANÇA DE DATA =====
+    async function verificarMudancaData() {
+      const novaData = getHojeISO();
+      if (dataAtual !== novaData) {
+        dataAtual = novaData;
+        
+        // Recarregar dados para o novo dia
+        await carregarPresenca();
+        
+        // Atualizar UI
+        await atualizarResumo();
+        
+        // Atualizar informações de data no cabeçalho
+        atualizarDataCabecalho();
+        atualizarInfoSemana();
+        
+        // Verificar finalização da semana
+        await finalizarSemana();
+        
+        // Recarregar Árvore Épica
+        await carregarArvoreEpica();
+      }
+    }
+    
+    // Função para atualizar o cabeçalho com a data
+    function atualizarDataCabecalho() {
+      const hoje = getHoje();
+      const dataHoje = hoje.toLocaleDateString('pt-BR', { weekday: 'long', day: 'numeric', month: 'long' });
+      document.getElementById("dataHoje").textContent = dataHoje.charAt(0).toUpperCase() + dataHoje.slice(1);
+    }
+    
+    // Função para atualizar informações da semana
+    function atualizarInfoSemana() {
+      const semanaAtual = getSemanaAtual();
+      document.getElementById("info-semana").innerHTML = `
+        <div style="font-weight:bold"><span class="destaque-semana">Semana ${semanaAtual.numero}</span></div>
+        <div>(${semanaAtual.inicioFormatado} a ${semanaAtual.fimFormatado})</div>
+        <div style="font-size:0.9rem;margin-top:5px;color:#7f8c8d">
+          A competição será encerrada sábado (${semanaAtual.fimCompeticao}), às 23:59h.
+        </div>
+      `;
+    }
 
     window.onload = async () => {
+      // Inicializar data atual
+      dataAtual = getHojeISO();
+      
       await carregarPresenca();
       await carregarTotalDias();
       await carregarPontosSemanais();
@@ -734,20 +783,10 @@
       else if (hora >= 12 && hora < 18) body.classList.add("tema-tarde");
       else body.classList.add("tema-noite");
 
-      // Data atual com destaque para o número da semana
-      const hoje = getHoje();
-      const dataHoje = hoje.toLocaleDateString('pt-BR', { weekday: 'long', day: 'numeric', month: 'long' });
-      document.getElementById("dataHoje").textContent = dataHoje.charAt(0).toUpperCase() + dataHoje.slice(1);
+      // Atualizar informações de data
+      atualizarDataCabecalho();
+      atualizarInfoSemana();
       
-      // Atualização para destacar a palavra "Semana" junto com o número
-      document.getElementById("info-semana").innerHTML = `
-        <div style="font-weight:bold"><span class="destaque-semana">Semana ${semanaAtual.numero}</span></div>
-        <div>(${semanaAtual.inicioFormatado} a ${semanaAtual.fimFormatado})</div>
-        <div style="font-size:0.9rem;margin-top:5px;color:#7f8c8d">
-          A competição será encerrada sábado (${semanaAtual.fimCompeticao}), às 23:59h.
-        </div>
-      `;
-
       // Event listeners
       membros.forEach(nome => {
         document.getElementById(nome).addEventListener("change", () => marcarCheckbox(nome));
@@ -776,9 +815,12 @@
       // Carregar Árvore Épica
       await carregarArvoreEpica();
       
-      // NOVAS CHAMADAS: Atualiza resumo e verifica equipes completas
+      // Atualizar resumo e verificar equipes completas
       await atualizarResumo();
       verificarEquipeCompleta();
+      
+      // Iniciar verificação periódica de mudança de data (a cada 1 minuto)
+      setInterval(verificarMudancaData, 60000);
     }
   </script>
   <style>
@@ -2160,4 +2202,4 @@
   <audio id="som-check" src="https://assets.mixkit.co/sfx/preview/mixkit-unlock-game-notification-253.mp3"></audio>
   <audio id="som-conquista" src="https://assets.mixkit.co/sfx/preview/mixkit-achievement-bell-600.mp3"></audio>
 </body>
-              </html>
+  </html>
