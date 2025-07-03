@@ -1464,7 +1464,49 @@
     }
     .tema-noite .funcao-lider { color: #bdc3c7; }
     
-    /* ===== NOVOS ESTILOS PARA A ÁRVORE ÉPICA ===== */
+    /* ===== MELHORIAS SOLICITADAS PARA A ÁRVORE ÉPICA ===== */
+    /* Tamanho progressivo das imagens */
+    #seed { max-width: 20%; max-height: 30%; }
+    #sprout { max-width: 35%; max-height: 45%; }
+    #tree { max-width: 55%; max-height: 65%; }
+    #flowers { max-width: 75%; max-height: 80%; }
+    #fruits { max-width: 90%; max-height: 85%; }
+    
+    /* Expansão da grama para cobrir toda a largura */
+    .ground {
+      width: 100%;
+      max-width: none;
+      left: 0;
+      border-radius: 0;
+    }
+    
+    .grass-detail {
+      width: 100%;
+      border-radius: 0;
+    }
+    
+    /* Correções para modo escuro do navegador */
+    .sun {
+      background: radial-gradient(circle, #ffeb3b, #ffc107) !important;
+      filter: none !important;
+    }
+    
+    .moon {
+      background: radial-gradient(circle, #e0e0e0, #bdbdbd) !important;
+      filter: none !important;
+    }
+    
+    .cloud {
+      background: rgba(255, 255, 255, 0.9) !important;
+      filter: none !important;
+    }
+    
+    .star {
+      background: rgba(255, 255, 255, 0.8) !important;
+      filter: none !important;
+    }
+
+    /* ===== ESTILOS PARA A ÁRVORE ÉPICA ===== */
     .arvore-epica-container {
       border-radius: 15px;
       padding: 20px;
@@ -2029,7 +2071,7 @@
       </div>
     </div>
     
-    <!-- NOVA SEÇÃO: Árvore Épica -->
+    <!-- SEÇÃO ATUALIZADA: Árvore Épica -->
     <div class="arvore-epica-container">
       <h2>Árvore Épica</h2>
       
@@ -2118,4 +2160,4 @@
   <audio id="som-check" src="https://assets.mixkit.co/sfx/preview/mixkit-unlock-game-notification-253.mp3"></audio>
   <audio id="som-conquista" src="https://assets.mixkit.co/sfx/preview/mixkit-achievement-bell-600.mp3"></audio>
 </body>
-  </html>
+              </html>
