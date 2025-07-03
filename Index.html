@@ -999,6 +999,84 @@
       }
     }
 
+    /* ===== ALTERAÇÕES VISUAIS NA ÁRVORE ÉPICA ===== */
+    /* Novo fundo do céu com imagens */
+    .tree-sky.day-mode {
+      background: url('https://i.ibb.co/35cdphm4/ceu-dia.png');
+      background-size: cover;
+      background-position: center;
+    }
+    
+    .tree-sky.night-mode {
+      background: url('https://i.ibb.co/BHNXckSp/ceu-noite.png');
+      background-size: cover;
+      background-position: center;
+    }
+    
+    /* Nova grama com imagem */
+    .ground {
+      background: url('https://i.ibb.co/dJBK7YmV/grama.png');
+      background-size: cover;
+      background-position: top center;
+      height: 100px;
+      border-radius: 0;
+    }
+    
+    /* Estilos para os novos emojis */
+    .emoji-sun, .emoji-moon, .emoji-cloud {
+      position: absolute;
+      z-index: 2;
+      font-size: 50px;
+      text-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+      transition: all 2s ease;
+    }
+    
+    .emoji-sun {
+      top: 50px;
+      right: 100px;
+    }
+    
+    .emoji-moon {
+      top: 50px;
+      right: 100px;
+      opacity: 0;
+    }
+    
+    .emoji-cloud {
+      font-size: 40px;
+      z-index: 3;
+      animation: float-cloud 40s infinite linear;
+    }
+    
+    .night-mode .emoji-sun {
+      opacity: 0;
+    }
+    
+    .night-mode .emoji-moon {
+      opacity: 1;
+    }
+    
+    /* Posições das nuvens */
+    .cloud-1 {
+      top: 80px;
+      left: -150px;
+      animation-duration: 50s;
+    }
+    
+    .cloud-2 {
+      top: 40px;
+      left: -250px;
+      animation-duration: 60s;
+      animation-delay: 10s;
+    }
+    
+    .cloud-3 {
+      top: 120px;
+      left: -200px;
+      animation-duration: 70s;
+      animation-delay: 20s;
+    }
+
     /* Estilos restantes permanecem iguais */
     * {
       box-sizing: border-box;
@@ -1594,140 +1672,6 @@
       transition: all 1.5s ease;
     }
     
-    .tree-sky.day-mode {
-      background: linear-gradient(to bottom, #1e88e5, #4da0ff, #a1c9ff);
-    }
-    
-    .tree-sky.night-mode {
-      background: linear-gradient(to bottom, #0d47a1, #1a237e, #000051);
-    }
-    
-    .sun {
-      position: absolute;
-      top: 50px;
-      right: 100px;
-      width: 60px;
-      height: 60px;
-      background: radial-gradient(circle, #ffeb3b, #ffc107);
-      border-radius: 50%;
-      box-shadow: 0 0 40px #ff9800;
-      z-index: 2;
-      transition: all 2s ease;
-    }
-    
-    .moon {
-      position: absolute;
-      top: 50px;
-      right: 100px;
-      width: 55px;
-      height: 55px;
-      background: radial-gradient(circle, #e0e0e0, #bdbdbd);
-      border-radius: 50%;
-      box-shadow: 0 0 30px rgba(255, 255, 255, 0.8);
-      z-index: 2;
-      opacity: 0;
-      transition: all 2s ease;
-    }
-    
-    .night-mode .sun {
-      opacity: 0;
-    }
-    
-    .night-mode .moon {
-      opacity: 1;
-    }
-    
-    .cloud {
-      position: absolute;
-      background: rgba(255, 255, 255, 0.9);
-      border-radius: 50%;
-      z-index: 3;
-      animation: float-cloud 40s infinite linear;
-    }
-    
-    .cloud-1 {
-      top: 80px;
-      left: -150px;
-      width: 80px;
-      height: 30px;
-      animation-duration: 50s;
-    }
-    
-    .cloud-2 {
-      top: 40px;
-      left: -250px;
-      width: 120px;
-      height: 50px;
-      animation-duration: 60s;
-      animation-delay: 10s;
-    }
-    
-    .cloud-3 {
-      top: 120px;
-      left: -200px;
-      width: 100px;
-      height: 40px;
-      animation-duration: 70s;
-      animation-delay: 20s;
-    }
-    
-    .night-mode .cloud {
-      background: rgba(200, 200, 255, 0.2);
-    }
-    
-    .star {
-      position: absolute;
-      background: rgba(255, 255, 255, 0.8);
-      border-radius: 50%;
-      animation: twinkle 4s infinite alternate;
-      opacity: 0;
-      display: none;
-    }
-    
-    .night-mode .star {
-      opacity: 1;
-      display: block;
-    }
-    
-    .tree-image {
-      position: absolute;
-      bottom: 0;
-      z-index: 10;
-      max-height: 85%;
-      transform-origin: bottom center;
-      filter: drop-shadow(0 10px 20px rgba(0, 0, 0, 0.4));
-      animation: sway 8s infinite ease-in-out;
-    }
-    
-    .ground {
-      position: absolute;
-      bottom: 0;
-      width: 140%;
-      max-width: 800px;
-      height: 80px;
-      background: linear-gradient(to top, #2e7d32 0%, #388e3c 20%, #4caf50 100%);
-      border-radius: 50% 50% 0 0;
-      z-index: 5;
-    }
-    
-    .night-mode .ground {
-      background: linear-gradient(to top, #1b5e20 0%, #2e7d32 20%, #388e3c 100%);
-    }
-    
-    .grass-detail {
-      position: absolute;
-      bottom: 0;
-      width: 100%;
-      height: 15px;
-      background: linear-gradient(to top, rgba(76, 175, 80, 0.8), rgba(56, 142, 60, 0.9));
-      border-radius: 50% 50% 0 0;
-      z-index: 6;
-    }
-    
-    .night-mode .grass-detail {
-      background: linear-gradient(to top, rgba(56, 142, 60, 0.7), rgba(40, 124, 44, 0.8));
-    }
-    
     .tree-info {
       background: linear-gradient(135deg, rgba(255, 255, 255, 0.7), rgba(245, 245, 245, 0.8));
       border-radius: 20px;
@@ -1807,10 +1751,12 @@
       .tree-display {
         height: 300px;
       }
-      .sun, .moon {
+      .emoji-sun, .emoji-moon {
+        font-size: 40px;
         right: 30px;
-        width: 40px;
-        height: 40px;
+      }
+      .emoji-cloud {
+        font-size: 30px;
       }
       .stage-info {
         font-size: 1.6rem;
@@ -1824,6 +1770,14 @@
       #popup { padding: 12px 20px; font-size: 0.95rem; }
       .membros-grid { grid-template-columns: 1fr; }
       .equipes-competicao { flex-direction: column; }
+      .tree-display {
+        height: 250px;
+      }
+      .emoji-sun, .emoji-moon {
+        font-size: 30px;
+        right: 20px;
+        top: 30px;
+      }
     }
   </style>
 </head>
@@ -2119,17 +2073,16 @@
       
       <div class="tree-display">
         <div class="tree-sky day-mode">
-          <div class="sun"></div>
-          <div class="moon"></div>
-          <div class="cloud cloud-1"></div>
-          <div class="cloud cloud-2"></div>
-          <div class="cloud cloud-3"></div>
+          <!-- Novos emojis -->
+          <div class="emoji-sun">☀️</div>
+          <div class="emoji-moon">🌙</div>
+          <div class="emoji-cloud cloud-1">☁️</div>
+          <div class="emoji-cloud cloud-2">☁️</div>
+          <div class="emoji-cloud cloud-3">☁️</div>
           <div class="stars-container"></div>
         </div>
         
-        <div class="ground">
-          <div class="grass-detail"></div>
-        </div>
+        <div class="ground"></div>
         
         <img id="seed" class="tree-image" src="https://i.ibb.co/7xsw9ZVd/semente.png" alt="Semente">
         <img id="sprout" class="tree-image" src="https://i.ibb.co/WNcWgWgn/broto.png" alt="Broto" style="display: none;">
@@ -2202,4 +2155,4 @@
   <audio id="som-check" src="https://assets.mixkit.co/sfx/preview/mixkit-unlock-game-notification-253.mp3"></audio>
   <audio id="som-conquista" src="https://assets.mixkit.co/sfx/preview/mixkit-achievement-bell-600.mp3"></audio>
 </body>
-  </html>
+            </html>
