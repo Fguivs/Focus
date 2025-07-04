@@ -629,6 +629,34 @@
       atualizarExibicaoArvore();
     }
     
+    function criarEstrelas() {
+      const starsContainer = document.querySelector('.stars-container');
+      const starCount = 150;
+      starsContainer.innerHTML = '';
+      
+      for (let i = 0; i < starCount; i++) {
+        const star = document.createElement('div');
+        star.classList.add('star');
+        
+        // Tamanho aleatório
+        const size = Math.random() * 3 + 1;
+        star.style.width = `${size}px`;
+        star.style.height = `${size}px`;
+        
+        // Posição aleatória
+        star.style.left = `${Math.random() * 100}%`;
+        star.style.top = `${Math.random() * 100}%`;
+        
+        // Atraso de animação
+        star.style.animationDelay = `${Math.random() * 4}s`;
+        
+        // Duração da animação
+        star.style.animationDuration = `${2 + Math.random() * 3}s`;
+        
+        starsContainer.appendChild(star);
+      }
+    }
+    
     function atualizarExibicaoArvore() {
       const fase = fasesArvore[arvoreEpica.faseAtual];
       document.getElementById("stage-name").textContent = fase.nome + " " + fase.emoji;
@@ -669,38 +697,16 @@
         if (document.querySelector('.stars-container').children.length === 0) {
           criarEstrelas();
         }
+        document.querySelector('.stars-container').style.opacity = "1";
       } else {
         treeSky.classList.remove("night-mode");
         treeSky.classList.add("day-mode");
+        document.querySelector('.stars-container').style.opacity = "0";
       }
-    }
-    
-    function criarEstrelas() {
-      const starsContainer = document.querySelector('.stars-container');
-      const starCount = 100;
-      starsContainer.innerHTML = '';
       
-      for (let i = 0; i < starCount; i++) {
-        const star = document.createElement('div');
-        star.classList.add('star');
-        
-        // Tamanho aleatório
-        const size = Math.random() * 3 + 1;
-        star.style.width = `${size}px`;
-        star.style.height = `${size}px`;
-        
-        // Posição aleatória
-        star.style.left = `${Math.random() * 100}%`;
-        star.style.top = `${Math.random() * 100}%`;
-        
-        // Atraso de animação
-        star.style.animationDelay = `${Math.random() * 4}s`;
-        
-        // Duração da animação
-        star.style.animationDuration = `${2 + Math.random() * 3}s`;
-        
-        starsContainer.appendChild(star);
-      }
+      // Controle de visibilidade sol/lua
+      document.getElementById("lua").style.opacity = modoNoite ? "1" : "0";
+      document.getElementById("sol").style.opacity = modoNoite ? "0" : "1";
     }
     
     // ===== FUNÇÕES PARA VERIFICAÇÃO AUTOMÁTICA DE MUDANÇA DE DATA =====
@@ -968,20 +974,6 @@
         font-size: 0.85em;
       }
       
-      /* Reduzir seção Árvore Épica */
-      .tree-info {
-        padding: 15px;
-      }
-      .stage-info {
-        font-size: 1.8rem;
-      }
-      .stage-desc {
-        font-size: 1.1rem;
-      }
-      .progresso-consecutivo {
-        font-size: 1rem;
-      }
-      
       /* Reduzir seção Sistema de Medalhas */
       .medalha-emoji {
         font-size: 2rem;
@@ -999,8 +991,53 @@
       }
     }
 
-    /* ===== ALTERAÇÕES VISUAIS NA ÁRVORE ÉPICA ===== */
-    /* Novo fundo do céu com imagens */
+    /* ===== MELHORIAS SOLICITADAS PARA A ÁRVORE ÉPICA ===== */
+    .arvore-epica-container {
+      border-radius: 15px;
+      padding: 20px;
+      margin-top: 30px;
+      background: rgba(255, 255, 255, 0.9);
+      box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+    }
+    
+    .tema-noite .arvore-epica-container {
+      background: rgba(43, 57, 87, 0.9);
+    }
+    
+    .arvore-epica-container h2 {
+      text-align: center;
+      margin-bottom: 20px;
+      color: #2C3E50;
+    }
+    
+    .tema-noite .arvore-epica-container h2 {
+      color: #ecf0f1;
+    }
+    
+    .tree-display {
+      position: relative;
+      height: 500px; /* Altura aumentada para 500px */
+      margin: 20px auto;
+      display: flex;
+      justify-content: center;
+      align-items: flex-end;
+      overflow: hidden;
+      background: transparent;
+      border-radius: 20px; /* Bordas mais arredondadas */
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      box-shadow: inset 0 0 30px rgba(0, 0, 0, 0.7); /* Sombra interna */
+    }
+    
+    .tree-sky {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 1;
+      transition: all 1.5s ease;
+    }
+    
     .tree-sky.day-mode {
       background: url('https://i.ibb.co/35cdphm4/ceu-dia.png');
       background-size: cover;
@@ -1013,71 +1050,221 @@
       background-position: center;
     }
     
-    /* Nova grama com imagem */
-    .ground {
-      background: url('https://i.ibb.co/dJBK7YmV/grama.png');
-      background-size: cover;
-      background-position: top center;
-      height: 100px;
-      border-radius: 0;
-    }
-    
-    /* Estilos para os novos emojis */
-    .emoji-sun, .emoji-moon, .emoji-cloud {
+    .sky-object, .nuvem, .ground, .tree-image {
       position: absolute;
-      z-index: 2;
-      font-size: 50px;
-      text-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
-      transition: all 2s ease;
     }
     
-    .emoji-sun {
-      top: 50px;
-      right: 100px;
-    }
-    
-    .emoji-moon {
-      top: 50px;
-      right: 100px;
-      opacity: 0;
-    }
-    
-    .emoji-cloud {
-      font-size: 40px;
-      z-index: 3;
-      animation: float-cloud 40s infinite linear;
-    }
-    
-    .night-mode .emoji-sun {
-      opacity: 0;
-    }
-    
-    .night-mode .emoji-moon {
-      opacity: 1;
-    }
-    
-    /* Posições das nuvens */
-    .cloud-1 {
-      top: 80px;
-      left: -150px;
-      animation-duration: 50s;
-    }
-    
-    .cloud-2 {
+    /* Sol com efeito de pulsação */
+    #sol {
       top: 40px;
-      left: -250px;
-      animation-duration: 60s;
-      animation-delay: 10s;
+      right: 100px;
+      width: 80px;
+      height: 80px;
+      z-index: 2;
+      transition: opacity 1.5s ease;
+      opacity: 1;
+      animation: pulsate 3s infinite alternate;
     }
     
-    .cloud-3 {
-      top: 120px;
-      left: -200px;
+    /* Lua sem efeito de pulsação */
+    #lua {
+      top: 40px;
+      right: 100px;
+      width: 80px;
+      height: 80px;
+      z-index: 2;
+      transition: opacity 1.5s ease;
+      opacity: 0;
+    }
+    
+    @keyframes pulsate {
+      0% { transform: scale(1); }
+      100% { transform: scale(1.1); }
+    }
+    
+    /* Nuvens com início imediato e posições iniciais variadas */
+    .nuvem {
+      width: 100px;
+      height: auto;
+      z-index: 2; /* Abaixo da árvore */
+      opacity: 0.7;
+      filter: drop-shadow(0 3px 3px rgba(0, 0, 0, 0.2));
+      animation: float-cloud 60s infinite linear;
+    }
+    
+    /* Posições iniciais variadas dentro da área visível */
+    .nuvem-1 {
+      top: 50px;
+      left: -20%; /* Começa parcialmente fora da tela */
       animation-duration: 70s;
-      animation-delay: 20s;
+    }
+    
+    .nuvem-2 {
+      top: 120px;
+      left: 30%; /* Começa mais ao centro */
+      animation-duration: 80s;
+    }
+    
+    .nuvem-3 {
+      top: 20px;
+      left: 80%; /* Começa quase saindo da tela */
+      animation-duration: 90s;
+    }
+    
+    /* Novas nuvens - posicionadas mais acima */
+    .nuvem-4 {
+      top: 40px;
+      left: -20%;
+      animation-duration: 70s;
+      animation-delay: 35s; /* Começa após a nuvem-1 desaparecer */
+      opacity: 0; /* Inicialmente invisível */
+    }
+    
+    .nuvem-5 {
+      top: 90px;
+      left: -20%;
+      animation-duration: 80s;
+      animation-delay: 40s; /* Começa após a nuvem-2 desaparecer */
+      opacity: 0; /* Inicialmente invisível */
+    }
+    
+    .nuvem-6 {
+      top: 10px;
+      left: -20%;
+      animation-duration: 90s;
+      animation-delay: 45s; /* Começa após a nuvem-3 desaparecer */
+      opacity: 0; /* Inicialmente invisível */
+    }
+    
+    /* Animação com movimento contínuo e controle de visibilidade */
+    @keyframes float-cloud {
+      0% { 
+        transform: translateX(0);
+        opacity: 0; /* Inicia invisível */
+      }
+      1% {
+        opacity: 0.7; /* Torna-se visível imediatamente */
+      }
+      100% { 
+        transform: translateX(calc(100vw + 150px));
+        opacity: 0.7; 
+      }
+    }
+    
+    /* Grama mais verde e lisa */
+    .ground {
+      bottom: 0;
+      left: 0;
+      width: 100%;
+      height: 120px;
+      z-index: 5;
+      background: linear-gradient(to top, 
+        #1b5e20, 
+        #2e7d32, 
+        #4caf50);
+      box-shadow: 0 -5px 15px rgba(0, 0, 0, 0.3);
+      position: relative;
+    }
+    
+    /* Árvore sobre a grama - posicionamento bem mais baixo */
+    .tree-image {
+      bottom: 80px; /* Posicionamento mais baixo */
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 6; /* Acima das nuvens */
+      animation: sway 8s infinite ease-in-out;
+      transform-origin: bottom center;
+      transition: transform 0.5s ease, max-height 0.5s ease;
+    }
+    
+    /* Aumento significativo das fases finais - Proporções idênticas ao código de referência */
+    #seed { max-width: 20%; max-height: 25%; display: block; }
+    #sprout { max-width: 35%; max-height: 40%; display: none; }
+    #tree { max-width: 60%; max-height: 65%; display: none; }
+    #flowers { max-width: 95%; max-height: 95%; display: none; }
+    #fruits { max-width: 100%; max-height: 100%; display: none; }
+    
+    @keyframes sway {
+      0% { transform: translateX(-50%) rotate(-3deg); }
+      50% { transform: translateX(-50%) rotate(3deg); }
+      100% { transform: translateX(-50%) rotate(-3deg); }
+    }
+    
+    .tree-info {
+      background: linear-gradient(135deg, rgba(255, 255, 255, 0.1), rgba(200, 230, 201, 0.15));
+      border-radius: 20px;
+      padding: 25px;
+      margin: 25px auto;
+      max-width: 800px;
+      border: 2px solid rgba(0, 180, 216, 0.4);
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+      text-align: center;
+    }
+    
+    .stage-info {
+      font-size: 2.5rem;
+      margin-bottom: 15px;
+      font-weight: 700;
+      color: #00b4d8;
+      text-shadow: 0 0 15px rgba(0, 180, 216, 0.7);
+    }
+    
+    .stage-desc {
+      font-size: 1.3rem;
+      margin: 20px 0;
+      line-height: 1.6;
+      color: #e8f5e9;
+    }
+    
+    .progresso-consecutivo {
+      margin-top: 20px;
+      font-size: 1.2rem;
+      padding: 15px;
+      background: rgba(0, 180, 216, 0.15);
+      border-radius: 15px;
+      color: #80deea;
+      border: 1px solid rgba(0, 180, 216, 0.3);
     }
 
-    /* Estilos restantes permanecem iguais */
+    /* Ajustes responsivos */
+    @media (max-width: 768px) {
+      .tree-display {
+        height: 400px; /* Altura reduzida em dispositivos móveis */
+      }
+      
+      #sol, #lua {
+        width: 60px;
+        height: 60px;
+        right: 40px;
+      }
+      
+      .nuvem {
+        width: 80px;
+      }
+      
+      .stage-info {
+        font-size: 2rem;
+      }
+      
+      .stage-desc {
+        font-size: 1.1rem;
+      }
+    }
+    
+    @media (max-width: 480px) {
+      .tree-display {
+        height: 300px; /* Altura ainda menor em telas pequenas */
+      }
+      
+      #sol, #lua {
+        width: 40px;
+        height: 40px;
+        right: 20px;
+        top: 20px;
+      }
+    }
+
+    /* ===== ESTILOS RESTANTES ===== */
     * {
       box-sizing: border-box;
       margin: 0;
@@ -1584,164 +1771,6 @@
     }
     .tema-noite .funcao-lider { color: #bdc3c7; }
     
-    /* ===== MELHORIAS SOLICITADAS PARA A ÁRVORE ÉPICA ===== */
-    /* Tamanho progressivo das imagens */
-    #seed { max-width: 20%; max-height: 30%; }
-    #sprout { max-width: 35%; max-height: 45%; }
-    #tree { max-width: 55%; max-height: 65%; }
-    #flowers { max-width: 75%; max-height: 80%; }
-    #fruits { max-width: 90%; max-height: 85%; }
-    
-    /* Expansão da grama para cobrir toda a largura */
-    .ground {
-      width: 100%;
-      max-width: none;
-      left: 0;
-      border-radius: 0;
-    }
-    
-    .grass-detail {
-      width: 100%;
-      border-radius: 0;
-    }
-    
-    /* Correções para modo escuro do navegador */
-    .sun {
-      background: radial-gradient(circle, #ffeb3b, #ffc107) !important;
-      filter: none !important;
-    }
-    
-    .moon {
-      background: radial-gradient(circle, #e0e0e0, #bdbdbd) !important;
-      filter: none !important;
-    }
-    
-    .cloud {
-      background: rgba(255, 255, 255, 0.9) !important;
-      filter: none !important;
-    }
-    
-    .star {
-      background: rgba(255, 255, 255, 0.8) !important;
-      filter: none !important;
-    }
-
-    /* ===== ESTILOS PARA A ÁRVORE ÉPICA ===== */
-    .arvore-epica-container {
-      border-radius: 15px;
-      padding: 20px;
-      margin-top: 30px;
-      background: rgba(255, 255, 255, 0.9);
-      box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
-    }
-    
-    .tema-noite .arvore-epica-container {
-      background: rgba(43, 57, 87, 0.9);
-    }
-    
-    .arvore-epica-container h2 {
-      text-align: center;
-      margin-bottom: 20px;
-      color: #2C3E50;
-    }
-    
-    .tema-noite .arvore-epica-container h2 {
-      color: #ecf0f1;
-    }
-    
-    .tree-display {
-      position: relative;
-      height: 400px;
-      margin: 20px auto;
-      display: flex;
-      justify-content: center;
-      align-items: flex-end;
-      overflow: hidden;
-      background: transparent;
-      border-radius: 15px;
-      border: 1px solid rgba(255, 255, 255, 0.2);
-    }
-    
-    .tree-sky {
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      z-index: 1;
-      transition: all 1.5s ease;
-    }
-    
-    .tree-info {
-      background: linear-gradient(135deg, rgba(255, 255, 255, 0.7), rgba(245, 245, 245, 0.8));
-      border-radius: 20px;
-      padding: 20px;
-      margin: 20px auto;
-      max-width: 800px;
-      border: 2px solid rgba(0, 180, 216, 0.4);
-      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
-      text-align: center;
-    }
-    
-    .tema-noite .tree-info {
-      background: linear-gradient(135deg, rgba(13, 27, 42, 0.7), rgba(26, 37, 51, 0.8));
-      border: 2px solid rgba(0, 150, 199, 0.3);
-    }
-    
-    .stage-info {
-      font-size: 2rem;
-      margin-bottom: 10px;
-      font-weight: 700;
-      color: #00b4d8;
-    }
-    
-    .tema-noite .stage-info {
-      color: #90e0ef;
-    }
-    
-    .stage-desc {
-      font-size: 1.2rem;
-      margin: 15px 0;
-      line-height: 1.5;
-      color: #2e7d32;
-    }
-    
-    .tema-noite .stage-desc {
-      color: #c8e6c9;
-    }
-    
-    .progresso-consecutivo {
-      margin-top: 15px;
-      font-size: 1.1rem;
-      padding: 10px;
-      background: rgba(0, 180, 216, 0.1);
-      border-radius: 10px;
-      color: #0077b6;
-    }
-    
-    .tema-noite .progresso-consecutivo {
-      background: rgba(0, 150, 199, 0.15);
-      color: #90e0ef;
-    }
-    
-    @keyframes sway {
-      0% { transform: rotate(-3deg); }
-      50% { transform: rotate(3deg); }
-      100% { transform: rotate(-3deg); }
-    }
-    
-    @keyframes float-cloud {
-      0% { transform: translateX(-100%); opacity: 0; }
-      10% { opacity: 1; }
-      90% { opacity: 1; }
-      100% { transform: translateX(100vw); opacity: 0; }
-    }
-    
-    @keyframes twinkle {
-      0% { opacity: 0.3; transform: scale(0.9); }
-      100% { opacity: 1; transform: scale(1.1); }
-    }
-    
     @media (max-width: 768px) {
       .stats-container { flex-direction: column; }
       .grupos-container { grid-template-columns: 1fr; }
@@ -1749,14 +1778,16 @@
       #contadorGeral { font-size: 1.5rem; }
       .membros-grid { grid-template-columns: 1fr 1fr; }
       .tree-display {
-        height: 300px;
+        height: 400px;
       }
-      .emoji-sun, .emoji-moon {
-        font-size: 40px;
+      #sol, #lua {
+        top: 20px;
         right: 30px;
+        width: 40px;
+        height: 40px;
       }
-      .emoji-cloud {
-        font-size: 30px;
+      .nuvem {
+        width: 80px;
       }
       .stage-info {
         font-size: 1.6rem;
@@ -1771,12 +1802,13 @@
       .membros-grid { grid-template-columns: 1fr; }
       .equipes-competicao { flex-direction: column; }
       .tree-display {
-        height: 250px;
+        height: 300px;
       }
-      .emoji-sun, .emoji-moon {
-        font-size: 30px;
+      #sol, #lua {
+        width: 30px;
+        height: 30px;
         right: 20px;
-        top: 30px;
+        top: 10px;
       }
     }
   </style>
@@ -2067,27 +2099,45 @@
       </div>
     </div>
     
-    <!-- SEÇÃO ATUALIZADA: Árvore Épica -->
+    <!-- SEÇÃO ATUALIZADA: Árvore Épica com espaço idêntico ao código de referência -->
     <div class="arvore-epica-container">
       <h2>Árvore Épica</h2>
       
       <div class="tree-display">
+        <!-- Céu (fundo) -->
         <div class="tree-sky day-mode">
-          <!-- Novos emojis -->
-          <div class="emoji-sun">☀️</div>
-          <div class="emoji-moon">🌙</div>
-          <div class="emoji-cloud cloud-1">☁️</div>
-          <div class="emoji-cloud cloud-2">☁️</div>
-          <div class="emoji-cloud cloud-3">☁️</div>
           <div class="stars-container"></div>
         </div>
         
+        <!-- Sol simplificado com efeito de pulsação -->
+        <div id="sol" class="sky-object">
+          <img src="https://i.ibb.co/yFW4Lq73/sol.png" alt="Sol">
+        </div>
+        
+        <!-- Lua sem efeito de pulsação -->
+        <div id="lua" class="sky-object">
+          <img src="https://i.ibb.co/LDdHmbP6/lua.png" alt="Lua">
+        </div>
+        
+        <!-- Nuvens simplificadas (3 iniciais) -->
+        <img class="nuvem nuvem-1" src="https://i.ibb.co/rfsS1Tp9/nuvem.png" alt="Nuvem">
+        <img class="nuvem nuvem-2" src="https://i.ibb.co/rfsS1Tp9/nuvem.png" alt="Nuvem">
+        <img class="nuvem nuvem-3" src="https://i.ibb.co/rfsS1Tp9/nuvem.png" alt="Nuvem">
+        
+        <!-- Novas nuvens (surgem após as iniciais desaparecerem) -->
+        <img class="nuvem nuvem-4" src="https://i.ibb.co/rfsS1Tp9/nuvem.png" alt="Nuvem">
+        <img class="nuvem nuvem-5" src="https://i.ibb.co/rfsS1Tp9/nuvem.png" alt="Nuvem">
+        <img class="nuvem nuvem-6" src="https://i.ibb.co/rfsS1Tp9/nuvem.png" alt="Nuvem">
+        
+        <!-- Grama mais verde e lisa -->
         <div class="ground"></div>
         
+        <!-- Árvores com posicionamento muito mais baixo e fases maiores -->
         <img id="seed" class="tree-image" src="https://i.ibb.co/7xsw9ZVd/semente.png" alt="Semente">
         <img id="sprout" class="tree-image" src="https://i.ibb.co/WNcWgWgn/broto.png" alt="Broto" style="display: none;">
         <img id="tree" class="tree-image" src="https://i.ibb.co/0jS2220Z/arvore.png" alt="Árvore" style="display: none;">
-        <img id="flowers" class="tree-image" src="https://i.ibb.co/HLyF1wFt/flores.png" alt="Flores" style="display: none;">
+        <!-- Nova imagem para flores -->
+        <img id="flowers" class="tree-image" src="https://i.ibb.co/FrMst3S/flores.png" alt="Flores" style="display: none;">
         <img id="fruits" class="tree-image" src="https://i.ibb.co/9k6HjBFk/frutos.png" alt="Frutos" style="display: none;">
       </div>
       
@@ -2155,4 +2205,4 @@
   <audio id="som-check" src="https://assets.mixkit.co/sfx/preview/mixkit-unlock-game-notification-253.mp3"></audio>
   <audio id="som-conquista" src="https://assets.mixkit.co/sfx/preview/mixkit-achievement-bell-600.mp3"></audio>
 </body>
-            </html>
+  </html>
