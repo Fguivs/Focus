@@ -45,9 +45,12 @@
     // Variável para acompanhar a data atual
     let dataAtual = '';
     
+    // Variável para data simulada (testes)
+    let dataSimulada = null;
+    
     // Funções dinâmicas para data
     function getHoje() {
-      return new Date();
+      return dataSimulada ? new Date(dataSimulada) : new Date();
     }
     
     function getHojeISO() {
@@ -62,7 +65,7 @@
     }
 
     function getSemanaAtual() {
-      const data = new Date();
+      const data = getHoje();
       const diaSemana = data.getDay() || 7;
       const segunda = new Date(data);
       segunda.setDate(data.getDate() - diaSemana + 1);
@@ -228,6 +231,27 @@
           await updateDoc(doc(db, "semanas", semanaAtual.inicio.toISOString().slice(0, 10)), {
             finalizada: true,
             vencedora: empate ? null : vencedora
+          });
+
+          // Atualizar a semana no placar
+          await carregarPontosSemanais();
+          atualizarPlacarSemanal();
+          atualizarInfoSemana();
+          
+          // Resetar pontos semanais localmente para a nova semana
+          pontosSemanais.abelha = 0;
+          pontosSemanais.joaninha = 0;
+          pontosSemanais.vagalume = 0;
+          
+          // Inicializar nova semana no Firestore
+          const novaSemanaInicio = new Date(semanaAtual.inicio);
+          novaSemanaInicio.setDate(novaSemanaInicio.getDate() + 7);
+          const novaSemanaKey = novaSemanaInicio.toISOString().slice(0, 10);
+          await setDoc(doc(db, "semanas", novaSemanaKey), {
+            abelha: 0,
+            joaninha: 0,
+            vagalume: 0,
+            finalizada: false
           });
         }
       }
@@ -526,6 +550,10 @@
         const rankingRef = doc(db, "ranking", "geral");
         await setDoc(rankingRef, { abelha: 0, joaninha: 0, vagalume: 0 });
         
+        // Resetar Árvore Épica
+        const arvoreRef = doc(db, "arvoreEpica", "progresso");
+        await deleteDoc(arvoreRef);
+        
         // Resetar variáveis locais
         pontosSemanais.abelha = 0;
         pontosSemanais.joaninha = 0;
@@ -553,8 +581,27 @@
       faseAtual: 0
     };
     
+    async function carregarEstadoArvore() {
+      const arvoreRef = doc(db, "arvoreEpica", "progresso");
+      const docSnap = await getDoc(arvoreRef);
+      
+      if (docSnap.exists()) {
+        arvoreEpica = docSnap.data();
+      } else {
+        arvoreEpica = {
+          consecutivos: 0,
+          ultimoDia: null,
+          faseAtual: 0
+        };
+        await setDoc(arvoreRef, arvoreEpica);
+      }
+    }
+    
     async function verificarArvoreEpica(totalCheckins) {
       const hojeISO = getHojeISO();
+      
+      // Carregar estado atual da árvore
+      await carregarEstadoArvore();
       
       // Se já processamos hoje, não fazemos nada
       if (arvoreEpica.ultimoDia === hojeISO) {
@@ -564,7 +611,7 @@
       // Verifica se atingiu o mínimo
       if (totalCheckins >= 10) {
         const ultimoDia = arvoreEpica.ultimoDia;
-        const ontem = new Date();
+        const ontem = getHoje();
         ontem.setDate(ontem.getDate() - 1);
         const ontemISO = ontem.toISOString().slice(0,10);
         
@@ -611,21 +658,7 @@
     }
     
     async function carregarArvoreEpica() {
-      const arvoreRef = doc(db, "arvoreEpica", "progresso");
-      const docSnap = await getDoc(arvoreRef);
-      
-      if (docSnap.exists()) {
-        arvoreEpica = docSnap.data();
-      } else {
-        // Inicializar com valores padrão
-        arvoreEpica = {
-          consecutivos: 0,
-          ultimoDia: null,
-          faseAtual: 0
-        };
-        await setDoc(arvoreRef, arvoreEpica);
-      }
-      
+      await carregarEstadoArvore();
       atualizarExibicaoArvore();
     }
     
@@ -684,7 +717,7 @@
       }
       
       // Verificar modo noite (após 18h)
-      const agora = new Date();
+      const agora = getHoje();
       const horas = agora.getHours();
       const modoNoite = horas >= 18 || horas < 6;
       
@@ -713,7 +746,17 @@
     async function verificarMudancaData() {
       const novaData = getHojeISO();
       if (dataAtual !== novaData) {
+        // Verificar Árvore Épica com dados do dia atual antes de mudar
+        const docSnap = await getDoc(doc(db, "presencas", dataAtual));
+        const totalCheckins = docSnap.exists() ? Object.values(docSnap.data()).filter(p => p).length : 0;
+        await verificarArvoreEpica(totalCheckins);
+        
         dataAtual = novaData;
+        
+        // Desmarcar todas as checkboxes ao mudar de dia
+        membros.forEach(nome => {
+          document.getElementById(nome).checked = false;
+        });
         
         // Recarregar dados para o novo dia
         await carregarPresenca();
@@ -727,6 +770,10 @@
         
         // Verificar finalização da semana
         await finalizarSemana();
+        
+        // Recarregar pontos semanais
+        await carregarPontosSemanais();
+        atualizarPlacarSemanal();
         
         // Recarregar Árvore Épica
         await carregarArvoreEpica();
@@ -750,6 +797,17 @@
           A competição será encerrada sábado (${semanaAtual.fimCompeticao}), às 23:59h.
         </div>
       `;
+    }
+
+    // Função para avançar um dia (para testes)
+    window.avancarDia = function() {
+      const hoje = getHoje();
+      hoje.setDate(hoje.getDate() + 1);
+      dataSimulada = hoje.toISOString();
+      
+      // Força verificação de mudança de data
+      verificarMudancaData();
+      mostrarPopup("⏭ Data Avançada", `Agora é dia ${formatarData(hoje)}. Modo de teste.`, 3000);
     }
 
     window.onload = async () => {
@@ -818,6 +876,26 @@
       resetBtn.onclick = resetarTudo;
       document.body.appendChild(resetBtn);
 
+      // Botão para avançar data (testes)
+      const avancarBtn = document.createElement('button');
+      avancarBtn.textContent = '➡️ Avançar Data';
+      avancarBtn.title = 'Avançar para o próximo dia (modo teste)';
+      avancarBtn.style.position = 'fixed';
+      avancarBtn.style.bottom = '70px';
+      avancarBtn.style.right = '20px';
+      avancarBtn.style.zIndex = '10000';
+      avancarBtn.style.background = '#3498db';
+      avancarBtn.style.color = 'white';
+      avancarBtn.style.border = 'none';
+      avancarBtn.style.borderRadius = '20px';
+      avancarBtn.style.padding = '10px 15px';
+      avancarBtn.style.fontSize = '14px';
+      avancarBtn.style.cursor = 'pointer';
+      avancarBtn.style.boxShadow = '0 2px 10px rgba(0,0,0,0.2)';
+      avancarBtn.onclick = avancarDia;
+      document.body.appendChild(avancarBtn);
+      avancarBtn.classList.add('botao-teste');
+
       // Carregar Árvore Épica
       await carregarArvoreEpica();
       
@@ -862,7 +940,7 @@
     
     /* AJUSTES ADICIONAIS PARA MELHOR VISUALIZAÇÃO */
     .medalha-container {
-      margin-right: 8px;
+      margin-left: 8px; /* Alterado para aparecer depois do nome */
     }
     
     /* Estilos para cores por equipe */
@@ -1226,41 +1304,66 @@
       border: 1px solid rgba(0, 180, 216, 0.3);
     }
 
-    /* Ajustes responsivos */
+    /* ===== MODIFICAÇÕES RESPONSIVAS PARA MOBILE ===== */
     @media (max-width: 768px) {
       .tree-display {
-        height: 400px; /* Altura reduzida em dispositivos móveis */
+        height: 400px !important; /* Altura fixa para tablets */
+      }
+      
+      .tree-image {
+        max-height: 80% !important; /* Ajuste de proporção */
+        bottom: 60px !important; /* Posicionamento mais baixo */
       }
       
       #sol, #lua {
         width: 60px;
         height: 60px;
-        right: 40px;
+        top: 30px;
+        right: 50px;
       }
       
       .nuvem {
         width: 80px;
       }
       
+      .arvore-epica-container {
+        padding: 15px;
+        margin-top: 20px;
+      }
+      
+      .tree-info {
+        padding: 15px;
+        margin: 15px 0;
+      }
+      
       .stage-info {
-        font-size: 2rem;
+        font-size: 1.8rem !important;
       }
       
       .stage-desc {
-        font-size: 1.1rem;
+        font-size: 1rem !important;
       }
     }
     
     @media (max-width: 480px) {
       .tree-display {
-        height: 300px; /* Altura ainda menor em telas pequenas */
+        height: 300px !important; /* Altura idêntica à referência para mobile */
+      }
+      
+      .tree-image {
+        max-height: 70% !important; /* Proporção ajustada */
+        bottom: 50px !important; /* Posicionamento mais próximo da base */
       }
       
       #sol, #lua {
-        width: 40px;
-        height: 40px;
-        right: 20px;
-        top: 20px;
+        width: 40px !important;
+        height: 40px !important;
+        top: 15px !important;
+        right: 20px !important;
+      }
+      
+      .nuvem {
+        width: 70px !important;
       }
     }
 
@@ -1763,13 +1866,40 @@
     }
     .tema-noite .sem-lider { color: #bdc3c7; }
     
-    .funcao-lider {
-      font-size: 0.8em;
-      color: #7f8c8d;
-      margin-left: 5px;
-      font-style: italic;
+    /* EFEITO NEON PERSONALIZADO POR EQUIPE */
+    .equipe-abelha input:checked + label::after {
+      animation: glowCheckAbelha 2s infinite alternate;
     }
-    .tema-noite .funcao-lider { color: #bdc3c7; }
+    @keyframes glowCheckAbelha {
+      from { box-shadow: 0 0 5px #FFD700; }
+      to { box-shadow: 0 0 15px #FFD700; }
+    }
+
+    .equipe-joaninha input:checked + label::after {
+      animation: glowCheckJoaninha 2s infinite alternate;
+    }
+    @keyframes glowCheckJoaninha {
+      from { box-shadow: 0 0 5px #FF6B6B; }
+      to { box-shadow: 0 0 15px #FF6B6B; }
+    }
+
+    .equipe-vagalume input:checked + label::after {
+      animation: glowCheckVagalume 2s infinite alternate;
+    }
+    @keyframes glowCheckVagalume {
+      from { box-shadow: 0 0 5px #27ae60; }
+      to { box-shadow: 0 0 15px #2ecc71; }
+    }
+
+    /* Botão de avançar data */
+    .botao-teste {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+    .tema-noite .botao-teste {
+      background: #9b59b6;
+    }
     
     @media (max-width: 768px) {
       .stats-container { flex-direction: column; }
@@ -1777,39 +1907,12 @@
       h1 { font-size: 2rem; }
       #contadorGeral { font-size: 1.5rem; }
       .membros-grid { grid-template-columns: 1fr 1fr; }
-      .tree-display {
-        height: 400px;
-      }
-      #sol, #lua {
-        top: 20px;
-        right: 30px;
-        width: 40px;
-        height: 40px;
-      }
-      .nuvem {
-        width: 80px;
-      }
-      .stage-info {
-        font-size: 1.6rem;
-      }
-      .stage-desc {
-        font-size: 1rem;
-      }
     }
     @media (max-width: 480px) {
       body { padding: 15px; }
       #popup { padding: 12px 20px; font-size: 0.95rem; }
       .membros-grid { grid-template-columns: 1fr; }
       .equipes-competicao { flex-direction: column; }
-      .tree-display {
-        height: 300px;
-      }
-      #sol, #lua {
-        width: 30px;
-        height: 30px;
-        right: 20px;
-        top: 10px;
-      }
     }
   </style>
 </head>
@@ -1865,12 +1968,11 @@
           <div class="membro">
             <input type="checkbox" id="Gui">
             <label for="Gui">
+              Gui
+              <span id="dias-Gui" class="dias-badge">0</span>
               <span class="medalha-container">
                 <span id="medalha-Gui" class="medalha escondido"></span>
               </span>
-              Gui
-              <span class="funcao-lider">(Líder Geral)</span>
-              <span id="dias-Gui" class="dias-badge">0</span>
             </label>
           </div>
         </div>
@@ -1890,11 +1992,11 @@
           <div class="membro">
             <input type="checkbox" id="Steh">
             <label for="Steh">
+              Steh
+              <span id="dias-Steh" class="dias-badge">0</span>
               <span class="medalha-container">
                 <span id="medalha-Steh" class="medalha escondido"></span>
               </span>
-              Steh
-              <span id="dias-Steh" class="dias-badge">0</span>
             </label>
           </div>
         </div>
@@ -1903,51 +2005,51 @@
           <div class="membro">
             <input type="checkbox" id="Brenda">
             <label for="Brenda">
+              Brenda
+              <span id="dias-Brenda" class="dias-badge">0</span>
               <span class="medalha-container">
                 <span id="medalha-Brenda" class="medalha escondido"></span>
               </span>
-              Brenda
-              <span id="dias-Brenda" class="dias-badge">0</span>
             </label>
           </div>
           <div class="membro">
             <input type="checkbox" id="Carlos">
             <label for="Carlos">
+              Carlos
+              <span id="dias-Carlos" class="dias-badge">0</span>
               <span class="medalha-container">
                 <span id="medalha-Carlos" class="medalha escondido"></span>
               </span>
-              Carlos
-              <span id="dias-Carlos" class="dias-badge">0</span>
             </label>
           </div>
           <div class="membro">
             <input type="checkbox" id="Kamila">
             <label for="Kamila">
+              Kamila
+              <span id="dias-Kamila" class="dias-badge">0</span>
               <span class="medalha-container">
                 <span id="medalha-Kamila" class="medalha escondido"></span>
               </span>
-              Kamila
-              <span id="dias-Kamila" class="dias-badge">0</span>
             </label>
           </div>
           <div class="membro">
             <input type="checkbox" id="Matt">
             <label for="Matt">
+              Matt
+              <span id="dias-Matt" class="dias-badge">0</span>
               <span class="medalha-container">
                 <span id="medalha-Matt" class="medalha escondido"></span>
               </span>
-              Matt
-              <span id="dias-Matt" class="dias-badge">0</span>
             </label>
           </div>
           <div class="membro">
             <input type="checkbox" id="Sarah">
             <label for="Sarah">
+              Sarah
+              <span id="dias-Sarah" class="dias-badge">0</span>
               <span class="medalha-container">
                 <span id="medalha-Sarah" class="medalha escondido"></span>
               </span>
-              Sarah
-              <span id="dias-Sarah" class="dias-badge">0</span>
             </label>
           </div>
         </div>
@@ -1971,61 +2073,61 @@
           <div class="membro">
             <input type="checkbox" id="Carla">
             <label for="Carla">
+              Carla
+              <span id="dias-Carla" class="dias-badge">0</span>
               <span class="medalha-container">
                 <span id="medalha-Carla" class="medalha escondido"></span>
               </span>
-              Carla
-              <span id="dias-Carla" class="dias-badge">0</span>
             </label>
           </div>
           <div class="membro">
             <input type="checkbox" id="Clara">
             <label for="Clara">
+              Clara
+              <span id="dias-Clara" class="dias-badge">0</span>
               <span class="medalha-container">
                 <span id="medalha-Clara" class="medalha escondido"></span>
               </span>
-              Clara
-              <span id="dias-Clara" class="dias-badge">0</span>
             </label>
           </div>
           <div class="membro">
             <input type="checkbox" id="Daniel">
             <label for="Daniel">
+              Daniel
+              <span id="dias-Daniel" class="dias-badge">0</span>
               <span class="medalha-container">
                 <span id="medalha-Daniel" class="medalha escondido"></span>
               </span>
-              Daniel
-              <span id="dias-Daniel" class="dias-badge">0</span>
             </label>
           </div>
           <div class="membro">
             <input type="checkbox" id="Kaii">
             <label for="Kaii">
+              Kaii
+              <span id="dias-Kaii" class="dias-badge">0</span>
               <span class="medalha-container">
                 <span id="medalha-Kaii" class="medalha escondido"></span>
               </span>
-              Kaii
-              <span id="dias-Kaii" class="dias-badge">0</span>
             </label>
           </div>
           <div class="membro">
             <input type="checkbox" id="Mich">
             <label for="Mich">
+              Mich
+              <span id="dias-Mich" class="dias-badge">0</span>
               <span class="medalha-container">
                 <span id="medalha-Mich" class="medalha escondido"></span>
               </span>
-              Mich
-              <span id="dias-Mich" class="dias-badge">0</span>
             </label>
           </div>
           <div class="membro">
             <input type="checkbox" id="Monalisa">
             <label for="Monalisa">
+              Monalisa
+              <span id="dias-Monalisa" class="dias-badge">0</span>
               <span class="medalha-container">
                 <span id="medalha-Monalisa" class="medalha escondido"></span>
               </span>
-              Monalisa
-              <span id="dias-Monalisa" class="dias-badge">0</span>
             </label>
           </div>
         </div>
@@ -2045,11 +2147,11 @@
           <div class="membro">
             <input type="checkbox" id="Duda">
             <label for="Duda">
+              Duda
+              <span id="dias-Duda" class="dias-badge">0</span>
               <span class="medalha-container">
                 <span id="medalha-Duda" class="medalha escondido"></span>
               </span>
-              Duda
-              <span id="dias-Duda" class="dias-badge">0</span>
             </label>
           </div>
         </div>
@@ -2058,41 +2160,41 @@
           <div class="membro">
             <input type="checkbox" id="Burigo">
             <label for="Burigo">
+              Burigo
+              <span id="dias-Burigo" class="dias-badge">0</span>
               <span class="medalha-container">
                 <span id="medalha-Burigo" class="medalha escondido"></span>
               </span>
-              Burigo
-              <span id="dias-Burigo" class="dias-badge">0</span>
             </label>
           </div>
           <div class="membro">
             <input type="checkbox" id="Felipe">
             <label for="Felipe">
+              Felipe
+              <span id="dias-Felipe" class="dias-badge">0</span>
               <span class="medalha-container">
                 <span id="medalha-Felipe" class="medalha escondido"></span>
               </span>
-              Felipe
-              <span id="dias-Felipe" class="dias-badge">0</span>
             </label>
           </div>
           <div class="membro">
             <input type="checkbox" id="Gabrielle">
             <label for="Gabrielle">
+              Gabrielle
+              <span id="dias-Gabrielle" class="dias-badge">0</span>
               <span class="medalha-container">
                 <span id="medalha-Gabrielle" class="medalha escondido"></span>
               </span>
-              Gabrielle
-              <span id="dias-Gabrielle" class="dias-badge">0</span>
             </label>
           </div>
           <div class="membro">
             <input type="checkbox" id="Pimentão">
             <label for="Pimentão">
+              Pimentão
+              <span id="dias-Pimentão" class="dias-badge">0</span>
               <span class="medalha-container">
                 <span id="medalha-Pimentão" class="medalha escondido"></span>
               </span>
-              Pimentão
-              <span id="dias-Pimentão" class="dias-badge">0</span>
             </label>
           </div>
         </div>
