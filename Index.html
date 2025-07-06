@@ -383,6 +383,9 @@
         const porcentagem = (total / membros.length) * 100;
         document.getElementById("progresso-barra").style.width = `${porcentagem}%`;
         
+        // VERIFICAÇÃO DA ÁRVORE ÉPICA (ADICIONADO)
+        await verificarArvoreEpica(total);
+        
         atualizarPlacarSemanal();
         verificarEquipeCompleta();
       });
@@ -609,11 +612,11 @@
 
     // ===== NOVAS FUNÇÕES PARA A ÁRVORE ÉPICA =====
     const fasesArvore = [
-      { dias: 1, nome: "Semente", emoji: "🌱", desc: "A jornada começa com um único dia de foco. Plante sua semente e cultive sua dedicação diária!" },
-      { dias: 15, nome: "Broto", emoji: "🌿", desc: "Com 15 dias consecutivos, seu esforço começa a brotar. Continue regando sua determinação!" },
-      { dias: 60, nome: "Árvore", emoji: "🌳", desc: "60 dias de foco ininterrupto! Sua árvore cresce forte, simbolizando sua consistência e perseverança." },
-      { dias: 180, nome: "Flores", emoji: "🌸", desc: "180 dias de dedicação fazem florescer resultados. Cada flor representa uma conquista em sua jornada!" },
-      { dias: 365, nome: "Frutos", emoji: "🍎", desc: "365 dias de foco contínuo! Colha os frutos do seu trabalho árduo e dedicação inabalável." }
+      { dias: 1, nome: "Semente", emoji: "🌱", desc: "A jornada começa com um único dia de foco. Vamos plantar nossa semente e cultivar a nossa dedicação diária!" },
+      { dias: 15, nome: "Broto", emoji: "🌿", desc: "Com 15 dias consecutivos, nosso esforço começa a brotar. Vamos continuar regando nossa determinação!" },
+      { dias: 60, nome: "Árvore", emoji: "🌳", desc: "60 dias de foco ininterrupto! Nossa árvore cresce forte, simbolizando nossa consistência e perseverança." },
+      { dias: 180, nome: "Flores", emoji: "🌸", desc: "180 dias de dedicação fazem florescer resultados. Cada flor representa uma conquista em nossa jornada!" },
+      { dias: 365, nome: "Frutos", emoji: "🍎", desc: "365 dias de foco contínuo! Enfim, colhemos os frutos do nosso trabalho árduo e dedicação inabalável." }
     ];
     
     let arvoreEpica = {
@@ -644,32 +647,28 @@
       // Carregar estado atual da árvore
       await carregarEstadoArvore();
       
-      // Se já processamos hoje, não fazemos nada
+      // Se o dia atual já foi processado (já contamos) e agora o total de checkins caiu abaixo de 10, revertemos.
       if (arvoreEpica.ultimoDia === hojeISO) {
-        return;
-      }
-
-      // Verifica se atingiu o mínimo
-      if (totalCheckins >= 10) {
-        const ultimoDia = arvoreEpica.ultimoDia;
+        if (totalCheckins < 10) {
+          // Revertemos o processamento do dia atual
+          arvoreEpica.consecutivos = Math.max(0, arvoreEpica.consecutivos - 1);
+          arvoreEpica.ultimoDia = null;
+        }
+      } 
+      // Se o dia atual não foi processado e temos 10 ou mais checkins, processamos.
+      else if (totalCheckins >= 10) {
         const ontem = new Date(getHoje());
         ontem.setDate(ontem.getDate() - 1);
         const ontemISO = ontem.toISOString().slice(0,10);
         
-        // Se não tem último dia registrado ou se o último dia foi ontem, incrementa
-        if (!ultimoDia || ultimoDia === ontemISO) {
+        if (!arvoreEpica.ultimoDia || arvoreEpica.ultimoDia === ontemISO) {
           arvoreEpica.consecutivos++;
         } else {
-          // Se não for consecutivo, reinicia contagem
           arvoreEpica.consecutivos = 1;
         }
-        
         arvoreEpica.ultimoDia = hojeISO;
-      } else {
-        // Se não atingiu, resetamos a contagem
-        arvoreEpica.consecutivos = 0;
-        arvoreEpica.ultimoDia = null;
       }
+      // Se o dia atual não foi processado e temos menos de 10, não fazemos nada (não conta e não quebra a sequência, mas também não avança)
       
       // Atualizar fase atual
       let novaFase = 0;
@@ -783,77 +782,56 @@
       document.getElementById("sol").style.opacity = modoNoite ? "0" : "1";
     }
     
-    // CORREÇÃO: Função para verificar mudança de data
+    // ===== FUNÇÃO CORRIGIDA PARA MUDANÇA DE DATA =====
     async function verificarMudancaData() {
       const novaData = getHojeISO();
+      
       if (dataAtual !== novaData) {
-        // Verificar Árvore Épica com dados do dia anterior
-        if (dataAtual) {
-          const docSnap = await getDoc(doc(db, "presencas", dataAtual));
-          const totalCheckins = docSnap.exists() ? Object.values(docSnap.data()).filter(p => p).length : 0;
-          await verificarArvoreEpica(totalCheckins);
-        }
+        console.log(`Mudança de data detectada: ${dataAtual} -> ${novaData}`);
         
-        dataAtual = novaData;
-        
-        // Desmarcar todas as checkboxes ao mudar de dia
+        // 1. Forçar desmarcar todas as checkboxes imediatamente
         membros.forEach(nome => {
           document.getElementById(nome).checked = false;
         });
         
-        // Recarregar dados para o novo dia
+        // 2. Resetar estado local
+        dataAtual = novaData;
+        
+        // 3. Garantir que o Firestore está pronto para o novo dia
+        await new Promise(resolve => setTimeout(resolve, 1000));
+        
+        // 4. Carregar dados do novo dia
         await carregarPresenca();
+        await carregarPontosSemanais();
         
-        // Atualizar UI
+        // 5. Atualizar UI
         await atualizarResumo();
-        
-        // Atualizar informações de data no cabeçalho
+        atualizarPlacarSemanal();
         atualizarDataCabecalho();
         atualizarInfoSemana();
         
-        // Verificar se ontem foi domingo para finalizar a semana
-        const ontem = new Date(getHoje());
-        ontem.setDate(ontem.getDate() - 1);
-        if (ontem.getDay() === 0) { // Se ontem foi domingo
-          await finalizarSemana();
-        }
+        // 6. Forçar recálculo do estado
+        verificarEquipeCompleta();
         
-        // Recarregar pontos semanais
-        await carregarPontosSemanais();
-        atualizarPlacarSemanal();
-        
-        // Recarregar Árvore Épica
+        // 7. Atualizar Árvore Épica
         await carregarArvoreEpica();
-        
-        // CORREÇÃO: Garantir que a semana atual existe
-        const semanaAtual = getSemanaAtual();
-        const semanaKey = semanaAtual.inicio.toISOString().slice(0, 10);
-        const semanaRef = doc(db, "semanas", semanaKey);
-        const semanaDoc = await getDoc(semanaRef);
-        
-        if (!semanaDoc.exists()) {
-          await setDoc(semanaRef, {
-            abelha: 0,
-            joaninha: 0,
-            vagalume: 0,
-            finalizada: false
-          });
-          // Resetar pontos locais
-          pontosSemanais.abelha = 0;
-          pontosSemanais.joaninha = 0;
-          pontosSemanais.vagalume = 0;
-          atualizarPlacarSemanal();
-        }
-        
-        // Se for segunda-feira, resetar pontos semanais
-        const hoje = getHoje();
-        if (hoje.getDay() === 1) {
-          pontosSemanais.abelha = 0;
-          pontosSemanais.joaninha = 0;
-          pontosSemanais.vagalume = 0;
-          atualizarPlacarSemanal();
-        }
+
+        // 8. Log do novo dia
+        console.log(`Sistema reinicializado para o novo dia: ${getHojeISO()}`);
       }
+    }
+
+    // ===== NOVA FUNÇÃO PARA RECARREGAR À MEIA-NOITE =====
+    function iniciarTimerMeiaNoite() {
+      const agora = getHoje();
+      const meiaNoite = new Date(agora);
+      meiaNoite.setHours(24, 0, 0, 0);
+      
+      const tempoRestante = meiaNoite - agora;
+      
+      setTimeout(() => {
+        location.reload(); // Recarrega a página para garantir reset completo
+      }, tempoRestante);
     }
     
     // Função para atualizar o cabeçalho com a data
@@ -925,6 +903,11 @@
       }
 
       await carregarPresenca();
+      
+      // VERIFICAÇÃO DA ÁRVORE ÉPICA AO CARREGAR (ADICIONADO)
+      const totalCheckins = membros.filter(nome => document.getElementById(nome).checked).length;
+      await verificarArvoreEpica(totalCheckins);
+      
       await carregarTotalDias();
       await carregarPontosSemanais();
       await carregarRankingGeral();
@@ -1034,6 +1017,9 @@
       
       // Iniciar verificação periódica de mudança de data (a cada 1 minuto)
       setInterval(verificarMudancaData, 60000);
+      
+      // Iniciar timer para recarregar à meia-noite
+      iniciarTimerMeiaNoite();
     }
   </script>
   <style>
@@ -1448,17 +1434,27 @@
       font-size: 1.3rem;
       margin: 20px 0;
       line-height: 1.6;
-      color: #e8f5e9;
+      color: #2c3e50; /* CONTRASTE MELHORADO */
+      font-weight: 500; /* ADICIONADO */
+    }
+    
+    .tema-noite .stage-desc {
+      color: #ecf0f1; /* CONTRASTE MELHORADO PARA MODO NOITE */
     }
     
     .progresso-consecutivo {
       margin-top: 20px;
       font-size: 1.2rem;
       padding: 15px;
-      background: rgba(0, 180, 216, 0.15);
+      background: rgba(0, 180, 216, 0.25); /* CONTRASTE MELHORADO */
       border-radius: 15px;
-      color: #80deea;
+      color: #005a6e; /* CONTRASTE MELHORADO */
+      font-weight: 600; /* ADICIONADO */
       border: 1px solid rgba(0, 180, 216, 0.3);
+    }
+
+    .tema-noite .progresso-consecutivo {
+      color: #80deea; /* CONTRASTE MELHORADO PARA MODO NOITE */
     }
 
     /* Criar estrelas para o modo noturno */
