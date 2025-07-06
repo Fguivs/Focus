@@ -48,6 +48,9 @@
     // Variável para data simulada (testes)
     let dataSimulada = null;
     
+    // Sistema de fila para atualizações rápidas
+    let filaAtualizacao = Promise.resolve();
+    
     // Funções dinâmicas para data
     function getHoje() {
       return dataSimulada ? new Date(dataSimulada) : new Date();
@@ -93,10 +96,6 @@
         presencas[nome] = document.getElementById(nome).checked;
       });
       await setDoc(doc(db, "presencas", getHojeISO()), presencas);
-      
-      // Após salvar, verificar Árvore Épica
-      const totalCheckins = Object.values(presencas).filter(p => p).length;
-      await verificarArvoreEpica(totalCheckins);
     }
 
     async function carregarPresenca() {
@@ -133,6 +132,17 @@
     }
 
     async function carregarPontosSemanais() {
+      const hoje = getHoje();
+      
+      // Domingo: sempre zerar pontos semanais
+      if (hoje.getDay() === 0) {
+        pontosSemanais.abelha = 0;
+        pontosSemanais.joaninha = 0;
+        pontosSemanais.vagalume = 0;
+        atualizarPlacarSemanal();
+        return;
+      }
+
       const semanaAtual = getSemanaAtual();
       const semanaDoc = await getDoc(doc(db, "semanas", semanaAtual.inicio.toISOString().slice(0, 10)));
       if (semanaDoc.exists()) {
@@ -312,60 +322,72 @@
     }
 
     window.atualizarResumo = async function () {
-      if (atualizando) return;
-      atualizando = true;
-      
-      const equipes = {
-        abelha: ["Brenda", "Carlos", "Kamila", "Matt", "Sarah", "Steh"],
-        joaninha: ["Carla", "Clara", "Daniel", "Kaii", "Mich", "Monalisa"],
-        vagalume: ["Burigo", "Duda", "Felipe", "Gabrielle", "Pimentão"]
-      };
+      // Usar sistema de fila para evitar conflitos
+      filaAtualizacao = filaAtualizacao.then(async () => {
+        const hoje = getHoje();
+        const equipes = {
+          abelha: ["Brenda", "Carlos", "Kamila", "Matt", "Sarah", "Steh"],
+          joaninha: ["Carla", "Clara", "Daniel", "Kaii", "Mich", "Monalisa"],
+          vagalume: ["Burigo", "Duda", "Felipe", "Gabrielle", "Pimentão"]
+        };
 
-      // Obter estado atual do Firestore
-      const hojeISO = getHojeISO();
-      const docSnap = await getDoc(doc(db, "presencas", hojeISO));
-      const estadoFirestore = docSnap.exists() ? docSnap.data() : {};
+        // Obter estado atual do Firestore
+        const hojeISO = getHojeISO();
+        const docSnap = await getDoc(doc(db, "presencas", hojeISO));
+        const estadoFirestore = docSnap.exists() ? docSnap.data() : {};
 
-      // Calcular diferenças baseadas no Firestore
-      const diferencas = { abelha: 0, joaninha: 0, vagalume: 0 };
-      
-      for (const [equipe, membrosEquipe] of Object.entries(equipes)) {
-        membrosEquipe.forEach(nome => {
-          const estadoAtual = document.getElementById(nome).checked;
-          const estadoSalvo = estadoFirestore[nome] || false;
-          
-          if (estadoAtual !== estadoSalvo) {
-            if (estadoAtual) {
-              diferencas[equipe]++;
-            } else {
-              diferencas[equipe]--;
+        // Calcular diferenças baseadas no Firestore
+        const diferencas = { abelha: 0, joaninha: 0, vagalume: 0 };
+        
+        for (const [equipe, membrosEquipe] of Object.entries(equipes)) {
+          membrosEquipe.forEach(nome => {
+            const estadoAtual = document.getElementById(nome).checked;
+            const estadoSalvo = estadoFirestore[nome] || false;
+            
+            if (estadoAtual !== estadoSalvo) {
+              if (estadoAtual) {
+                diferencas[equipe]++;
+              } else {
+                diferencas[equipe]--;
+              }
             }
+          });
+        }
+
+        // Salvar estado atual no Firestore
+        await salvarPresenca();
+        
+        // Atualizar pontos semanais apenas se não for domingo
+        if (hoje.getDay() !== 0) {
+          for (const equipe of Object.keys(equipes)) {
+            pontosSemanais[equipe] = Math.max(0, pontosSemanais[equipe] + diferencas[equipe]);
           }
-        });
-      }
 
-      // Atualizar pontos semanais
-      for (const equipe of Object.keys(equipes)) {
-        pontosSemanais[equipe] = Math.max(0, pontosSemanais[equipe] + diferencas[equipe]);
-      }
-
-      // Salvar estado atual no Firestore
-      await salvarPresenca();
+          // Atualizar semana no Firestore
+          const semanaAtual = getSemanaAtual();
+          const semanaKey = semanaAtual.inicio.toISOString().slice(0, 10);
+          const semanaRef = doc(db, "semanas", semanaKey);
+          
+          // Usar setDoc com merge para criar ou atualizar
+          await setDoc(semanaRef, pontosSemanais, { merge: true });
+        } else {
+          // Domingo: não acumula pontos, mantém 0
+          pontosSemanais.abelha = 0;
+          pontosSemanais.joaninha = 0;
+          pontosSemanais.vagalume = 0;
+        }
+        
+        // Atualizar UI
+        const total = membros.filter(nome => document.getElementById(nome).checked).length;
+        document.getElementById("contadorGeral").textContent = `${total} épicos focaram hoje!`;
+        const porcentagem = (total / membros.length) * 100;
+        document.getElementById("progresso-barra").style.width = `${porcentagem}%`;
+        
+        atualizarPlacarSemanal();
+        verificarEquipeCompleta();
+      });
       
-      // Atualizar semana no Firestore
-      const semanaAtual = getSemanaAtual();
-      await updateDoc(doc(db, "semanas", semanaAtual.inicio.toISOString().slice(0, 10)), pontosSemanais);
-      
-      // Atualizar UI
-      const total = membros.filter(nome => document.getElementById(nome).checked).length;
-      document.getElementById("contadorGeral").textContent = `${total} épicos focaram hoje!`;
-      const porcentagem = (total / membros.length) * 100;
-      document.getElementById("progresso-barra").style.width = `${porcentagem}%`;
-      
-      atualizarPlacarSemanal();
-      verificarEquipeCompleta();
-      
-      atualizando = false;
+      await filaAtualizacao;
     }
 
     // Verificar se todos os membros de uma equipe estão focados
@@ -497,18 +519,37 @@
           p.y += p.speed * 0.8;
           p.x += Math.sin(p.angle) * 2;
           p.angle += p.spin;
-          confettiCtx.fillStyle = p.color;
-          confettiCtx.beginPath();
-          confettiCtx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
-          confettiCtx.fill();
-          if (p.y < confettiCanvas.height) particlesAlive++;
+
+          // Verificar se a partícula ainda está visível
+          const isVisible = p.y < confettiCanvas.height && 
+                           p.x > -50 && 
+                           p.x < confettiCanvas.width + 50;
+          
+          if (isVisible) {
+            confettiCtx.fillStyle = p.color;
+            confettiCtx.beginPath();
+            confettiCtx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+            confettiCtx.fill();
+            particlesAlive++;
+          }
         }
-        if (particlesAlive > 0) requestAnimationFrame(animateConfetti);
+        
+        if (particlesAlive > 0) {
+          requestAnimationFrame(animateConfetti);
+        } else {
+          // Limpar completamente quando todas as partículas saírem
+          confettiCtx.clearRect(0, 0, confettiCanvas.width, confettiCanvas.height);
+        }
       }
       animateConfetti();
     }
 
     window.marcarCheckbox = function (nome) {
+      const hoje = getHoje();
+      if (hoje.getDay() === 0) {
+        mostrarPopup("ℹ️ Domingo", "Pontos semanais não são contabilizados aos domingos", 3000);
+      }
+      
       const checkbox = document.getElementById(nome);
       const som = document.getElementById("som-check");
       som.currentTime = 0;
@@ -607,11 +648,11 @@
       if (arvoreEpica.ultimoDia === hojeISO) {
         return;
       }
-      
+
       // Verifica se atingiu o mínimo
       if (totalCheckins >= 10) {
         const ultimoDia = arvoreEpica.ultimoDia;
-        const ontem = getHoje();
+        const ontem = new Date(getHoje());
         ontem.setDate(ontem.getDate() - 1);
         const ontemISO = ontem.toISOString().slice(0,10);
         
@@ -742,14 +783,16 @@
       document.getElementById("sol").style.opacity = modoNoite ? "0" : "1";
     }
     
-    // ===== FUNÇÕES PARA VERIFICAÇÃO AUTOMÁTICA DE MUDANÇA DE DATA =====
+    // CORREÇÃO: Função para verificar mudança de data
     async function verificarMudancaData() {
       const novaData = getHojeISO();
       if (dataAtual !== novaData) {
-        // Verificar Árvore Épica com dados do dia atual antes de mudar
-        const docSnap = await getDoc(doc(db, "presencas", dataAtual));
-        const totalCheckins = docSnap.exists() ? Object.values(docSnap.data()).filter(p => p).length : 0;
-        await verificarArvoreEpica(totalCheckins);
+        // Verificar Árvore Épica com dados do dia anterior
+        if (dataAtual) {
+          const docSnap = await getDoc(doc(db, "presencas", dataAtual));
+          const totalCheckins = docSnap.exists() ? Object.values(docSnap.data()).filter(p => p).length : 0;
+          await verificarArvoreEpica(totalCheckins);
+        }
         
         dataAtual = novaData;
         
@@ -768,8 +811,12 @@
         atualizarDataCabecalho();
         atualizarInfoSemana();
         
-        // Verificar finalização da semana
-        await finalizarSemana();
+        // Verificar se ontem foi domingo para finalizar a semana
+        const ontem = new Date(getHoje());
+        ontem.setDate(ontem.getDate() - 1);
+        if (ontem.getDay() === 0) { // Se ontem foi domingo
+          await finalizarSemana();
+        }
         
         // Recarregar pontos semanais
         await carregarPontosSemanais();
@@ -777,6 +824,35 @@
         
         // Recarregar Árvore Épica
         await carregarArvoreEpica();
+        
+        // CORREÇÃO: Garantir que a semana atual existe
+        const semanaAtual = getSemanaAtual();
+        const semanaKey = semanaAtual.inicio.toISOString().slice(0, 10);
+        const semanaRef = doc(db, "semanas", semanaKey);
+        const semanaDoc = await getDoc(semanaRef);
+        
+        if (!semanaDoc.exists()) {
+          await setDoc(semanaRef, {
+            abelha: 0,
+            joaninha: 0,
+            vagalume: 0,
+            finalizada: false
+          });
+          // Resetar pontos locais
+          pontosSemanais.abelha = 0;
+          pontosSemanais.joaninha = 0;
+          pontosSemanais.vagalume = 0;
+          atualizarPlacarSemanal();
+        }
+        
+        // Se for segunda-feira, resetar pontos semanais
+        const hoje = getHoje();
+        if (hoje.getDay() === 1) {
+          pontosSemanais.abelha = 0;
+          pontosSemanais.joaninha = 0;
+          pontosSemanais.vagalume = 0;
+          atualizarPlacarSemanal();
+        }
       }
     }
     
@@ -805,15 +881,49 @@
       hoje.setDate(hoje.getDate() + 1);
       dataSimulada = hoje.toISOString();
       
+      // Se avançou para domingo, forçar finalização da semana
+      if (hoje.getDay() === 0) {
+        finalizarSemana();
+      }
+      
       // Força verificação de mudança de data
       verificarMudancaData();
       mostrarPopup("⏭ Data Avançada", `Agora é dia ${formatarData(hoje)}. Modo de teste.`, 3000);
     }
+    
+    // Função para testar as fases da árvore épica
+    window.testarFasesArvore = function() {
+      const fases = ["seed", "sprout", "tree", "flowers", "fruits"];
+      let current = 0;
+      
+      const changeFase = () => {
+        fases.forEach((fase, i) => {
+          document.getElementById(fase).style.display = i === current ? "block" : "none";
+        });
+        
+        const faseInfo = fasesArvore[current];
+        document.getElementById("stage-name").textContent = faseInfo.nome + " " + faseInfo.emoji;
+        document.getElementById("stage-desc").textContent = faseInfo.desc;
+        
+        current = (current + 1) % fases.length;
+        mostrarPopup("🌳 Teste de Fases", `Mostrando: ${fases[current]}`, 2000);
+      };
+      
+      // Mudar a cada 2 segundos
+      setInterval(changeFase, 2000);
+      changeFase();
+    }
 
     window.onload = async () => {
-      // Inicializar data atual
       dataAtual = getHojeISO();
       
+      // Se for domingo, pontos semanais = 0
+      if (getHoje().getDay() === 0) {
+        pontosSemanais.abelha = 0;
+        pontosSemanais.joaninha = 0;
+        pontosSemanais.vagalume = 0;
+      }
+
       await carregarPresenca();
       await carregarTotalDias();
       await carregarPontosSemanais();
@@ -895,6 +1005,25 @@
       avancarBtn.onclick = avancarDia;
       document.body.appendChild(avancarBtn);
       avancarBtn.classList.add('botao-teste');
+      
+      // Botão para testar as fases da árvore
+      const arvoreBtn = document.createElement('button');
+      arvoreBtn.textContent = '🌱 Testar Fases';
+      arvoreBtn.title = 'Testar todas as fases da Árvore Épica';
+      arvoreBtn.style.position = 'fixed';
+      arvoreBtn.style.bottom = '120px';
+      arvoreBtn.style.right = '20px';
+      arvoreBtn.style.zIndex = '10000';
+      arvoreBtn.style.background = '#2ecc71';
+      arvoreBtn.style.color = 'white';
+      arvoreBtn.style.border = 'none';
+      arvoreBtn.style.borderRadius = '20px';
+      arvoreBtn.style.padding = '10px 15px';
+      arvoreBtn.style.fontSize = '14px';
+      arvoreBtn.style.cursor = 'pointer';
+      arvoreBtn.style.boxShadow = '0 2px 10px rgba(0,0,0,0.2)';
+      arvoreBtn.onclick = testarFasesArvore;
+      document.body.appendChild(arvoreBtn);
 
       // Carregar Árvore Épica
       await carregarArvoreEpica();
@@ -1069,7 +1198,7 @@
       }
     }
 
-    /* ===== MELHORIAS SOLICITADAS PARA A ÁRVORE ÉPICA ===== */
+    /* ===== MELHORIAS PARA A ÁRVORE ÉPICA ===== */
     .arvore-epica-container {
       border-radius: 15px;
       padding: 20px;
@@ -1094,16 +1223,16 @@
     
     .tree-display {
       position: relative;
-      height: 500px; /* Altura aumentada para 500px */
+      height: 400px; 
       margin: 20px auto;
       display: flex;
       justify-content: center;
       align-items: flex-end;
       overflow: hidden;
       background: transparent;
-      border-radius: 20px; /* Bordas mais arredondadas */
+      border-radius: 20px;
       border: 1px solid rgba(255, 255, 255, 0.2);
-      box-shadow: inset 0 0 30px rgba(0, 0, 0, 0.7); /* Sombra interna */
+      box-shadow: inset 0 0 30px rgba(0, 0, 0, 0.7);
     }
     
     .tree-sky {
@@ -1134,10 +1263,10 @@
     
     /* Sol com efeito de pulsação */
     #sol {
-      top: 40px;
-      right: 100px;
-      width: 80px;
-      height: 80px;
+      top: 15px; /* posição mais alta */
+      right: 40px; /* mais centralizado */
+      width: 50px; /* anterior: 40px */
+      height: 50px; /* anterior: 40px */
       z-index: 2;
       transition: opacity 1.5s ease;
       opacity: 1;
@@ -1146,13 +1275,18 @@
     
     /* Lua sem efeito de pulsação */
     #lua {
-      top: 40px;
-      right: 100px;
-      width: 80px;
-      height: 80px;
+      top: 15px; /* posição mais alta */
+      right: 40px; /* mais centralizado */
+      width: 50px; /* anterior: 40px */
+      height: 50px; /* anterior: 40px */
       z-index: 2;
       transition: opacity 1.5s ease;
       opacity: 0;
+    }
+    
+    #sol img, #lua img {
+      width: 100%;
+      height: 100%;
     }
     
     @keyframes pulsate {
@@ -1162,66 +1296,69 @@
     
     /* Nuvens com início imediato e posições iniciais variadas */
     .nuvem {
-      width: 100px;
+      width: 56px; /* anterior: 80px */
       height: auto;
-      z-index: 2; /* Abaixo da árvore */
+      z-index: 2;
       opacity: 0.7;
       filter: drop-shadow(0 3px 3px rgba(0, 0, 0, 0.2));
       animation: float-cloud 60s infinite linear;
     }
     
-    /* Posições iniciais variadas dentro da área visível */
+    /* Tamanhos específicos reduzidos */
     .nuvem-1 {
-      top: 50px;
-      left: -20%; /* Começa parcialmente fora da tela */
-      animation-duration: 70s;
-    }
-    
-    .nuvem-2 {
-      top: 120px;
-      left: 30%; /* Começa mais ao centro */
+      top: 15%;
+      left: -20%;
+      width: 42px; /* anterior: 60px */
       animation-duration: 80s;
     }
     
+    .nuvem-2 {
+      top: 30%;
+      left: -20%;
+      width: 70px; /* anterior: 100px */
+      animation-duration: 70s;
+    }
+    
     .nuvem-3 {
-      top: 20px;
-      left: 80%; /* Começa quase saindo da tela */
+      top: 45%;
+      left: -20%;
+      width: 56px; /* anterior: 80px */
       animation-duration: 90s;
     }
     
     /* Novas nuvens - posicionadas mais acima */
     .nuvem-4 {
-      top: 40px;
+      top: 20%;
       left: -20%;
-      animation-duration: 70s;
-      animation-delay: 35s; /* Começa após a nuvem-1 desaparecer */
-      opacity: 0; /* Inicialmente invisível */
+      width: 49px; /* anterior: 70px */
+      animation-duration: 75s;
+      animation-delay: 15s;
     }
     
     .nuvem-5 {
-      top: 90px;
+      top: 35%;
       left: -20%;
-      animation-duration: 80s;
-      animation-delay: 40s; /* Começa após a nuvem-2 desaparecer */
-      opacity: 0; /* Inicialmente invisível */
+      width: 63px; /* anterior: 90px */
+      animation-duration: 85s;
+      animation-delay: 30s;
     }
     
     .nuvem-6 {
-      top: 10px;
+      top: 50%;
       left: -20%;
-      animation-duration: 90s;
-      animation-delay: 45s; /* Começa após a nuvem-3 desaparecer */
-      opacity: 0; /* Inicialmente invisível */
+      width: 77px; /* anterior: 110px */
+      animation-duration: 95s;
+      animation-delay: 45s;
     }
     
-    /* Animação com movimento contínuo e controle de visibilidade */
+    /* Animação com movimento contínuo */
     @keyframes float-cloud {
       0% { 
         transform: translateX(0);
-        opacity: 0; /* Inicia invisível */
+        opacity: 0;
       }
       1% {
-        opacity: 0.7; /* Torna-se visível imediatamente */
+        opacity: 0.7;
       }
       100% { 
         transform: translateX(calc(100vw + 150px));
@@ -1234,7 +1371,7 @@
       bottom: 0;
       left: 0;
       width: 100%;
-      height: 120px;
+      height: 80px;
       z-index: 5;
       background: linear-gradient(to top, 
         #1b5e20, 
@@ -1244,28 +1381,48 @@
       position: relative;
     }
     
-    /* Árvore sobre a grama - posicionamento bem mais baixo */
+    /* Árvore sobre a grama - posicionamento mais baixo */
     .tree-image {
-      bottom: 80px; /* Posicionamento mais baixo */
+      bottom: 70px;
       left: 50%;
       transform: translateX(-50%);
-      z-index: 6; /* Acima das nuvens */
+      z-index: 6;
       animation: sway 8s infinite ease-in-out;
       transform-origin: bottom center;
       transition: transform 0.5s ease, max-height 0.5s ease;
+      max-height: 75%;
     }
     
-    /* Aumento significativo das fases finais - Proporções idênticas ao código de referência */
-    #seed { max-width: 20%; max-height: 25%; display: block; }
-    #sprout { max-width: 35%; max-height: 40%; display: none; }
-    #tree { max-width: 60%; max-height: 65%; display: none; }
-    #flowers { max-width: 95%; max-height: 95%; display: none; }
-    #fruits { max-width: 100%; max-height: 100%; display: none; }
+    /* Ajustes de tamanho para as fases da árvore */
+    #seed { max-width: 20%; max-height: 40%; }
+    #sprout { max-width: 35%; max-height: 50%; }
+    #tree { max-width: 60%; max-height: 65%; }
+    #flowers { 
+      max-width: 95%; 
+      max-height: 85%;
+      bottom: 65px;
+    }
+    #fruits { 
+      max-width: 100%; 
+      max-height: 90%;
+      bottom: 60px;
+    }
+    
+    /* Animação especial para fases maiores */
+    #flowers, #fruits {
+      animation: sway-large 10s infinite ease-in-out;
+    }
     
     @keyframes sway {
       0% { transform: translateX(-50%) rotate(-3deg); }
       50% { transform: translateX(-50%) rotate(3deg); }
       100% { transform: translateX(-50%) rotate(-3deg); }
+    }
+    
+    @keyframes sway-large {
+      0% { transform: translateX(-50%) rotate(-2deg); }
+      50% { transform: translateX(-50%) rotate(2deg); }
+      100% { transform: translateX(-50%) rotate(-2deg); }
     }
     
     .tree-info {
@@ -1304,67 +1461,28 @@
       border: 1px solid rgba(0, 180, 216, 0.3);
     }
 
-    /* ===== MODIFICAÇÕES RESPONSIVAS PARA MOBILE ===== */
-    @media (max-width: 768px) {
-      .tree-display {
-        height: 400px !important; /* Altura fixa para tablets */
-      }
-      
-      .tree-image {
-        max-height: 80% !important; /* Ajuste de proporção */
-        bottom: 60px !important; /* Posicionamento mais baixo */
-      }
-      
-      #sol, #lua {
-        width: 60px;
-        height: 60px;
-        top: 30px;
-        right: 50px;
-      }
-      
-      .nuvem {
-        width: 80px;
-      }
-      
-      .arvore-epica-container {
-        padding: 15px;
-        margin-top: 20px;
-      }
-      
-      .tree-info {
-        padding: 15px;
-        margin: 15px 0;
-      }
-      
-      .stage-info {
-        font-size: 1.8rem !important;
-      }
-      
-      .stage-desc {
-        font-size: 1rem !important;
-      }
+    /* Criar estrelas para o modo noturno */
+    .stars-container {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      opacity: 0;
+      transition: opacity 1s ease;
     }
     
-    @media (max-width: 480px) {
-      .tree-display {
-        height: 300px !important; /* Altura idêntica à referência para mobile */
-      }
-      
-      .tree-image {
-        max-height: 70% !important; /* Proporção ajustada */
-        bottom: 50px !important; /* Posicionamento mais próximo da base */
-      }
-      
-      #sol, #lua {
-        width: 40px !important;
-        height: 40px !important;
-        top: 15px !important;
-        right: 20px !important;
-      }
-      
-      .nuvem {
-        width: 70px !important;
-      }
+    .star {
+      position: absolute;
+      background: white;
+      border-radius: 50%;
+      animation: twinkle 2s infinite alternate;
+    }
+    
+    @keyframes twinkle {
+      0% { opacity: 0.3; transform: scale(0.9); }
+      100% { opacity: 1; transform: scale(1.1); }
     }
 
     /* ===== ESTILOS RESTANTES ===== */
@@ -1907,12 +2025,73 @@
       h1 { font-size: 2rem; }
       #contadorGeral { font-size: 1.5rem; }
       .membros-grid { grid-template-columns: 1fr 1fr; }
+      
+      /* Responsividade para Árvore Épica */
+      .tree-display {
+        height: 300px !important;
+      }
+      
+      .tree-image {
+        max-height: 70% !important;
+        bottom: 60px !important;
+      }
+      
+      #sol, #lua {
+        width: 38px; /* anterior: 30px */
+        height: 38px; /* anterior: 30px */
+        top: 12px; /* anterior: 15px */
+        right: 30px; /* anterior: 30px */
+      }
+      
+      .nuvem {
+        width: 40px !important; /* anterior: 50px */
+      }
+      
+      .arvore-epica-container {
+        padding: 15px;
+        margin-top: 20px;
+      }
+      
+      .tree-info {
+        padding: 15px;
+        margin: 15px 0;
+      }
+      
+      .stage-info {
+        font-size: 1.8rem !important;
+      }
+      
+      .stage-desc {
+        font-size: 1rem !important;
+      }
     }
+    
     @media (max-width: 480px) {
       body { padding: 15px; }
       #popup { padding: 12px 20px; font-size: 0.95rem; }
       .membros-grid { grid-template-columns: 1fr; }
       .equipes-competicao { flex-direction: column; }
+      
+      /* Responsividade para Árvore Épica */
+      .tree-display {
+        height: 250px !important;
+      }
+      
+      .tree-image {
+        max-height: 65% !important;
+        bottom: 50px !important;
+      }
+      
+      #sol, #lua {
+        width: 31px !important; /* anterior: 25px */
+        height: 31px !important; /* anterior: 25px */
+        top: 8px !important; /* anterior: 10px */
+        right: 25px !important; /* anterior: 20px */
+      }
+      
+      .nuvem {
+        width: 30px !important; /* anterior: 40px */
+      }
     }
   </style>
 </head>
@@ -2211,7 +2390,7 @@
           <div class="stars-container"></div>
         </div>
         
-        <!-- Sol simplificado com efeito de pulsação -->
+        <!-- Sol com efeito de pulsação -->
         <div id="sol" class="sky-object">
           <img src="https://i.ibb.co/yFW4Lq73/sol.png" alt="Sol">
         </div>
