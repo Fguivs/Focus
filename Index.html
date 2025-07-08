@@ -19,11 +19,21 @@
 
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
-    const membros = [
-      "Gui", "Brenda", "Carlos", "Kamila", "Matt", "Sarah", "Steh",
-      "Carla", "Clara", "Daniel", "Kaii", "Mich", "Monalisa",
-      "Burigo", "Duda", "Felipe", "Gabrielle", "Pimentão"
-    ];
+    
+    // Variáveis dinâmicas
+    let membros = [];
+    let equipes = {
+      abelha: [],
+      joaninha: [],
+      vagalume: []
+    };
+    let lider = null;
+    let lideresEquipes = {
+      abelha: null,
+      joaninha: null,
+      vagalume: null
+    };
+
     const medalhas = {
       3: { emoji: "🔥", nome: "Fagulha" },
       10: { emoji: "👑", nome: "Lenda" },
@@ -45,15 +55,16 @@
     // Variável para acompanhar a data atual
     let dataAtual = '';
     
-    // Variável para data simulada (testes)
-    let dataSimulada = null;
-    
     // Sistema de fila para atualizações rápidas
     let filaAtualizacao = Promise.resolve();
+
+    // Variáveis para o painel secreto
+    let diamanteTaps = 0;
+    let painelAberto = false;
     
     // Funções dinâmicas para data
     function getHoje() {
-      return dataSimulada ? new Date(dataSimulada) : new Date();
+      return new Date();
     }
     
     function getHojeISO() {
@@ -90,11 +101,169 @@
       };
     }
 
+    // ====== Carregar membros do Firebase ======
+    async function carregarMembrosDoFirebase() {
+      try {
+        const querySnapshot = await getDocs(collection(db, "membros"));
+        
+        // Limpar estruturas anteriores
+        membros = [];
+        equipes = { abelha: [], joaninha: [], vagalume: [] };
+        lider = null;
+        lideresEquipes = { abelha: null, joaninha: null, vagalume: null };
+
+        querySnapshot.forEach((docSnap) => {
+          const dados = docSnap.data();
+          const nome = dados.nome;
+          const equipe = dados.equipe;
+          const papel = dados.papel || "";
+
+          // Armazenar como objeto
+          const membro = { nome, equipe, papel };
+
+          if (papel === "lider") {
+            lider = membro;
+          } else if (papel === "lider-equipe") {
+            if (equipe in lideresEquipes) {
+              lideresEquipes[equipe] = membro;
+            }
+            if (equipe in equipes) {
+              equipes[equipe].push(membro);
+            }
+          } else {
+            membros.push(membro);
+            if (equipe in equipes) {
+              equipes[equipe].push(membro);
+            }
+          }
+        });
+      } catch (error) {
+        console.error("Erro ao carregar membros:", error);
+        mostrarPopup("❌ Erro", "Falha ao carregar membros do Firebase", 5000);
+      }
+    }
+
+    // ====== Renderizar membros dinamicamente ======
+    function renderizarMembrosNaTela() {
+      // Renderizar o líder geral
+      const liderContainer = document.getElementById("lider");
+      if (lider) {
+        liderContainer.innerHTML = `
+          <div class="membro">
+            <input type="checkbox" id="${lider.nome}">
+            <label for="${lider.nome}">
+              ${lider.nome}
+              <span id="dias-${lider.nome}" class="dias-badge">0</span>
+              <span class="medalha-container">
+                <span id="medalha-${lider.nome}" class="medalha escondido"></span>
+              </span>
+            </label>
+          </div>
+        `;
+      } else {
+        liderContainer.innerHTML = '<div class="sem-lider">Sem líder</div>';
+      }
+
+      // Renderizar cada equipe
+      for (const [equipeCod, membrosEquipe] of Object.entries(equipes)) {
+        const container = document.getElementById(`equipe-${equipeCod}`);
+        // Limpar o container
+        container.innerHTML = '';
+        // Adicionar o título da equipe
+        const titulo = document.createElement('h2');
+        titulo.textContent = nomeEquipe(equipeCod);
+        container.appendChild(titulo);
+
+        // Adicionar o resumo da equipe
+        const resumo = document.createElement('div');
+        resumo.className = 'resumo';
+        resumo.id = `resumo-${equipeCod}`;
+        container.appendChild(resumo);
+
+        // Adicionar a área do líder da equipe
+        const liderEquipeContainer = document.createElement('div');
+        liderEquipeContainer.className = 'lider-equipe';
+        const tituloLider = document.createElement('div');
+        tituloLider.className = 'titulo-lider';
+        tituloLider.textContent = 'Líder da Equipe';
+        liderEquipeContainer.appendChild(tituloLider);
+
+        const liderEquipe = lideresEquipes[equipeCod];
+        if (liderEquipe) {
+          const divLider = document.createElement('div');
+          divLider.className = 'membro';
+          divLider.innerHTML = `
+            <input type="checkbox" id="${liderEquipe.nome}">
+            <label for="${liderEquipe.nome}">
+              ${liderEquipe.nome}
+              <span id="dias-${liderEquipe.nome}" class="dias-badge">0</span>
+              <span class="medalha-container">
+                <span id="medalha-${liderEquipe.nome}" class="medalha escondido"></span>
+              </span>
+            </label>
+          `;
+          liderEquipeContainer.appendChild(divLider);
+        } else {
+          const semLider = document.createElement('div');
+          semLider.className = 'sem-lider';
+          semLider.textContent = 'Sem líder';
+          liderEquipeContainer.appendChild(semLider);
+        }
+        container.appendChild(liderEquipeContainer);
+
+        // Adicionar os membros da equipe (exceto o líder da equipe)
+        membrosEquipe.forEach(membro => {
+          // Se for o líder da equipe, não adicionar novamente
+          if (liderEquipe && membro.nome === liderEquipe.nome) {
+            return;
+          }
+          const div = document.createElement('div');
+          div.className = 'membro';
+          div.innerHTML = `
+            <input type="checkbox" id="${membro.nome}">
+            <label for="${membro.nome}">
+              ${membro.nome}
+              <span id="dias-${membro.nome}" class="dias-badge">0</span>
+              <span class="medalha-container">
+                <span id="medalha-${membro.nome}" class="medalha escondido"></span>
+              </span>
+            </label>
+          `;
+          container.appendChild(div);
+        });
+      }
+    }
+
+    function nomeEquipe(cod) {
+      if (cod === "abelha") return "🐝 Equipe Abelha";
+      if (cod === "joaninha") return "🐞 Equipe Joaninha";
+      if (cod === "vagalume") return "💡 Equipe Vaga-lume";
+      return cod;
+    }
+
+    // ====== FIM DAS NOVAS FUNÇÕES ======
+
     async function salvarPresenca() {
       const presencas = {};
-      membros.forEach(nome => {
-        presencas[nome] = document.getElementById(nome).checked;
+      
+      // Coletar todos os membros (incluindo líderes)
+      const todosMembros = [];
+      if (lider) todosMembros.push(lider.nome);
+      membros.forEach(m => todosMembros.push(m.nome));
+      for (const equipe of Object.values(equipes)) {
+        equipe.forEach(m => todosMembros.push(m.nome));
+      }
+      
+      // Remover duplicatas
+      const membrosUnicos = [...new Set(todosMembros)].filter(Boolean);
+      
+      membrosUnicos.forEach(nome => {
+        const checkbox = document.getElementById(nome);
+        if (checkbox) {
+          presencas[nome] = checkbox.checked;
+        }
       });
+      
       await setDoc(doc(db, "presencas", getHojeISO()), presencas);
     }
 
@@ -103,31 +272,66 @@
       const docSnap = await getDoc(doc(db, "presencas", hojeISO));
       
       if (!docSnap.exists()) {
-        membros.forEach(nome => {
-          document.getElementById(nome).checked = false;
+        // Desmarcar todos os checkboxes
+        const checkboxes = document.querySelectorAll('input[type="checkbox"]');
+        checkboxes.forEach(checkbox => {
+          checkbox.checked = false;
         });
         return;
       }
 
       const data = docSnap.data();
-      membros.forEach(nome => {
-        document.getElementById(nome).checked = data[nome] || false;
+      // Percorrer todos os checkboxes da página
+      const checkboxes = document.querySelectorAll('input[type="checkbox"]');
+      checkboxes.forEach(checkbox => {
+        const nome = checkbox.id;
+        if (nome in data) {
+          checkbox.checked = data[nome];
+          // Atualizar a classe do label
+          const label = checkbox.nextElementSibling;
+          if (label) {
+            if (checkbox.checked) {
+              label.classList.add('checked');
+            } else {
+              label.classList.remove('checked');
+            }
+          }
+        } else {
+          checkbox.checked = false;
+          const label = checkbox.nextElementSibling;
+          if (label) {
+            label.classList.remove('checked');
+          }
+        }
       });
     }
 
     async function carregarTotalDias() {
       const querySnapshot = await getDocs(collection(db, "presencas"));
-      membros.forEach(nome => {
+      
+      // Obter todos os nomes de membros
+      const todosMembros = [];
+      if (lider) todosMembros.push(lider.nome);
+      membros.forEach(m => todosMembros.push(m.nome));
+      for (const equipe of Object.values(equipes)) {
+        equipe.forEach(m => todosMembros.push(m.nome));
+      }
+      const membrosUnicos = [...new Set(todosMembros)].filter(Boolean);
+      
+      // Inicializar contadores
+      membrosUnicos.forEach(nome => {
         totalDiasMembros[nome] = 0;
       });
+      
       querySnapshot.forEach(doc => {
         const data = doc.data();
-        membros.forEach(nome => {
+        membrosUnicos.forEach(nome => {
           if (data[nome]) {
             totalDiasMembros[nome]++;
           }
         });
       });
+      
       atualizarMedalhas();
     }
 
@@ -278,41 +482,64 @@
     }
 
     function atualizarMedalhas() {
-      membros.forEach(nome => {
+      // Obter todos os nomes de membros (lider, líderes de equipe e membros comuns)
+      const todosMembros = [];
+      if (lider) todosMembros.push(lider.nome);
+      membros.forEach(m => todosMembros.push(m.nome));
+      for (const equipe of Object.values(equipes)) {
+        equipe.forEach(m => todosMembros.push(m.nome));
+      }
+      // Remover duplicatas (caso haja)
+      const membrosUnicos = [...new Set(todosMembros)].filter(Boolean);
+
+      membrosUnicos.forEach(nome => {
         const totalDias = totalDiasMembros[nome] || 0;
         const medalhaElement = document.getElementById(`medalha-${nome}`);
         const diasElement = document.getElementById(`dias-${nome}`);
         const medalha = getMedalha(totalDias);
         
-        diasElement.textContent = `${totalDias}`;
-        diasElement.title = `${totalDias} dias de foco`;
+        if (diasElement) diasElement.textContent = `${totalDias}`;
+        if (diasElement) diasElement.title = `${totalDias} dias de foco`;
         
-        if (medalha) {
-          medalhaElement.innerHTML = medalha.emoji;
-          medalhaElement.title = `${medalha.nome} - ${totalDias} dias de foco`;
-          medalhaElement.classList.add('com-medalha');
-          medalhaElement.classList.remove('escondido');
-        } else {
-          medalhaElement.innerHTML = '';
-          medalhaElement.classList.remove('com-medalha');
-          medalhaElement.classList.add('escondido');
+        if (medalhaElement) {
+          if (medalha) {
+            medalhaElement.innerHTML = medalha.emoji;
+            medalhaElement.title = `${medalha.nome} - ${totalDias} dias de foco`;
+            medalhaElement.classList.add('com-medalha');
+            medalhaElement.classList.remove('escondido');
+          } else {
+            medalhaElement.innerHTML = '';
+            medalhaElement.classList.remove('com-medalha');
+            medalhaElement.classList.add('escondido');
+          }
         }
       });
     }
 
     function atualizarPlacarSemanal() {
-      document.getElementById("resumo-abelha").innerHTML = `
-        <div>${document.querySelectorAll('#equipe-abelha input:checked').length} focaram hoje!</div>
-        <div>${pontosSemanais.abelha} pontos na semana</div>
-      `;
-      document.getElementById("resumo-joaninha").innerHTML = `
-        <div>${document.querySelectorAll('#equipe-joaninha input:checked').length} focaram hoje!</div>
-        <div>${pontosSemanais.joaninha} pontos na semana</div>
-      `;
-      document.getElementById("resumo-vagalume").innerHTML = `
-        <div>${document.querySelectorAll('#equipe-vagalume input:checked').length} focaram hoje!</div>
-        <div>${pontosSemanais.vagalume} pontos na semana</div>
-      `;
+      if (equipes.abelha.length > 0) {
+        const focadosAbelha = document.querySelectorAll('#equipe-abelha input:checked').length;
+        document.getElementById("resumo-abelha").innerHTML = `
+          <div>${focadosAbelha} focaram hoje!</div>
+          <div>${pontosSemanais.abelha} pontos na semana</div>
+        `;
+      }
+      
+      if (equipes.joaninha.length > 0) {
+        const focadosJoaninha = document.querySelectorAll('#equipe-joaninha input:checked').length;
+        document.getElementById("resumo-joaninha").innerHTML = `
+          <div>${focadosJoaninha} focaram hoje!</div>
+          <div>${pontosSemanais.joaninha} pontos na semana</div>
+        `;
+      }
+      
+      if (equipes.vagalume.length > 0) {
+        const focadosVagalume = document.querySelectorAll('#equipe-vagalume input:checked').length;
+        document.getElementById("resumo-vagalume").innerHTML = `
+          <div>${focadosVagalume} focaram hoje!</div>
+          <div>${pontosSemanais.vagalume} pontos na semana</div>
+        `;
+      }
     }
 
     function atualizarRankingGeral() {
@@ -325,11 +552,6 @@
       // Usar sistema de fila para evitar conflitos
       filaAtualizacao = filaAtualizacao.then(async () => {
         const hoje = getHoje();
-        const equipes = {
-          abelha: ["Brenda", "Carlos", "Kamila", "Matt", "Sarah", "Steh"],
-          joaninha: ["Carla", "Clara", "Daniel", "Kaii", "Mich", "Monalisa"],
-          vagalume: ["Burigo", "Duda", "Felipe", "Gabrielle", "Pimentão"]
-        };
 
         // Obter estado atual do Firestore
         const hojeISO = getHojeISO();
@@ -340,9 +562,9 @@
         const diferencas = { abelha: 0, joaninha: 0, vagalume: 0 };
         
         for (const [equipe, membrosEquipe] of Object.entries(equipes)) {
-          membrosEquipe.forEach(nome => {
-            const estadoAtual = document.getElementById(nome).checked;
-            const estadoSalvo = estadoFirestore[nome] || false;
+          membrosEquipe.forEach(membro => {
+            const estadoAtual = document.getElementById(membro.nome)?.checked || false;
+            const estadoSalvo = estadoFirestore[membro.nome] || false;
             
             if (estadoAtual !== estadoSalvo) {
               if (estadoAtual) {
@@ -378,12 +600,24 @@
         }
         
         // Atualizar UI
-        const total = membros.filter(nome => document.getElementById(nome).checked).length;
+        const todosMembros = [];
+        if (lider) todosMembros.push(lider.nome);
+        membros.forEach(m => todosMembros.push(m.nome));
+        for (const equipe of Object.values(equipes)) {
+          equipe.forEach(m => todosMembros.push(m.nome));
+        }
+        const membrosUnicos = [...new Set(todosMembros)].filter(Boolean);
+        
+        const total = membrosUnicos.filter(nome => {
+          const checkbox = document.getElementById(nome);
+          return checkbox && checkbox.checked;
+        }).length;
+        
         document.getElementById("contadorGeral").textContent = `${total} épicos focaram hoje!`;
-        const porcentagem = (total / membros.length) * 100;
+        const porcentagem = (total / membrosUnicos.length) * 100;
         document.getElementById("progresso-barra").style.width = `${porcentagem}%`;
         
-        // VERIFICAÇÃO DA ÁRVORE ÉPICA (ADICIONADO)
+        // VERIFICAÇÃO DA ÁRVORE ÉPICA
         await verificarArvoreEpica(total);
         
         atualizarPlacarSemanal();
@@ -395,22 +629,20 @@
 
     // Verificar se todos os membros de uma equipe estão focados
     function verificarEquipeCompleta() {
-      const equipes = {
-        abelha: ["Brenda", "Carlos", "Kamila", "Matt", "Sarah", "Steh"],
-        joaninha: ["Carla", "Clara", "Daniel", "Kaii", "Mich", "Monalisa"],
-        vagalume: ["Burigo", "Duda", "Felipe", "Gabrielle", "Pimentão"]
-      };
-      
-      for (const equipe in equipes) {
-        const todosFocados = equipes[equipe].every(membro => 
-          document.getElementById(membro).checked
-        );
+      for (const equipeCod in equipes) {
+        const membrosEquipe = equipes[equipeCod].map(m => m.nome);
+        const todosFocados = membrosEquipe.every(nome => {
+          const checkbox = document.getElementById(nome);
+          return checkbox && checkbox.checked;
+        });
         
-        const grupo = document.getElementById(`equipe-${equipe}`);
-        if (todosFocados) {
-          grupo.classList.add('equipe-completa', equipe);
-        } else {
-          grupo.classList.remove('equipe-completa', equipe);
+        const grupo = document.getElementById(`equipe-${equipeCod}`);
+        if (grupo) {
+          if (todosFocados) {
+            grupo.classList.add('equipe-completa', equipeCod);
+          } else {
+            grupo.classList.remove('equipe-completa', equipeCod);
+          }
         }
       }
     }
@@ -554,6 +786,8 @@
       }
       
       const checkbox = document.getElementById(nome);
+      if (!checkbox) return;
+      
       const som = document.getElementById("som-check");
       som.currentTime = 0;
       som.play();
@@ -566,12 +800,12 @@
       if (checkbox.checked) mostrarPopup("🎉 Foco Registrado", `${nome}, parabéns por ter focado hoje!`, 3000);
       else mostrarPopup("ℹ️ Foco Removido", `${nome}, seu foco de hoje foi removido`, 3000);
 
-      // Adicionar destaque apenas no resumo da equipe do membro (exceto Gui)
-      if (nome !== "Gui") {
+      // Adicionar destaque apenas no resumo da equipe do membro (exceto líder geral)
+      if (lider && nome !== lider.nome) {
         let equipe = "";
-        if (["Brenda", "Carlos", "Kamila", "Matt", "Sarah", "Steh"].includes(nome)) equipe = "abelha";
-        else if (["Carla", "Clara", "Daniel", "Kaii", "Mich", "Monalisa"].includes(nome)) equipe = "joaninha";
-        else if (["Burigo", "Duda", "Felipe", "Gabrielle", "Pimentão"].includes(nome)) equipe = "vagalume";
+        if (equipes.abelha.some(m => m.nome === nome)) equipe = "abelha";
+        else if (equipes.joaninha.some(m => m.nome === nome)) equipe = "joaninha";
+        else if (equipes.vagalume.some(m => m.nome === nome)) equipe = "vagalume";
         
         if (equipe) {
           const resumo = document.getElementById(`resumo-${equipe}`);
@@ -790,33 +1024,40 @@
         console.log(`Mudança de data detectada: ${dataAtual} -> ${novaData}`);
         
         // 1. Forçar desmarcar todas as checkboxes imediatamente
-        membros.forEach(nome => {
-          document.getElementById(nome).checked = false;
+        const checkboxes = document.querySelectorAll('input[type="checkbox"]');
+        checkboxes.forEach(checkbox => {
+          checkbox.checked = false;
         });
         
         // 2. Resetar estado local
         dataAtual = novaData;
         
-        // 3. Garantir que o Firestore está pronto para o novo dia
+        // 3. Limpar localStorage para o dia anterior
+        localStorage.removeItem('ultimoDiaProcessado');
+        
+        // 4. Garantir que o Firestore está pronto para o novo dia
         await new Promise(resolve => setTimeout(resolve, 1000));
         
-        // 4. Carregar dados do novo dia
+        // 5. Carregar dados do novo dia
         await carregarPresenca();
         await carregarPontosSemanais();
         
-        // 5. Atualizar UI
+        // 6. Atualizar UI
         await atualizarResumo();
         atualizarPlacarSemanal();
         atualizarDataCabecalho();
         atualizarInfoSemana();
         
-        // 6. Forçar recálculo do estado
+        // 7. Forçar recálculo do estado
         verificarEquipeCompleta();
         
-        // 7. Atualizar Árvore Épica
+        // 8. Atualizar Árvore Épica
         await carregarArvoreEpica();
 
-        // 8. Log do novo dia
+        // 9. Salvar no localStorage que processamos este dia
+        localStorage.setItem('ultimoDiaProcessado', novaData);
+        
+        // 10. Log do novo dia
         console.log(`Sistema reinicializado para o novo dia: ${getHojeISO()}`);
       }
     }
@@ -832,6 +1073,21 @@
       setTimeout(() => {
         location.reload(); // Recarrega a página para garantir reset completo
       }, tempoRestante);
+    }
+
+    // ===== VERIFICAÇÃO DE DIA JÁ PROCESSADO =====
+    function verificarDiaJaProcessado() {
+      const hojeISO = getHojeISO();
+      const ultimoDia = localStorage.getItem('ultimoDiaProcessado');
+      
+      // Se já processamos este dia, forçar desmarcar checkboxes
+      if (ultimoDia === hojeISO) {
+        const checkboxes = document.querySelectorAll('input[type="checkbox"]');
+        checkboxes.forEach(checkbox => {
+          checkbox.checked = false;
+        });
+        console.log('Checkboxes resetadas via localStorage');
+      }
     }
     
     // Função para atualizar o cabeçalho com a data
@@ -853,46 +1109,128 @@
       `;
     }
 
-    // Função para avançar um dia (para testes)
-    window.avancarDia = function() {
-      const hoje = getHoje();
-      hoje.setDate(hoje.getDate() + 1);
-      dataSimulada = hoje.toISOString();
-      
-      // Se avançou para domingo, forçar finalização da semana
-      if (hoje.getDay() === 0) {
-        finalizarSemana();
+    // Função para verificar toques na medalha de Diamante
+    function verificarToqueDiamante(event) {
+      if (event.target.textContent.includes('💎') && !painelAberto) {
+        diamanteTaps++;
+        if (diamanteTaps >= 5) {
+          const senha = prompt("🔐 Digite a senha secreta:");
+          if (senha === "goiaba") {
+            abrirPainelSecreto();
+          } else {
+            alert("❌ Senha incorreta!");
+          }
+          diamanteTaps = 0;
+        }
       }
-      
-      // Força verificação de mudança de data
-      verificarMudancaData();
-      mostrarPopup("⏭ Data Avançada", `Agora é dia ${formatarData(hoje)}. Modo de teste.`, 3000);
-    }
-    
-    // Função para testar as fases da árvore épica
-    window.testarFasesArvore = function() {
-      const fases = ["seed", "sprout", "tree", "flowers", "fruits"];
-      let current = 0;
-      
-      const changeFase = () => {
-        fases.forEach((fase, i) => {
-          document.getElementById(fase).style.display = i === current ? "block" : "none";
-        });
-        
-        const faseInfo = fasesArvore[current];
-        document.getElementById("stage-name").textContent = faseInfo.nome + " " + faseInfo.emoji;
-        document.getElementById("stage-desc").textContent = faseInfo.desc;
-        
-        current = (current + 1) % fases.length;
-        mostrarPopup("🌳 Teste de Fases", `Mostrando: ${fases[current]}`, 2000);
-      };
-      
-      // Mudar a cada 2 segundos
-      setInterval(changeFase, 2000);
-      changeFase();
     }
 
+    function abrirPainelSecreto() {
+      painelAberto = true;
+      const painel = document.getElementById('painel-secreto');
+      painel.style.display = 'block';
+      
+      // Preencher select de membros
+      const selectMembro = document.getElementById('membro-pontos');
+      selectMembro.innerHTML = '';
+      
+      // Obter todos os membros
+      const todosMembros = [];
+      if (lider) todosMembros.push(lider.nome);
+      membros.forEach(m => todosMembros.push(m.nome));
+      for (const equipe of Object.values(equipes)) {
+        equipe.forEach(m => todosMembros.push(m.nome));
+      }
+      const membrosUnicos = [...new Set(todosMembros)].filter(Boolean);
+      
+      membrosUnicos.forEach(membro => {
+        const option = document.createElement('option');
+        option.value = membro;
+        option.textContent = membro;
+        selectMembro.appendChild(option);
+      });
+    }
+
+    // Funções do painel secreto
+    window.ajustarPontosMembro = async function () {
+  const membro = document.getElementById('membro-pontos').value.trim();
+  const quantidade = parseInt(document.getElementById('quantidade-membro').value);
+
+  if (!membro || isNaN(quantidade)) return;
+
+  const hoje = new Date();
+
+  for (let i = 0; i < Math.abs(quantidade); i++) {
+    const data = new Date(hoje);
+    data.setDate(data.getDate() - i - 1); // dias anteriores
+    const dataISO = data.toISOString().slice(0, 10);
+
+    const docRef = doc(db, "presencas", dataISO);
+    const docSnap = await getDoc(docRef);
+    let dados = docSnap.exists() ? docSnap.data() : {};
+
+    if (quantidade > 0) {
+      dados[membro] = true;
+    } else {
+      dados[membro] = false;
+    }
+
+    await setDoc(docRef, dados, { merge: true });
+  }
+
+  await carregarTotalDias(); // Atualiza contadores
+  atualizarMedalhas();        // Atualiza medalhas
+  atualizarResumo();          // Atualiza visuais
+
+  mostrarPopup(`✅ ${quantidade > 0 ? 'Adicionados' : 'Removidos'} ${Math.abs(quantidade)} dia(s) para ${membro}!`);
+};
+
+    window.ajustarPontosEquipe = async function() {
+      const equipe = document.getElementById('equipe-pontos').value;
+      const quantidade = parseInt(document.getElementById('quantidade-equipe').value);
+      
+      pontosSemanais[equipe] += quantidade;
+      if (pontosSemanais[equipe] < 0) pontosSemanais[equipe] = 0;
+      
+      // Atualizar Firestore
+      const semanaAtual = getSemanaAtual();
+      const semanaKey = semanaAtual.inicio.toISOString().slice(0, 10);
+      const semanaRef = doc(db, "semanas", semanaKey);
+      await setDoc(semanaRef, pontosSemanais, { merge: true });
+      
+      atualizarPlacarSemanal();
+      mostrarPopup(`✅ ${quantidade > 0 ? 'Adicionados' : 'Removidos'} ${Math.abs(quantidade)} pontos para ${equipe}`, 3000);
+    };
+
+    window.ajustarPontosRanking = async function() {
+      const equipe = document.getElementById('equipe-ranking').value;
+      const quantidade = parseInt(document.getElementById('quantidade-ranking').value);
+      
+      rankingGeral[equipe] += quantidade;
+      if (rankingGeral[equipe] < 0) rankingGeral[equipe] = 0;
+      
+      // Atualizar Firestore
+      const rankingRef = doc(db, "ranking", "geral");
+      await setDoc(rankingRef, rankingGeral, { merge: true });
+      
+      atualizarRankingGeral();
+      mostrarPopup(`✅ ${quantidade > 0 ? 'Adicionados' : 'Removidos'} ${Math.abs(quantidade)} vitórias para ${equipe}`, 3000);
+    };
+
     window.onload = async () => {
+      // Exibir estado de carregamento
+      document.getElementById("lider").innerHTML = "Carregando líder...";
+      document.getElementById("equipe-abelha").innerHTML = "Carregando equipe Abelha...";
+      document.getElementById("equipe-joaninha").innerHTML = "Carregando equipe Joaninha...";
+      document.getElementById("equipe-vagalume").innerHTML = "Carregando equipe Vaga-lume...";
+      
+      // 1. Carregar membros do Firebase e renderizar
+      await carregarMembrosDoFirebase();
+      renderizarMembrosNaTela();
+      
+      // Verificação inicial via localStorage: se o dia atual já foi processado, desmarca as checkboxes
+      verificarDiaJaProcessado();
+      
       dataAtual = getHojeISO();
       
       // Se for domingo, pontos semanais = 0
@@ -905,7 +1243,19 @@
       await carregarPresenca();
       
       // VERIFICAÇÃO DA ÁRVORE ÉPICA AO CARREGAR (ADICIONADO)
-      const totalCheckins = membros.filter(nome => document.getElementById(nome).checked).length;
+      const todosMembros = [];
+      if (lider) todosMembros.push(lider.nome);
+      membros.forEach(m => todosMembros.push(m.nome));
+      for (const equipe of Object.values(equipes)) {
+        equipe.forEach(m => todosMembros.push(m.nome));
+      }
+      const membrosUnicos = [...new Set(todosMembros)].filter(Boolean);
+      
+      const totalCheckins = membrosUnicos.filter(nome => {
+        const checkbox = document.getElementById(nome);
+        return checkbox && checkbox.checked;
+      }).length;
+      
       await verificarArvoreEpica(totalCheckins);
       
       await carregarTotalDias();
@@ -945,69 +1295,15 @@
       atualizarInfoSemana();
       
       // Event listeners
-      membros.forEach(nome => {
-        document.getElementById(nome).addEventListener("change", () => marcarCheckbox(nome));
+      document.body.addEventListener('change', (event) => {
+        if (event.target.matches('input[type="checkbox"]')) {
+          marcarCheckbox(event.target.id);
+        }
       });
       
-      // Botão de reset
-      const resetBtn = document.createElement('button');
-      resetBtn.textContent = '⚙️';
-      resetBtn.title = 'Resetar todos os dados (apenas para desenvolvimento)';
-      resetBtn.style.position = 'fixed';
-      resetBtn.style.bottom = '20px';
-      resetBtn.style.right = '20px';
-      resetBtn.style.zIndex = '10000';
-      resetBtn.style.background = '#e74c3c';
-      resetBtn.style.color = 'white';
-      resetBtn.style.border = 'none';
-      resetBtn.style.borderRadius = '50%';
-      resetBtn.style.width = '40px';
-      resetBtn.style.height = '40px';
-      resetBtn.style.fontSize = '20px';
-      resetBtn.style.cursor = 'pointer';
-      resetBtn.style.boxShadow = '0 2px 10px rgba(0,0,0,0.2)';
-      resetBtn.onclick = resetarTudo;
-      document.body.appendChild(resetBtn);
-
-      // Botão para avançar data (testes)
-      const avancarBtn = document.createElement('button');
-      avancarBtn.textContent = '➡️ Avançar Data';
-      avancarBtn.title = 'Avançar para o próximo dia (modo teste)';
-      avancarBtn.style.position = 'fixed';
-      avancarBtn.style.bottom = '70px';
-      avancarBtn.style.right = '20px';
-      avancarBtn.style.zIndex = '10000';
-      avancarBtn.style.background = '#3498db';
-      avancarBtn.style.color = 'white';
-      avancarBtn.style.border = 'none';
-      avancarBtn.style.borderRadius = '20px';
-      avancarBtn.style.padding = '10px 15px';
-      avancarBtn.style.fontSize = '14px';
-      avancarBtn.style.cursor = 'pointer';
-      avancarBtn.style.boxShadow = '0 2px 10px rgba(0,0,0,0.2)';
-      avancarBtn.onclick = avancarDia;
-      document.body.appendChild(avancarBtn);
-      avancarBtn.classList.add('botao-teste');
+      // Adicionar event listener para medalhas (para o painel secreto)
+      document.addEventListener('click', verificarToqueDiamante);
       
-      // Botão para testar as fases da árvore
-      const arvoreBtn = document.createElement('button');
-      arvoreBtn.textContent = '🌱 Testar Fases';
-      arvoreBtn.title = 'Testar todas as fases da Árvore Épica';
-      arvoreBtn.style.position = 'fixed';
-      arvoreBtn.style.bottom = '120px';
-      arvoreBtn.style.right = '20px';
-      arvoreBtn.style.zIndex = '10000';
-      arvoreBtn.style.background = '#2ecc71';
-      arvoreBtn.style.color = 'white';
-      arvoreBtn.style.border = 'none';
-      arvoreBtn.style.borderRadius = '20px';
-      arvoreBtn.style.padding = '10px 15px';
-      arvoreBtn.style.fontSize = '14px';
-      arvoreBtn.style.cursor = 'pointer';
-      arvoreBtn.style.boxShadow = '0 2px 10px rgba(0,0,0,0.2)';
-      arvoreBtn.onclick = testarFasesArvore;
-      document.body.appendChild(arvoreBtn);
-
       // Carregar Árvore Épica
       await carregarArvoreEpica();
       
@@ -1015,11 +1311,14 @@
       await atualizarResumo();
       verificarEquipeCompleta();
       
-      // Iniciar verificação periódica de mudança de data (a cada 1 minuto)
-      setInterval(verificarMudancaData, 60000);
+      // Iniciar verificação periódica de mudança de data (a cada 30 segundos)
+      setInterval(verificarMudancaData, 30000);
       
       // Iniciar timer para recarregar à meia-noite
       iniciarTimerMeiaNoite();
+      
+      // Forçar verificação de mudança de data ao carregar
+      verificarMudancaData();
     }
   </script>
   <style>
@@ -2005,14 +2304,78 @@
       to { box-shadow: 0 0 15px #2ecc71; }
     }
 
-    /* Botão de avançar data */
-    .botao-teste {
-      display: flex;
-      align-items: center;
-      gap: 5px;
+    /* Estilo para o painel secreto */
+    #painel-secreto {
+      display: none;
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: rgba(43, 57, 87, 0.95);
+      padding: 25px;
+      border-radius: 15px;
+      z-index: 2000;
+      box-shadow: 0 0 30px rgba(0,0,0,0.7);
+      border: 3px solid #00f2fe;
+      max-width: 90%;
+      width: 500px;
+      color: white;
     }
-    .tema-noite .botao-teste {
-      background: #9b59b6;
+    
+    .painel-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+      border-bottom: 1px solid #00f2fe;
+      padding-bottom: 10px;
+    }
+    
+    .painel-secao {
+      margin-bottom: 20px;
+      padding: 15px;
+      background: rgba(0, 0, 0, 0.2);
+      border-radius: 10px;
+    }
+    
+    .painel-controles {
+      display: flex;
+      gap: 10px;
+      margin-top: 10px;
+      flex-wrap: wrap;
+    }
+    
+    .painel-controles select, 
+    .painel-controles input {
+      padding: 8px 12px;
+      border-radius: 8px;
+      border: none;
+      background: #2c3e50;
+      color: white;
+      flex: 1;
+      min-width: 120px;
+    }
+    
+    .painel-controles button {
+      background: #00f2fe;
+      color: #0c0e30;
+      border: none;
+      padding: 8px 15px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: bold;
+      transition: all 0.3s;
+      flex: 1;
+    }
+    
+    .painel-controles button:hover {
+      background: #4facfe;
+      transform: translateY(-2px);
+    }
+    
+    .btn-fechar {
+      background: #e74c3c !important;
+      color: white !important;
     }
     
     @media (max-width: 768px) {
@@ -2135,245 +2498,16 @@
     </div>
     
     <div class="grupos-container">
-      <!-- Líder Geral -->
-      <div class="grupo">
+      <!-- Líder Geral (AGORA DINÂMICO) -->
+      <div class="grupo" id="grupo-lider">
         <h2>Líder Geral</h2>
-        <div class="membros-grid">
-          <!-- Gui (Líder Geral) -->
-          <div class="membro">
-            <input type="checkbox" id="Gui">
-            <label for="Gui">
-              Gui
-              <span id="dias-Gui" class="dias-badge">0</span>
-              <span class="medalha-container">
-                <span id="medalha-Gui" class="medalha escondido"></span>
-              </span>
-            </label>
-          </div>
-        </div>
+        <div id="lider">Carregando líder...</div>
       </div>
       
-      <!-- Equipe Abelha -->
-      <div class="grupo" id="equipe-abelha">
-        <h2>🐝 Equipe Abelha</h2>
-        <div class="resumo" id="resumo-abelha">
-          <div>0 focaram hoje!</div>
-          <div>0 pontos na semana</div>
-        </div>
-        
-        <!-- Área do Líder da Equipe Abelha -->
-        <div class="lider-equipe">
-          <div class="titulo-lider">Líder da Equipe</div>
-          <div class="membro">
-            <input type="checkbox" id="Steh">
-            <label for="Steh">
-              Steh
-              <span id="dias-Steh" class="dias-badge">0</span>
-              <span class="medalha-container">
-                <span id="medalha-Steh" class="medalha escondido"></span>
-              </span>
-            </label>
-          </div>
-        </div>
-        
-        <div class="membros-grid">
-          <div class="membro">
-            <input type="checkbox" id="Brenda">
-            <label for="Brenda">
-              Brenda
-              <span id="dias-Brenda" class="dias-badge">0</span>
-              <span class="medalha-container">
-                <span id="medalha-Brenda" class="medalha escondido"></span>
-              </span>
-            </label>
-          </div>
-          <div class="membro">
-            <input type="checkbox" id="Carlos">
-            <label for="Carlos">
-              Carlos
-              <span id="dias-Carlos" class="dias-badge">0</span>
-              <span class="medalha-container">
-                <span id="medalha-Carlos" class="medalha escondido"></span>
-              </span>
-            </label>
-          </div>
-          <div class="membro">
-            <input type="checkbox" id="Kamila">
-            <label for="Kamila">
-              Kamila
-              <span id="dias-Kamila" class="dias-badge">0</span>
-              <span class="medalha-container">
-                <span id="medalha-Kamila" class="medalha escondido"></span>
-              </span>
-            </label>
-          </div>
-          <div class="membro">
-            <input type="checkbox" id="Matt">
-            <label for="Matt">
-              Matt
-              <span id="dias-Matt" class="dias-badge">0</span>
-              <span class="medalha-container">
-                <span id="medalha-Matt" class="medalha escondido"></span>
-              </span>
-            </label>
-          </div>
-          <div class="membro">
-            <input type="checkbox" id="Sarah">
-            <label for="Sarah">
-              Sarah
-              <span id="dias-Sarah" class="dias-badge">0</span>
-              <span class="medalha-container">
-                <span id="medalha-Sarah" class="medalha escondido"></span>
-              </span>
-            </label>
-          </div>
-        </div>
-      </div>
-      
-      <!-- Equipe Joaninha -->
-      <div class="grupo" id="equipe-joaninha">
-        <h2>🐞 Equipe Joaninha</h2>
-        <div class="resumo" id="resumo-joaninha">
-          <div>0 focaram hoje!</div>
-          <div>0 pontos na semana</div>
-        </div>
-        
-        <!-- Área do Líder da Equipe Joaninha (vazia) -->
-        <div class="lider-equipe">
-          <div class="titulo-lider">Líder da Equipe</div>
-          <div class="sem-lider">Sem líder</div>
-        </div>
-        
-        <div class="membros-grid">
-          <div class="membro">
-            <input type="checkbox" id="Carla">
-            <label for="Carla">
-              Carla
-              <span id="dias-Carla" class="dias-badge">0</span>
-              <span class="medalha-container">
-                <span id="medalha-Carla" class="medalha escondido"></span>
-              </span>
-            </label>
-          </div>
-          <div class="membro">
-            <input type="checkbox" id="Clara">
-            <label for="Clara">
-              Clara
-              <span id="dias-Clara" class="dias-badge">0</span>
-              <span class="medalha-container">
-                <span id="medalha-Clara" class="medalha escondido"></span>
-              </span>
-            </label>
-          </div>
-          <div class="membro">
-            <input type="checkbox" id="Daniel">
-            <label for="Daniel">
-              Daniel
-              <span id="dias-Daniel" class="dias-badge">0</span>
-              <span class="medalha-container">
-                <span id="medalha-Daniel" class="medalha escondido"></span>
-              </span>
-            </label>
-          </div>
-          <div class="membro">
-            <input type="checkbox" id="Kaii">
-            <label for="Kaii">
-              Kaii
-              <span id="dias-Kaii" class="dias-badge">0</span>
-              <span class="medalha-container">
-                <span id="medalha-Kaii" class="medalha escondido"></span>
-              </span>
-            </label>
-          </div>
-          <div class="membro">
-            <input type="checkbox" id="Mich">
-            <label for="Mich">
-              Mich
-              <span id="dias-Mich" class="dias-badge">0</span>
-              <span class="medalha-container">
-                <span id="medalha-Mich" class="medalha escondido"></span>
-              </span>
-            </label>
-          </div>
-          <div class="membro">
-            <input type="checkbox" id="Monalisa">
-            <label for="Monalisa">
-              Monalisa
-              <span id="dias-Monalisa" class="dias-badge">0</span>
-              <span class="medalha-container">
-                <span id="medalha-Monalisa" class="medalha escondido"></span>
-              </span>
-            </label>
-          </div>
-        </div>
-      </div>
-      
-      <!-- Equipe Vaga-lume -->
-      <div class="grupo" id="equipe-vagalume">
-        <h2>💡 Equipe Vaga-lume</h2>
-        <div class="resumo" id="resumo-vagalume">
-          <div>0 focaram hoje!</div>
-          <div>0 pontos na semana</div>
-        </div>
-        
-        <!-- Área do Líder da Equipe Vaga-lume -->
-        <div class="lider-equipe">
-          <div class="titulo-lider">Líder da Equipe</div>
-          <div class="membro">
-            <input type="checkbox" id="Duda">
-            <label for="Duda">
-              Duda
-              <span id="dias-Duda" class="dias-badge">0</span>
-              <span class="medalha-container">
-                <span id="medalha-Duda" class="medalha escondido"></span>
-              </span>
-            </label>
-          </div>
-        </div>
-        
-        <div class="membros-grid">
-          <div class="membro">
-            <input type="checkbox" id="Burigo">
-            <label for="Burigo">
-              Burigo
-              <span id="dias-Burigo" class="dias-badge">0</span>
-              <span class="medalha-container">
-                <span id="medalha-Burigo" class="medalha escondido"></span>
-              </span>
-            </label>
-          </div>
-          <div class="membro">
-            <input type="checkbox" id="Felipe">
-            <label for="Felipe">
-              Felipe
-              <span id="dias-Felipe" class="dias-badge">0</span>
-              <span class="medalha-container">
-                <span id="medalha-Felipe" class="medalha escondido"></span>
-              </span>
-            </label>
-          </div>
-          <div class="membro">
-            <input type="checkbox" id="Gabrielle">
-            <label for="Gabrielle">
-              Gabrielle
-              <span id="dias-Gabrielle" class="dias-badge">0</span>
-              <span class="medalha-container">
-                <span id="medalha-Gabrielle" class="medalha escondido"></span>
-              </span>
-            </label>
-          </div>
-          <div class="membro">
-            <input type="checkbox" id="Pimentão">
-            <label for="Pimentão">
-              Pimentão
-              <span id="dias-Pimentão" class="dias-badge">0</span>
-              <span class="medalha-container">
-                <span id="medalha-Pimentão" class="medalha escondido"></span>
-              </span>
-            </label>
-          </div>
-        </div>
-      </div>
+      <!-- Equipes (AGORA DINÂMICAS) -->
+      <div id="equipe-abelha" class="grupo">Carregando equipe Abelha...</div>
+      <div id="equipe-joaninha" class="grupo">Carregando equipe Joaninha...</div>
+      <div id="equipe-vagalume" class="grupo">Carregando equipe Vaga-lume...</div>
     </div>
     
     <!-- SEÇÃO ATUALIZADA: Árvore Épica com espaço idêntico ao código de referência -->
@@ -2481,5 +2615,55 @@
   <!-- Elementos de áudio -->
   <audio id="som-check" src="https://assets.mixkit.co/sfx/preview/mixkit-unlock-game-notification-253.mp3"></audio>
   <audio id="som-conquista" src="https://assets.mixkit.co/sfx/preview/mixkit-achievement-bell-600.mp3"></audio>
+
+  <!-- Painel Secreto -->
+  <div id="painel-secreto">
+    <div class="painel-header">
+      <h2>🔓 Painel Secreto</h2>
+      <button class="btn-fechar" onclick="document.getElementById('painel-secreto').style.display='none'; painelAberto=false">Fechar</button>
+    </div>
+    
+    <div class="painel-secao">
+      <h3>👤 Pontos de Membro</h3>
+      <div class="painel-controles">
+        <select id="membro-pontos">
+          <!-- Preenchido por JavaScript -->
+        </select>
+        <input type="number" id="quantidade-membro" value="1" min="-100" max="100">
+        <button onclick="ajustarPontosMembro()">Aplicar</button>
+      </div>
+    </div>
+    
+    <div class="painel-secao">
+      <h3>🏆 Pontos da Semana</h3>
+      <div class="painel-controles">
+        <select id="equipe-pontos">
+          <option value="abelha">Abelha</option>
+          <option value="joaninha">Joaninha</option>
+          <option value="vagalume">Vaga-lume</option>
+        </select>
+        <input type="number" id="quantidade-equipe" value="1" min="-100" max="100">
+        <button onclick="ajustarPontosEquipe()">Aplicar</button>
+      </div>
+    </div>
+    
+    <div class="painel-secao">
+      <h3>🏅 Pontos do Ranking</h3>
+      <div class="painel-controles">
+        <select id="equipe-ranking">
+          <option value="abelha">Abelha</option>
+          <option value="joaninha">Joaninha</option>
+          <option value="vagalume">Vaga-lume</option>
+        </select>
+        <input type="number" id="quantidade-ranking" value="1" min="-100" max="100">
+        <button onclick="ajustarPontosRanking()">Aplicar</button>
+      </div>
+    </div>
+    
+    <div class="painel-secao">
+      <h3>⚠️ Reset Geral</h3>
+      <button onclick="resetarTudo()" style="width:100%;padding:12px;background:#e74c3c;color:white">Resetar Tudo</button>
+    </div>
+  </div>
 </body>
   </html>
