@@ -5,8 +5,13 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Épicos 亗 🌱</title>
   <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-    import { getFirestore, doc, setDoc, getDoc, collection, getDocs, updateDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+    import { 
+  initializeApp 
+} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import { 
+  getFirestore, doc, setDoc, getDoc, collection, getDocs, 
+  updateDoc, deleteDoc, addDoc, serverTimestamp, onSnapshot
+} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
     const firebaseConfig = {
       apiKey: "AIzaSyDoncRn8ikIdij8aXC0OUeqdqnLITrhmPc",
@@ -20,6 +25,8 @@
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
     
+    const muralRef = collection(db, "mural");
+  
     // Variáveis dinâmicas
     let membros = [];
     let equipes = {
@@ -268,19 +275,14 @@
     }
 
     async function carregarPresenca() {
-      const hojeISO = getHojeISO();
-      const docSnap = await getDoc(doc(db, "presencas", hojeISO));
-      
-      if (!docSnap.exists()) {
-        // Desmarcar todos os checkboxes
-        const checkboxes = document.querySelectorAll('input[type="checkbox"]');
-        checkboxes.forEach(checkbox => {
-          checkbox.checked = false;
-        });
-        return;
-      }
-
+  const hojeISO = getHojeISO();
+  
+  try {
+    const docSnap = await getDoc(doc(db, "presencas", hojeISO));
+    
+    if (docSnap.exists()) {
       const data = docSnap.data();
+      
       // Percorrer todos os checkboxes da página
       const checkboxes = document.querySelectorAll('input[type="checkbox"]');
       checkboxes.forEach(checkbox => {
@@ -304,7 +306,22 @@
           }
         }
       });
+    } else {
+      // Se não existir documento para hoje, desmarcar tudo
+      const checkboxes = document.querySelectorAll('input[type="checkbox"]');
+      checkboxes.forEach(checkbox => {
+        checkbox.checked = false;
+        const label = checkbox.nextElementSibling;
+        if (label) {
+          label.classList.remove('checked');
+        }
+      });
     }
+  } catch (error) {
+    console.error("Erro ao carregar presenças:", error);
+    mostrarPopup("❌ Erro", "Falha ao carregar presenças do dia.", 5000);
+  }
+}
 
     async function carregarTotalDias() {
       const querySnapshot = await getDocs(collection(db, "presencas"));
@@ -336,27 +353,36 @@
     }
 
     async function carregarPontosSemanais() {
-      const hoje = getHoje();
+  try {
+    const semanaAtual = getSemanaAtual();
+    const semanaDoc = await getDoc(doc(db, "semanas", semanaAtual.inicio.toISOString().slice(0, 10)));
+    
+    if (semanaDoc.exists()) {
+      const data = semanaDoc.data();
+      pontosSemanais.abelha = data.abelha || 0;
+      pontosSemanais.joaninha = data.joaninha || 0;
+      pontosSemanais.vagalume = data.vagalume || 0;
+    } else {
+      // Se não existir documento para a semana, inicializar com zeros
+      pontosSemanais.abelha = 0;
+      pontosSemanais.joaninha = 0;
+      pontosSemanais.vagalume = 0;
       
-      // Domingo: sempre zerar pontos semanais
-      if (hoje.getDay() === 0) {
-        pontosSemanais.abelha = 0;
-        pontosSemanais.joaninha = 0;
-        pontosSemanais.vagalume = 0;
-        atualizarPlacarSemanal();
-        return;
-      }
-
-      const semanaAtual = getSemanaAtual();
-      const semanaDoc = await getDoc(doc(db, "semanas", semanaAtual.inicio.toISOString().slice(0, 10)));
-      if (semanaDoc.exists()) {
-        const data = semanaDoc.data();
-        pontosSemanais.abelha = data.abelha || 0;
-        pontosSemanais.joaninha = data.joaninha || 0;
-        pontosSemanais.vagalume = data.vagalume || 0;
-      }
-      atualizarPlacarSemanal();
+      // Criar documento no Firestore
+      await setDoc(doc(db, "semanas", semanaAtual.inicio.toISOString().slice(0, 10)), {
+        abelha: 0,
+        joaninha: 0,
+        vagalume: 0,
+        finalizada: false
+      });
     }
+    
+    atualizarPlacarSemanal();
+  } catch (error) {
+    console.error("Erro ao carregar pontos semanais:", error);
+    mostrarPopup("❌ Erro", "Falha ao carregar pontos semanais.", 5000);
+  }
+}
 
     async function carregarRankingGeral() {
       const rankingDoc = await getDoc(doc(db, "ranking", "geral"));
@@ -1018,49 +1044,38 @@
     
     // ===== FUNÇÃO CORRIGIDA PARA MUDANÇA DE DATA =====
     async function verificarMudancaData() {
-      const novaData = getHojeISO();
+  const novaData = getHojeISO();
+  
+  if (dataAtual !== novaData) {
+    console.log(`Mudança de data detectada: ${dataAtual} -> ${novaData}`);
+    
+    try {
+      // 1. Atualizar data atual
+      dataAtual = novaData;
       
-      if (dataAtual !== novaData) {
-        console.log(`Mudança de data detectada: ${dataAtual} -> ${novaData}`);
-        
-        // 1. Forçar desmarcar todas as checkboxes imediatamente
-        const checkboxes = document.querySelectorAll('input[type="checkbox"]');
-        checkboxes.forEach(checkbox => {
-          checkbox.checked = false;
-        });
-        
-        // 2. Resetar estado local
-        dataAtual = novaData;
-        
-        // 3. Limpar localStorage para o dia anterior
-        localStorage.removeItem('ultimoDiaProcessado');
-        
-        // 4. Garantir que o Firestore está pronto para o novo dia
-        await new Promise(resolve => setTimeout(resolve, 1000));
-        
-        // 5. Carregar dados do novo dia
-        await carregarPresenca();
-        await carregarPontosSemanais();
-        
-        // 6. Atualizar UI
-        await atualizarResumo();
-        atualizarPlacarSemanal();
-        atualizarDataCabecalho();
-        atualizarInfoSemana();
-        
-        // 7. Forçar recálculo do estado
-        verificarEquipeCompleta();
-        
-        // 8. Atualizar Árvore Épica
-        await carregarArvoreEpica();
+      // 2. Carregar dados do Firestore
+      await carregarPresenca();
+      await carregarPontosSemanais();
+      
+      // 3. Atualizar UI
+      atualizarPlacarSemanal();
+      atualizarDataCabecalho();
+      atualizarInfoSemana();
+      verificarEquipeCompleta();
+      
+      // 4. Atualizar Árvore Épica
+      await carregarArvoreEpica();
 
-        // 9. Salvar no localStorage que processamos este dia
-        localStorage.setItem('ultimoDiaProcessado', novaData);
-        
-        // 10. Log do novo dia
-        console.log(`Sistema reinicializado para o novo dia: ${getHojeISO()}`);
-      }
+      // 5. Salvar no localStorage
+      localStorage.setItem('ultimoDiaProcessado', novaData);
+      
+      console.log(`Sistema reinicializado para o novo dia: ${getHojeISO()}`);
+    } catch (error) {
+      console.error("Erro ao verificar mudança de data:", error);
+      mostrarPopup("❌ Erro", "Falha ao atualizar para o novo dia.", 5000);
     }
+  }
+}
 
     // ===== NOVA FUNÇÃO PARA RECARREGAR À MEIA-NOITE =====
     function iniciarTimerMeiaNoite() {
@@ -1075,21 +1090,7 @@
       }, tempoRestante);
     }
 
-    // ===== VERIFICAÇÃO DE DIA JÁ PROCESSADO =====
-    function verificarDiaJaProcessado() {
-      const hojeISO = getHojeISO();
-      const ultimoDia = localStorage.getItem('ultimoDiaProcessado');
-      
-      // Se já processamos este dia, forçar desmarcar checkboxes
-      if (ultimoDia === hojeISO) {
-        const checkboxes = document.querySelectorAll('input[type="checkbox"]');
-        checkboxes.forEach(checkbox => {
-          checkbox.checked = false;
-        });
-        console.log('Checkboxes resetadas via localStorage');
-      }
-    }
-    
+   
     // Função para atualizar o cabeçalho com a data
     function atualizarDataCabecalho() {
       const hoje = getHoje();
@@ -1125,31 +1126,32 @@
       }
     }
 
-    function abrirPainelSecreto() {
-      painelAberto = true;
-      const painel = document.getElementById('painel-secreto');
-      painel.style.display = 'block';
-      
-      // Preencher select de membros
-      const selectMembro = document.getElementById('membro-pontos');
-      selectMembro.innerHTML = '';
-      
-      // Obter todos os membros
-      const todosMembros = [];
-      if (lider) todosMembros.push(lider.nome);
-      membros.forEach(m => todosMembros.push(m.nome));
-      for (const equipe of Object.values(equipes)) {
-        equipe.forEach(m => todosMembros.push(m.nome));
-      }
-      const membrosUnicos = [...new Set(todosMembros)].filter(Boolean);
-      
-      membrosUnicos.forEach(membro => {
-        const option = document.createElement('option');
-        option.value = membro;
-        option.textContent = membro;
-        selectMembro.appendChild(option);
-      });
-    }
+function abrirPainelSecreto() {
+  painelAberto = true;
+  const painel = document.getElementById('painel-secreto');
+  painel.style.display = 'block';
+  
+  // Preencher select de membros
+  const selectMembro = document.getElementById('membro-pontos');
+  selectMembro.innerHTML = '';
+  
+  // Obter todos os membros
+  const todosMembros = [];
+  if (lider) todosMembros.push(lider.nome);
+  membros.forEach(m => todosMembros.push(m.nome));
+  for (const equipe of Object.values(equipes)) {
+    equipe.forEach(m => todosMembros.push(m.nome));
+  }
+  const membrosUnicos = [...new Set(todosMembros)].filter(Boolean);
+  
+  membrosUnicos.forEach(membro => {
+    const option = document.createElement('option');
+    option.value = membro;
+    option.textContent = membro;
+    selectMembro.appendChild(option);
+  });
+ 
+}
 
     // Funções do painel secreto
     window.ajustarPontosMembro = async function () {
@@ -1217,109 +1219,252 @@
       mostrarPopup(`✅ ${quantidade > 0 ? 'Adicionados' : 'Removidos'} ${Math.abs(quantidade)} vitórias para ${equipe}`, 3000);
     };
 
-    window.onload = async () => {
-      // Exibir estado de carregamento
-      document.getElementById("lider").innerHTML = "Carregando líder...";
-      document.getElementById("equipe-abelha").innerHTML = "Carregando equipe Abelha...";
-      document.getElementById("equipe-joaninha").innerHTML = "Carregando equipe Joaninha...";
-      document.getElementById("equipe-vagalume").innerHTML = "Carregando equipe Vaga-lume...";
-      
-      // 1. Carregar membros do Firebase e renderizar
-      await carregarMembrosDoFirebase();
-      renderizarMembrosNaTela();
-      
-      // Verificação inicial via localStorage: se o dia atual já foi processado, desmarca as checkboxes
-      verificarDiaJaProcessado();
-      
-      dataAtual = getHojeISO();
-      
-      // Se for domingo, pontos semanais = 0
-      if (getHoje().getDay() === 0) {
-        pontosSemanais.abelha = 0;
-        pontosSemanais.joaninha = 0;
-        pontosSemanais.vagalume = 0;
-      }
+// Função para enviar mensagem
+window.enviarMensagem = async function() {
+  const nomeInput = document.getElementById('mensagem-nome');
+  const textoInput = document.getElementById('mensagem-texto');
+  const anonimaCheck = document.getElementById('mensagem-anonima');
+  
+  const nome = anonimaCheck.checked ? "Anônimo" : (nomeInput.value.trim() || "Membro Épico");
+  const texto = textoInput.value.trim();
+  
+  if (!texto) {
+    mostrarPopup("❌ Campo vazio", "Por favor, escreva sua mensagem antes de enviar.", 3000);
+    return;
+  }
 
-      await carregarPresenca();
-      
-      // VERIFICAÇÃO DA ÁRVORE ÉPICA AO CARREGAR (ADICIONADO)
-      const todosMembros = [];
-      if (lider) todosMembros.push(lider.nome);
-      membros.forEach(m => todosMembros.push(m.nome));
-      for (const equipe of Object.values(equipes)) {
-        equipe.forEach(m => todosMembros.push(m.nome));
-      }
-      const membrosUnicos = [...new Set(todosMembros)].filter(Boolean);
-      
-      const totalCheckins = membrosUnicos.filter(nome => {
-        const checkbox = document.getElementById(nome);
-        return checkbox && checkbox.checked;
-      }).length;
-      
-      await verificarArvoreEpica(totalCheckins);
-      
-      await carregarTotalDias();
-      await carregarPontosSemanais();
-      await carregarRankingGeral();
-      
-      const semanaAtual = getSemanaAtual();
-      const semanaDocRef = doc(db, "semanas", semanaAtual.inicio.toISOString().slice(0, 10));
-      const semanaDoc = await getDoc(semanaDocRef);
-      if (!semanaDoc.exists()) {
-        await setDoc(semanaDocRef, {
-          abelha: 0,
-          joaninha: 0,
-          vagalume: 0,
-          finalizada: false
-        });
-      }
-      
-      const rankingRef = doc(db, "ranking", "geral");
-      const rankingDoc = await getDoc(rankingRef);
-      if (!rankingDoc.exists()) await setDoc(rankingRef, rankingGeral);
-      
-      atualizarPlacarSemanal();
-      atualizarRankingGeral();
-      await finalizarSemana();
+  try {
+    await addDoc(muralRef, {
+      nome: nome,
+      texto: texto,
+      timestamp: serverTimestamp()
+    });
+    
+    // Limpar campos
+    textoInput.value = '';
+    nomeInput.value = '';
+    anonimaCheck.checked = false;
+    
+    mostrarPopup("💌 Mensagem enviada", "Sua mensagem foi publicada no mural!", 3000);
+    
+    const somEnvio = document.getElementById("som-check");
+    somEnvio.currentTime = 0;
+    somEnvio.play();
+  } catch (error) {
+    console.error("Erro ao enviar mensagem:", error);
+    mostrarPopup("❌ Erro", "Falha ao enviar a mensagem. Tente novamente.", 5000);
+  }
+};
 
-      // Tema dinâmico corrigido
-      const hora = new Date().getHours();
-      const body = document.body;
-      body.classList.remove("tema-manha", "tema-tarde", "tema-noite");
-      if (hora >= 5 && hora < 12) body.classList.add("tema-manha");
-      else if (hora >= 12 && hora < 18) body.classList.add("tema-tarde");
-      else body.classList.add("tema-noite");
+// Função para carregar e exibir mensagens
+function carregarMural() {
+  const muralContainer = document.getElementById('mural-mensagens');
+  
+  onSnapshot(muralRef, (snapshot) => {
+    muralContainer.innerHTML = '';
+    
+    const mensagens = [];
+    snapshot.forEach(doc => {
+      mensagens.push({ id: doc.id, ...doc.data() });
+    });
+    
+    // Ordenar por timestamp (mais recente primeiro)
+    mensagens.sort((a, b) => {
+      const aTime = a.timestamp?.toDate?.() || new Date(0);
+      const bTime = b.timestamp?.toDate?.() || new Date(0);
+      return bTime - aTime;
+    });
 
-      // Atualizar informações de data
-      atualizarDataCabecalho();
-      atualizarInfoSemana();
-      
-      // Event listeners
-      document.body.addEventListener('change', (event) => {
-        if (event.target.matches('input[type="checkbox"]')) {
-          marcarCheckbox(event.target.id);
-        }
-      });
-      
-      // Adicionar event listener para medalhas (para o painel secreto)
-      document.addEventListener('click', verificarToqueDiamante);
-      
-      // Carregar Árvore Épica
-      await carregarArvoreEpica();
-      
-      // Atualizar resumo e verificar equipes completas
-      await atualizarResumo();
-      verificarEquipeCompleta();
-      
-      // Iniciar verificação periódica de mudança de data (a cada 30 segundos)
-      setInterval(verificarMudancaData, 30000);
-      
-      // Iniciar timer para recarregar à meia-noite
-      iniciarTimerMeiaNoite();
-      
-      // Forçar verificação de mudança de data ao carregar
-      verificarMudancaData();
+    if (mensagens.length === 0) {
+      muralContainer.innerHTML = `
+        <div class="mensagem-item" style="text-align: center; grid-column: 1 / -1;">
+          <div class="mensagem-texto">
+            O mural está vazio... Seja o primeiro a compartilhar!
+          </div>
+          <div class="mensagem-info">
+            <span class="mensagem-autor">Equipe Épicos</span>
+            <span class="mensagem-hora">Agora</span>
+          </div>
+        </div>
+      `;
+      return;
     }
+
+    mensagens.forEach(msg => {
+      const timestamp = msg.timestamp?.toDate?.() || new Date();
+      const hora = timestamp.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+      const data = timestamp.toLocaleDateString('pt-BR');
+      
+      const mensagemEl = document.createElement('div');
+      mensagemEl.className = 'mensagem-item';
+      mensagemEl.dataset.id = msg.id;
+      
+      mensagemEl.innerHTML = `
+        <div class="mensagem-texto">${msg.texto}</div>
+        <div class="mensagem-info">
+          <span class="mensagem-autor">${msg.nome}</span>
+          <span class="mensagem-hora">${hora} - ${data}</span>
+        </div>
+        <div class="mensagem-delete" onclick="excluirMensagem('${msg.id}')">❌</div>
+      `;
+      
+      muralContainer.appendChild(mensagemEl);
+    });
+  });
+}
+
+// Função para excluir mensagem
+window.excluirMensagem = async function(id) {
+  if (!confirm('Tem certeza que deseja excluir esta mensagem?')) return;
+  
+  try {
+    await deleteDoc(doc(db, "mural", id));
+    mostrarPopup("🗑️ Mensagem excluída", "A mensagem foi removida do mural.", 3000);
+  } catch (error) {
+    console.error("Erro ao excluir mensagem:", error);
+    mostrarPopup("❌ Erro", "Falha ao excluir a mensagem.", 3000);
+  }
+};
+
+// Função para adicionar reação
+window.adicionarReacao = function(id, emoji) {
+  const mensagemEl = document.querySelector(`.mensagem-item[data-id="${id}"]`);
+  if (!mensagemEl) return;
+  
+  const btn = mensagemEl.querySelector(`.reacao-btn:nth-child(${emoji === '👍' ? 1 : emoji === '❤️' ? 2 : 3})`);
+  if (!btn) return;
+  
+  // Simular adição de reação
+  const texto = btn.textContent;
+  const regex = /(\d+)/;
+  const match = texto.match(regex);
+  const count = match ? parseInt(match[0]) + 1 : 1;
+  
+  btn.textContent = `${emoji} ${count}`;
+  btn.style.animation = "pulse 0.5s";
+  setTimeout(() => btn.style.animation = "", 500);
+  
+  // Tocar som de reação
+  const somReacao = document.getElementById("som-conquista");
+  somReacao.currentTime = 0;
+  somReacao.play();
+};
+  
+    window.onload = async () => {
+  // Primeiro, espere o DOM estar completamente carregado
+  await new Promise(resolve => setTimeout(resolve, 100));
+  
+  try {
+    // 1. Carregar membros primeiro
+    await carregarMembrosDoFirebase();
+    renderizarMembrosNaTela();
+    
+    // 2. Carregar dados do Firestore
+    await Promise.all([
+      carregarPresenca(),
+      carregarPontosSemanais(),
+      carregarRankingGeral(),
+      carregarTotalDias(),
+      carregarArvoreEpica()
+    ]);
+    
+    // 3. Configurar eventos e UI
+    atualizarDataCabecalho();
+    atualizarInfoSemana();
+    verificarEquipeCompleta();
+    atualizarResumo();
+    
+    // 4. Iniciar mural (remova a mensagem de exemplo estática)
+    document.getElementById("mural-mensagens").innerHTML = '';
+    carregarMural();
+    
+    // 5. Configurar tema
+    const hora = new Date().getHours();
+    const body = document.body;
+    body.classList.remove("tema-manha", "tema-tarde", "tema-noite");
+    if (hora >= 5 && hora < 12) body.classList.add("tema-manha");
+    else if (hora >= 12 && hora < 18) body.classList.add("tema-tarde");
+    else body.classList.add("tema-noite");
+    
+    // 6. Configurar eventos
+    document.addEventListener('click', verificarToqueDiamante);
+    iniciarTimerMeiaNoite();
+    setInterval(verificarMudancaData, 30000);
+    
+  } catch (error) {
+    console.error("Erro durante o carregamento:", error);
+    mostrarPopup("❌ Erro", "Falha ao carregar os dados. Recarregue a página.", 5000);
+  }
+};
+      
+    async function carregarMensagensParaPainel() {
+  const select = document.getElementById('mensagem-excluir');
+  select.innerHTML = '';
+  
+  const querySnapshot = await getDocs(muralRef);
+  querySnapshot.forEach(doc => {
+    const msg = doc.data();
+    const option = document.createElement('option');
+    option.value = doc.id;
+    option.textContent = `${msg.nome}: ${msg.texto.slice(0, 30)}...`;
+    select.appendChild(option);
+  });
+}
+
+window.excluirMensagemSelecionada = async function() {
+  const select = document.getElementById('mensagem-excluir');
+  const id = select.value;
+  
+  if (!id) return;
+  
+  if (confirm('Tem certeza que deseja excluir esta mensagem?')) {
+    await deleteDoc(doc(db, "mural", id));
+    mostrarPopup("🗑️ Mensagem Excluída", "A mensagem foi removida com sucesso.", 3000);
+    await carregarMensagensParaPainel();
+  }
+}
+
+window.excluirTodasMensagens = async function() {
+  if (confirm('⚠️ ATENÇÃO: Isso excluirá TODAS as mensagens. Continuar?')) {
+    const querySnapshot = await getDocs(muralRef);
+    const promises = [];
+    
+    querySnapshot.forEach(doc => {
+      promises.push(deleteDoc(doc.ref));
+    });
+    
+    await Promise.all(promises);
+    mostrarPopup("🗑️ Mural Limpo", "Todas as mensagens foram excluídas.", 5000);
+    await carregarMensagensParaPainel();
+  
+    await carregarMural();
+    
+    await verificarLimpezaMuralSemanal();
+    
+  }
+};
+  
+  // Função para limpar o mural na segunda-feira
+async function verificarLimpezaMuralSemanal() {
+  const hoje = getHoje();
+  if (hoje.getDay() === 1) { // Segunda-feira
+    const ultimaLimpeza = localStorage.getItem('ultimaLimpezaMural');
+    const hojeISO = getHojeISO();
+    
+    if (ultimaLimpeza !== hojeISO) {
+      // Verificar se já há mensagens no mural
+      const querySnapshot = await getDocs(muralRef);
+      if (!querySnapshot.empty) {
+        if (confirm('Deseja limpar o mural de mensagens nesta segunda-feira?')) {
+          await excluirTodasMensagens();
+          localStorage.setItem('ultimaLimpezaMural', hojeISO);
+          mostrarPopup("🪧 Mural Limpo", "Todas as mensagens foram removidas (limpeza semanal).", 5000);
+        }
+      }
+    }
+  }
+}
+  
   </script>
   <style>
     /* MODIFICAÇÕES SOLICITADAS */
@@ -2450,8 +2595,228 @@
       
       .nuvem {
         width: 30px !important; /* anterior: 40px */
+        
       }
-    }
+        
+        /* ESTILOS DO MURAL */
+/* Adicione estes estilos à seção de CSS */
+.mural-container {
+  border-radius: 15px;
+  padding: 25px;
+  margin-top: 30px;
+  background: rgba(255, 255, 255, 0.95);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+  border: 1px solid rgba(0, 0, 0, 0.05);
+}
+.tema-noite .mural-container {
+  background: rgba(43, 57, 87, 0.95);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.mural-container h2 {
+  text-align: center;
+  margin-bottom: 25px;
+  color: #2C3E50;
+  font-size: 1.8rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 15px;
+}
+.tema-noite .mural-container h2 {
+  color: #ecf0f1;
+}
+
+.mural-input-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 15px;
+  margin-bottom: 25px;
+  background: #f8f9fa;
+  padding: 20px;
+  border-radius: 12px;
+  box-shadow: inset 0 2px 8px rgba(0,0,0,0.05);
+}
+.tema-noite .mural-input-container {
+  background: #2c3e50;
+  box-shadow: inset 0 2px 8px rgba(0,0,0,0.2);
+}
+
+.mural-input {
+  flex: 1;
+  min-width: 250px;
+}
+
+.mural-input input, .mural-input textarea {
+  width: 100%;
+  padding: 14px 18px;
+  border-radius: 10px;
+  border: 1px solid #ddd;
+  font-size: 1rem;
+  margin-bottom: 12px;
+  resize: none;
+  transition: all 0.3s;
+}
+.mural-input input:focus, .mural-input textarea:focus {
+  outline: none;
+  border-color: #3498db;
+  box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.2);
+}
+.tema-noite .mural-input input, 
+.tema-noite .mural-input textarea {
+  background: #3a506b;
+  color: white;
+  border: 1px solid #4a658a;
+}
+.tema-noite .mural-input input:focus, 
+.tema-noite .mural-input textarea:focus {
+  border-color: #1abc9c;
+  box-shadow: 0 0 0 3px rgba(26, 188, 156, 0.3);
+}
+
+.mural-input textarea {
+  height: 120px;
+}
+
+.btn-enviar {
+  padding: 14px 30px;
+  border-radius: 30px;
+  border: none;
+  background: linear-gradient(135deg, #3498db, #2980b9);
+  color: white;
+  font-weight: bold;
+  cursor: pointer;
+  transition: all 0.3s;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 1rem;
+  box-shadow: 0 4px 15px rgba(52, 152, 219, 0.3);
+}
+.btn-enviar:hover {
+  background: linear-gradient(135deg, #2980b9, #3498db);
+  transform: translateY(-3px);
+  box-shadow: 0 6px 20px rgba(52, 152, 219, 0.4);
+}
+.tema-noite .btn-enviar {
+  background: linear-gradient(135deg, #1abc9c, #16a085);
+  box-shadow: 0 4px 15px rgba(26, 188, 156, 0.3);
+}
+.tema-noite .btn-enviar:hover {
+  background: linear-gradient(135deg, #16a085, #1abc9c);
+  box-shadow: 0 6px 20px rgba(26, 188, 156, 0.4);
+}
+
+.mural-mensagens {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 25px;
+  margin-top: 20px;
+}
+
+.mensagem-item {
+  padding: 25px;
+  border-radius: 12px;
+  position: relative;
+  box-shadow: 0 8px 20px rgba(0,0,0,0.08);
+  animation: aparecer 0.5s ease;
+  transform-origin: top left;
+  transition: all 0.3s;
+  overflow: hidden;
+  min-height: 200px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  background: white;
+  border: 1px solid rgba(0,0,0,0.05);
+}
+.mensagem-item:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 12px 25px rgba(0,0,0,0.15);
+}
+
+@keyframes aparecer {
+  0% { transform: scale(0.9); opacity: 0; }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+.tema-noite .mensagem-item {
+  background: #2c3e50;
+  border: 1px solid rgba(255,255,255,0.05);
+  box-shadow: 0 8px 20px rgba(0,0,0,0.3);
+}
+
+.mensagem-texto {
+  margin: 15px 0;
+  font-size: 1.1rem;
+  line-height: 1.6;
+  flex-grow: 1;
+  color: #333;
+}
+.tema-noite .mensagem-texto {
+  color: #ecf0f1;
+}
+
+.mensagem-info {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.9rem;
+  color: #7f8c8d;
+  border-top: 1px dashed rgba(0,0,0,0.1);
+  padding-top: 12px;
+  margin-top: 15px;
+}
+.tema-noite .mensagem-info {
+  color: #bdc3c7;
+  border-top: 1px dashed rgba(255,255,255,0.1);
+}
+
+.mensagem-autor {
+  font-weight: bold;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  color: #3498db;
+}
+.tema-noite .mensagem-autor {
+  color: #1abc9c;
+}
+
+.mensagem-hora {
+  font-style: italic;
+}
+
+/* Efeito de gradiente nas mensagens */
+.mensagem-item::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 5px;
+  background: linear-gradient(90deg, #3498db, #1abc9c);
+  opacity: 0.8;
+}
+.tema-noite .mensagem-item::before {
+  background: linear-gradient(90deg, #1abc9c, #3498db);
+}
+
+/* Responsividade */
+@media (max-width: 768px) {
+  .mural-mensagens {
+    grid-template-columns: 1fr;
+  }
+  
+  .mural-input {
+    min-width: 100%;
+  }
+  
+  .btn-enviar {
+    width: 100%;
+    justify-content: center;
+  }
+}
+        
   </style>
 </head>
 <body>
@@ -2562,6 +2927,26 @@
       </div>
     </div>
     
+    <!-- Área do mural de mensagens -->
+<div class="mural-container">
+  <h2><span>🪧</span> Mural de Mensagens</h2>
+  
+  <div class="mural-input-container">
+    <div class="mural-input">
+      <input type="text" id="mensagem-nome" placeholder="Seu nome (opcional, deixe em branco para 'Membro Épico')">
+      <textarea id="mensagem-texto" placeholder="Escreva sua mensagem motivacional, recado ou celebração..."></textarea>
+    </div>
+    
+    <button class="btn-enviar" onclick="enviarMensagem()">
+      <span>✉️</span> Enviar Mensagem
+    </button>
+  </div>
+  
+  <div id="mural-mensagens" class="mural-mensagens">
+    <!-- Mensagens serão carregadas dinamicamente -->
+  </div>
+</div>
+    
     <div class="medalha-info">
       <h2>Sistema de Medalhas</h2>
       <div class="medalhas-grid">
@@ -2659,6 +3044,17 @@
         <button onclick="ajustarPontosRanking()">Aplicar</button>
       </div>
     </div>
+    
+<div class="painel-secao">
+  <h3>🗑️ Gerenciar Mensagens</h3>
+  <div class="painel-controles">
+    <select id="mensagem-excluir">
+      <!-- Preenchido por JavaScript -->
+    </select>
+    <button onclick="excluirMensagemSelecionada()">Excluir Selecionada</button>
+    <button onclick="excluirTodasMensagens()" style="background:#e74c3c">Excluir Todas</button>
+  </div>
+</div>
     
     <div class="painel-secao">
       <h3>⚠️ Reset Geral</h3>
