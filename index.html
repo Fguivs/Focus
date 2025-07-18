@@ -1,0 +1,4216 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Épicos 亗 🌱</title>
+    <script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+  import { 
+    getFirestore, doc, setDoc, getDoc, collection, getDocs, updateDoc, deleteDoc, 
+    increment, writeBatch, query, where, onSnapshot 
+  } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyDoncRn8ikIdij8aXC0OUeqdqnLITrhmPc",
+    authDomain: "foco-diario-75630.firebaseapp.com",
+    projectId: "foco-diario-75630",
+    storageBucket: "foco-diario-75630.appspot.com",
+    messagingSenderId: "1040579676771",
+    appId: "1:1040579676771:web:ca12f964d8adb3778e4656"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const db = getFirestore(app);
+  
+  // Variáveis atualizadas para membros dinâmicos
+  let todosMembros = [];
+  let equipes = {
+    abelha: { membros: [], lider: null },
+    joaninha: { membros: [], lider: null },
+    vagalume: { membros: [], lider: null }
+  };
+  let liderGeral = null;
+
+  const medalhas = {
+    3: { emoji: "🔥", nome: "Fagulha" },
+    10: { emoji: "👑", nome: "Lenda" },
+    30: { emoji: "🌟", nome: "Constante" },
+    60: { emoji: "💎", nome: "Diamante" },
+    120: { emoji: "🚀", nome: "Foguete" },
+    150: { emoji: "🏆", nome: "Troféu" },
+    240: { emoji: "🔮", nome: "Bola de cristal" },
+    365: { emoji: "🌞", nome: "Solar" }
+  };
+  const totalDiasMembros = {};
+  const pontosSemanais = { abelha: 0, joaninha: 0, vagalume: 0 };
+  const rankingGeral = { abelha: 0, joaninha: 0, vagalume: 0 };
+  const historicoAcoes = {};
+  
+  // Variável de controle para evitar duplicação
+  let atualizando = false;
+  
+  // Variável para acompanhar a data atual
+  let dataAtual = '';
+  
+  // Sistema de fila para atualizações rápidas
+  let filaAtualizacao = Promise.resolve();
+  
+  // Variáveis para controle do painel secreto
+  let cliqueCount = 0;
+  let timeoutClique;
+  
+  // Variável global para armazenar a cor selecionada
+  let corSelecionada = "#f8d5cc"; // Cor padrão
+
+  // Funções dinâmicas para data
+  function getHoje() {
+  return new Date();
+}
+  
+  function getHojeISO() {
+    return getHoje().toISOString().slice(0, 10);
+  }
+
+  function formatarData(date) {
+    const dia = String(date.getDate()).padStart(2, '0');
+    const mes = String(date.getMonth() + 1).padStart(2, '0');
+    const ano = date.getFullYear();
+    return `${dia}/${mes}/${ano}`;
+  }
+
+  function getSemanaAtual() {
+    const data = getHoje();
+    const diaSemana = data.getDay() || 7; // Domingo = 0, convertendo para 7
+    
+    const primeiroDiaAno = new Date(data.getFullYear(), 0, 1);
+    const diferencaDias = Math.floor((data - primeiroDiaAno) / (24*60*60*1000));
+    const semanaNumero = Math.ceil((diferencaDias + primeiroDiaAno.getDay() + 1) / 7);
+    
+    // Ajuste para considerar domingo como parte da semana anterior
+    let diasAteSabado = 5;
+    if (diaSemana === 0) { // Se for domingo
+      diasAteSabado = -1; // Sábado será 6 dias atrás
+    }
+
+    const segunda = new Date(data);
+    segunda.setDate(data.getDate() - diaSemana + 1);
+    
+    const sabado = new Date(segunda);
+    sabado.setDate(segunda.getDate() + diasAteSabado);
+        
+    return {
+      inicio: segunda,
+      fim: sabado,
+      numero: semanaNumero,
+      inicioFormatado: formatarData(segunda),
+      fimFormatado: formatarData(sabado),
+      fimCompeticao: formatarData(sabado).slice(0, 5)
+    };
+  }
+
+  // ATUALIZADA: Verificação de data atual
+  async function salvarPresenca() {
+  const hojeISO = getHojeISO();
+  const presencas = {};
+  
+  todosMembros.forEach(nome => {
+    const checkbox = document.getElementById(nome);
+    if (checkbox) {
+      presencas[nome] = checkbox.checked;
+    }
+  });
+  
+  // Sempre salva, independente de ser o dia atual
+  await setDoc(doc(db, "presencas", hojeISO), presencas);
+}
+
+  async function carregarPresenca() {
+    const hojeISO = getHojeISO();
+    const docSnap = await getDoc(doc(db, "presencas", hojeISO));
+    
+    // Sempre desmarca primeiro
+    todosMembros.forEach(nome => {
+      const checkbox = document.getElementById(nome);
+      if (checkbox) {
+        checkbox.checked = false;
+      }
+    });
+
+    // Só marca se existir documento
+    if (docSnap.exists()) {
+      const data = docSnap.data();
+      todosMembros.forEach(nome => {
+        const checkbox = document.getElementById(nome);
+        if (checkbox) {
+          checkbox.checked = data[nome] || false;
+        }
+      });
+    }
+  }
+
+  // ATUALIZADA: Cálculo correto dos dias totais
+  async function carregarTotalDias() {
+    const querySnapshot = await getDocs(collection(db, "presencas"));
+    
+    // Resetar contagem
+    todosMembros.forEach(nome => {
+      totalDiasMembros[nome] = 0;
+    });
+    
+    // Contar dias para cada membro
+    querySnapshot.forEach(doc => {
+      const data = doc.data();
+      Object.keys(data).forEach(nome => {
+        if (data[nome] && todosMembros.includes(nome)) {
+          totalDiasMembros[nome] = (totalDiasMembros[nome] || 0) + 1;
+        }
+      });
+    });
+    
+    atualizarMedalhas();
+  }
+
+  async function carregarPontosSemanais() {
+    const hoje = getHoje();
+    
+    // Domingo: sempre zerar pontos semanais
+    if (hoje.getDay() === 0) {
+      pontosSemanais.abelha = 0;
+      pontosSemanais.joaninha = 0;
+      pontosSemanais.vagalume = 0;
+      atualizarPlacarSemanal();
+      return;
+    }
+
+    const semanaAtual = getSemanaAtual();
+    const semanaDoc = await getDoc(doc(db, "semanas", semanaAtual.inicio.toISOString().slice(0, 10)));
+    if (semanaDoc.exists()) {
+      const data = semanaDoc.data();
+      pontosSemanais.abelha = data.abelha || 0;
+      pontosSemanais.joaninha = data.joaninha || 0;
+      pontosSemanais.vagalume = data.vagalume || 0;
+    }
+    atualizarPlacarSemanal();
+  }
+
+  async function carregarRankingGeral() {
+    const rankingDoc = await getDoc(doc(db, "ranking", "geral"));
+    if (rankingDoc.exists()) {
+      const data = rankingDoc.data();
+      rankingGeral.abelha = data.abelha || 0;
+      rankingGeral.joaninha = data.joaninha || 0;
+      rankingGeral.vagalume = data.vagalume || 0;
+    }
+    atualizarRankingGeral();
+  }
+
+  async function finalizarSemana() {
+    const hoje = getHoje();
+    if (hoje.getDay() === 0) {
+      const semanaAtual = getSemanaAtual();
+      const semanaDoc = await getDoc(doc(db, "semanas", semanaAtual.inicio.toISOString().slice(0, 10)));
+      
+      if (semanaDoc.exists() && !semanaDoc.data().finalizada) {
+        const pontos = semanaDoc.data();
+        let vencedora = null;
+        let maxPontos = 0;
+        const equipesComPontuacao = [];
+        
+        if (pontos.abelha > maxPontos) {
+          maxPontos = pontos.abelha;
+          vencedora = "abelha";
+        }
+        if (pontos.joaninha > maxPontos) {
+          maxPontos = pontos.joaninha;
+          vencedora = "joaninha";
+        }
+        if (pontos.vagalume > maxPontos) {
+          maxPontos = pontos.vagalume;
+          vencedora = "vagalume";
+        }
+        
+        if (pontos.abelha === maxPontos) equipesComPontuacao.push("abelha");
+        if (pontos.joaninha === maxPontos) equipesComPontuacao.push("joaninha");
+        if (pontos.vagalume === maxPontos) equipesComPontuacao.push("vagalume");
+        
+        const empate = equipesComPontuacao.length > 1;
+        const rankingRef = doc(db, "ranking", "geral");
+        
+        if (!empate && vencedora) {
+          await updateDoc(rankingRef, {
+            [vencedora]: rankingGeral[vencedora] + 1
+          });
+          rankingGeral[vencedora]++;
+          atualizarRankingGeral();
+          
+          const nomesEquipes = {
+            abelha: "Abelha",
+            joaninha: "Joaninha",
+            vagalume: "Vaga-lume"
+          };
+          
+          mostrarPopup("🏆 Vitória Semanal", 
+            `Equipe ${nomesEquipes[vencedora]} venceu a semana com ${maxPontos} pontos!`, 8000);
+        } else if (empate) {
+          const atualizacoes = {};
+          const equipesEmpatadas = [];
+          
+          equipesComPontuacao.forEach(equipe => {
+            atualizacoes[equipe] = rankingGeral[equipe] + 1;
+            rankingGeral[equipe]++;
+            equipesEmpatadas.push(equipe);
+          });
+          
+          await updateDoc(rankingRef, atualizacoes);
+          atualizarRankingGeral();
+          
+          const nomesEquipes = equipesEmpatadas.map(eq => {
+            const nomes = {
+              abelha: "Abelha",
+              joaninha: "Joaninha",
+              vagalume: "Vaga-lume"
+            };
+            return nomes[eq];
+          }).join(", ");
+          
+          mostrarPopup("🏆 Empate Semanal", 
+            `As equipes ${nomesEquipes} empataram com ${maxPontos} pontos cada! Todas ganham um ponto no ranking.`, 8000);
+        }
+        
+        await updateDoc(doc(db, "semanas", semanaAtual.inicio.toISOString().slice(0, 10)), {
+          finalizada: true,
+          vencedora: empate ? null : vencedora
+        });
+
+        // Atualizar a semana no placar
+        await carregarPontosSemanais();
+        atualizarPlacarSemanal();
+        atualizarInfoSemana();
+        
+        // Resetar pontos semanais localmente para a nova semana
+        pontosSemanais.abelha = 0;
+        pontosSemanais.joaninha = 0;
+        pontosSemanais.vagalume = 0;
+        
+        // Inicializar nova semana no Firestore
+        const novaSemanaInicio = new Date(semanaAtual.inicio);
+        novaSemanaInicio.setDate(novaSemanaInicio.getDate() + 7);
+        const novaSemanaKey = novaSemanaInicio.toISOString().slice(0, 10);
+        await setDoc(doc(db, "semanas", novaSemanaKey), {
+          abelha: 0,
+          joaninha: 0,
+          vagalume: 0,
+          finalizada: false
+        });
+      }
+    }
+  }
+
+  function getMedalha(totalDias) {
+    const niveis = Object.keys(medalhas).map(Number).sort((a, b) => b - a);
+    for (const nivel of niveis) {
+      if (totalDias >= nivel) {
+        return medalhas[nivel];
+      }
+    }
+    return null;
+  }
+
+  function atualizarMedalhas() {
+  todosMembros.forEach(nome => {
+    const totalDias = totalDiasMembros[nome] || 0;
+    const medalhaElement = document.getElementById(`medalha-${nome}`);
+    const diasElement = document.getElementById(`dias-${nome}`);
+    
+    if (!diasElement || !medalhaElement) return;
+    
+    // Mantemos o título com o total de dias
+    diasElement.title = `${totalDias} dias de foco`;
+    
+    // A medalha é baseada no total de dias
+    const medalha = getMedalha(totalDias);
+    if (medalha) {
+      medalhaElement.innerHTML = medalha.emoji;
+      medalhaElement.title = `${medalha.nome} - ${totalDias} dias de foco`;
+      medalhaElement.classList.add('com-medalha');
+      medalhaElement.classList.remove('escondido');
+    } else {
+      medalhaElement.innerHTML = '';
+      medalhaElement.classList.remove('com-medalha');
+      medalhaElement.classList.add('escondido');
+    }
+  });
+}
+
+  function atualizarPlacarSemanal() {
+    if (document.getElementById("resumo-abelha")) {
+      document.getElementById("resumo-abelha").innerHTML = `
+        <div>${document.querySelectorAll('#equipe-abelha input:checked').length} focaram hoje!</div>
+        <div>${pontosSemanais.abelha} pontos na semana</div>
+      `;
+    }
+    
+    if (document.getElementById("resumo-joaninha")) {
+      document.getElementById("resumo-joaninha").innerHTML = `
+        <div>${document.querySelectorAll('#equipe-joaninha input:checked').length} focaram hoje!</div>
+        <div>${pontosSemanais.joaninha} pontos na semana</div>
+      `;
+    }
+    
+    if (document.getElementById("resumo-vagalume")) {
+      document.getElementById("resumo-vagalume").innerHTML = `
+        <div>${document.querySelectorAll('#equipe-vagalume input:checked').length} focaram hoje!</div>
+        <div>${pontosSemanais.vagalume} pontos na semana</div>
+      `;
+    }
+  }
+
+  function atualizarRankingGeral() {
+    if (document.getElementById("ranking-abelha")) {
+      document.getElementById("ranking-abelha").textContent = rankingGeral.abelha;
+    }
+    if (document.getElementById("ranking-joaninha")) {
+      document.getElementById("ranking-joaninha").textContent = rankingGeral.joaninha;
+    }
+    if (document.getElementById("ranking-vagalume")) {
+      document.getElementById("ranking-vagalume").textContent = rankingGeral.vagalume;
+    }
+  }
+
+  // ATUALIZADA: Verificação inicial de membros
+  window.atualizarResumo = async function () {
+    // Não atualizar se ainda não carregou membros
+    if (todosMembros.length === 0) return;
+    
+    // Usar sistema de fila para evitar conflitos
+    filaAtualizacao = filaAtualizacao.then(async () => {
+      const hoje = getHoje();
+      
+      // Obter estado atual do Firestore
+      const hojeISO = getHojeISO();
+      const docSnap = await getDoc(doc(db, "presencas", hojeISO));
+      const estadoFirestore = docSnap.exists() ? docSnap.data() : {};
+
+      // Calcular diferenças baseadas no Firestore
+      const diferencas = { abelha: 0, joaninha: 0, vagalume: 0 };
+      
+      for (const [equipeNome, equipe] of Object.entries(equipes)) {
+        equipe.membros.forEach(membroObj => {
+          const nome = membroObj.nome;
+          const estadoAtual = document.getElementById(nome)?.checked || false;
+          const estadoSalvo = estadoFirestore[nome] || false;
+          
+          if (estadoAtual !== estadoSalvo) {
+            if (estadoAtual) {
+              diferencas[equipeNome]++;
+            } else {
+              diferencas[equipeNome]--;
+            }
+          }
+        });
+      }
+
+      // Salvar estado atual no Firestore
+      await salvarPresenca();
+      
+      // Atualizar pontos semanais apenas se não for domingo
+      if (hoje.getDay() !== 0) {
+        for (const equipe of Object.keys(equipes)) {
+          pontosSemanais[equipe] = Math.max(0, pontosSemanais[equipe] + diferencas[equipe]);
+        }
+
+        // Atualizar semana no Firestore
+        const semanaAtual = getSemanaAtual();
+        const semanaKey = semanaAtual.inicio.toISOString().slice(0, 10);
+        const semanaRef = doc(db, "semanas", semanaKey);
+        
+        // Usar setDoc com merge para criar ou atualizar
+        await setDoc(semanaRef, pontosSemanais, { merge: true });
+      } else {
+        // Domingo: não acumula pontos, mantém 0
+        pontosSemanais.abelha = 0;
+        pontosSemanais.joaninha = 0;
+        pontosSemanais.vagalume = 0;
+      }
+      
+      // Atualizar UI
+      const total = todosMembros.filter(nome => 
+        document.getElementById(nome)?.checked
+      ).length;
+      
+      if (document.getElementById("contadorGeral")) {
+        document.getElementById("contadorGeral").textContent = `${total} épicos focaram hoje!`;
+        const porcentagem = (total / todosMembros.length) * 100;
+        document.getElementById("progresso-barra").style.width = `${porcentagem}%`;
+      }
+      
+      atualizarPlacarSemanal();
+      verificarEquipeCompleta();
+      
+      // Atualizar Árvore Épica com os novos dados
+      await verificarArvoreEpica(total);
+      await carregarTop5Semana();
+    });
+    
+    await filaAtualizacao;
+  }
+
+  // Verificar se todos os membros de uma equipe estão focados
+  function verificarEquipeCompleta() {
+    for (const equipeNome in equipes) {
+      const todosFocados = equipes[equipeNome].membros.every(membroObj => 
+        document.getElementById(membroObj.nome)?.checked
+      );
+      
+      const grupo = document.getElementById(`equipe-${equipeNome}`);
+      if (grupo && todosFocados) {
+        grupo.classList.add('equipe-completa', equipeNome);
+      } else if (grupo) {
+        grupo.classList.remove('equipe-completa', equipeNome);
+      }
+    }
+  }
+
+  window.mostrarPopup = function (titulo, mensagem, duracao = 8000) {
+    const popup = document.getElementById("popup");
+    if (!popup) return;
+    
+    popup.innerHTML = `<strong>${titulo}</strong><br>${mensagem}`;
+    popup.classList.add("mostrar");
+    popup.style.zIndex = "1001";
+    clearTimeout(window.popupTimeout);
+    window.popupTimeout = setTimeout(() => {
+      popup.classList.remove("mostrar");
+      setTimeout(() => popup.style.zIndex = "1000", 500);
+    }, duracao);
+  }
+
+  const conquistas = {
+    5: "🏆 5 dias consecutivos!",
+    10: "🔥 Fogo Sagrado! 10 dias!",
+    15: "🚀 Nível Épico! 15 dias!"
+  };
+
+  const medalhasConcedidas = {};
+  
+  async function verificarConquista(nome, acao) {
+  if (!historicoAcoes[nome]) historicoAcoes[nome] = [];
+  historicoAcoes[nome].push({ data: new Date(), acao: acao });
+  
+  const docRef = doc(db, "streak", nome);
+  const docSnap = await getDoc(docRef);
+  let streak = docSnap.exists() ? docSnap.data().streak : 0;
+  
+  if (acao === 'adicionar') {
+    streak += 1;
+  } else if (acao === 'remover') {
+    streak = Math.max(0, streak - 1);
+  }
+  
+  await setDoc(docRef, { 
+    streak: streak,
+    ultimoDia: acao === 'adicionar' ? getHojeISO() : (docSnap.exists() ? docSnap.data().ultimoDia : null)
+  });
+
+  // CORREÇÃO: Atualizar badge imediatamente
+  const diasElement = document.getElementById(`dias-${nome}`);
+  if (diasElement) {
+    diasElement.textContent = streak;
+  }
+
+    // Carregar total de dias ATUALIZADO do Firestore
+    await carregarTotalDias();
+    
+    // Aguardar atualização dos dados
+    await new Promise(resolve => setTimeout(resolve, 100));
+    const totalDias = totalDiasMembros[nome] || 0;
+    const medalha = getMedalha(totalDias);
+    
+    if (acao === 'adicionar' && medalha) {
+      const niveis = Object.keys(medalhas).map(Number);
+      const nivelAtual = niveis.find(nivel => nivel === totalDias);
+      if (nivelAtual && (!medalhasConcedidas[nome] || medalhasConcedidas[nome].nome !== medalha.nome)) {
+        medalhasConcedidas[nome] = medalha;
+        const somConquista = document.getElementById("som-conquista");
+        if (somConquista) {
+          somConquista.currentTime = 0;
+          somConquista.play();
+        }
+        mostrarPopup("🏅 Nova Medalha", `${nome} conquistou:<br>${medalha.emoji} ${medalha.nome}!`, 8000);
+        dispararConfete();
+      }
+    }
+    else if (acao === 'remover' && medalhasConcedidas[nome]) {
+      const medalhaAtual = getMedalha(totalDias);
+      if (!medalhaAtual || medalhaAtual.nome !== medalhasConcedidas[nome].nome) {
+        mostrarPopup("ℹ️ Medalha Removida", `${nome} perdeu a medalha:<br>${medalhasConcedidas[nome].emoji} ${medalhasConcedidas[nome].nome}`, 5000);
+        delete medalhasConcedidas[nome];
+      }
+    }
+    
+    if (conquistas[streak] && acao === 'adicionar') {
+      const somConquista = document.getElementById("som-conquista");
+      if (somConquista) {
+        somConquista.currentTime = 0;
+        somConquista.play();
+      }
+      mostrarPopup("🌟 Conquista", `${nome} conquistou:<br>${conquistas[streak]}`, 8000);
+      dispararConfete();
+    }
+  }
+
+  function dispararConfete() {
+    const confettiCanvas = document.getElementById("confetti-canvas");
+    if (!confettiCanvas) return;
+    
+    const confettiCtx = confettiCanvas.getContext('2d');
+    confettiCanvas.width = window.innerWidth;
+    confettiCanvas.height = window.innerHeight;
+    const confettiParticles = [];
+    
+    // Reduzir número de partículas e aumentar velocidade
+    for (let i = 0; i < 100; i++) {
+      confettiParticles.push({
+        x: Math.random() * confettiCanvas.width,
+        y: -10,
+        size: Math.random() * 10 + 5,
+        speed: Math.random() * 8 + 5, // Aumento de velocidade
+        color: ['#ff0000', '#00ff00', '#0000ff', '#ffff00', '#ff00ff'][Math.floor(Math.random() * 5)],
+        angle: Math.random() * Math.PI * 2,
+        spin: Math.random() * 0.2 - 0.1
+      });
+    }
+    
+    function animateConfetti() {
+      confettiCtx.clearRect(0, 0, confettiCanvas.width, confettiCanvas.height);
+      let particlesAlive = 0;
+      for (let i = 0; i < confettiParticles.length; i++) {
+        const p = confettiParticles[i];
+        // Aumentar gravidade para cair mais rápido
+        p.y += p.speed * 0.8;
+        p.x += Math.sin(p.angle) * 2;
+        p.angle += p.spin;
+
+        // Verificar se a partícula ainda está visível
+        const isVisible = p.y < confettiCanvas.height && 
+                         p.x > -50 && 
+                         p.x < confettiCanvas.width + 50;
+        
+        if (isVisible) {
+          confettiCtx.fillStyle = p.color;
+          confettiCtx.beginPath();
+          confettiCtx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+          confettiCtx.fill();
+          particlesAlive++;
+        }
+      }
+      
+      if (particlesAlive > 0) {
+        requestAnimationFrame(animateConfetti);
+      } else {
+        // Limpar completamente quando todas as partículas saírem
+        confettiCtx.clearRect(0, 0, confettiCanvas.width, confettiCanvas.height);
+      }
+    }
+    animateConfetti();
+  }
+
+  window.marcarCheckbox = function (nome) {
+    const hoje = getHoje();
+    if (hoje.getDay() === 0) {
+      mostrarPopup("ℹ️ Domingo", "Pontos semanais não são contabilizados aos domingos", 3000);
+    }
+    
+    const checkbox = document.getElementById(nome);
+    if (!checkbox) return;
+    
+    const som = document.getElementById("som-check");
+    if (som) {
+      som.currentTime = 0;
+      som.play();
+    }
+    const label = checkbox.nextElementSibling;
+    if (checkbox.checked) label.classList.add('checked');
+    else label.classList.remove('checked');
+    const acao = checkbox.checked ? 'adicionar' : 'remover';
+    verificarConquista(nome, acao);
+    atualizarResumo();
+    if (checkbox.checked) mostrarPopup("🎉 Foco Registrado", `${nome}, parabéns por ter focado hoje!`, 3000);
+    else mostrarPopup("ℹ️ Foco Removido", `${nome}, seu foco de hoje foi removido`, 3000);
+
+    // Adicionar destaque apenas no resumo da equipe do membro (exceto líder geral)
+    if (liderGeral?.nome !== nome) {
+      let equipeNome = "";
+      for (const [eq, dados] of Object.entries(equipes)) {
+        if (dados.membros.some(m => m.nome === nome)) {
+          equipeNome = eq;
+          break;
+        }
+      }
+      
+      if (equipeNome) {
+        const resumo = document.getElementById(`resumo-${equipeNome}`);
+        if (resumo) {
+          resumo.classList.add('destaque');
+          setTimeout(() => resumo.classList.remove('destaque'), 500);
+        }
+      }
+    }
+  }
+  
+  window.resetarTudo = async function() {
+  if (!confirm('⚠️ ATENÇÃO: Você está prestes a resetar TODOS os dados!\nIsso apagará todo o histórico e pontos.\n\nDeseja continuar?')) return;
+  try {
+    // Resetar dados no Firebase
+    const presencasSnapshot = await getDocs(collection(db, "presencas"));
+    for (const doc of presencasSnapshot.docs) await deleteDoc(doc.ref);
+    
+    const semanasSnapshot = await getDocs(collection(db, "semanas"));
+    for (const doc of semanasSnapshot.docs) await deleteDoc(doc.ref);
+    
+    const streaksSnapshot = await getDocs(collection(db, "streak"));
+    for (const doc of streaksSnapshot.docs) await deleteDoc(doc.ref);
+    
+    // ADICIONAR RESET DO RANKING GERAL
+    const rankingRef = doc(db, "ranking", "geral");
+    await setDoc(rankingRef, { abelha: 0, joaninha: 0, vagalume: 0 });
+    
+    // Resetar Árvore Épica
+    const arvoreRef = doc(db, "arvoreEpica", "progresso");
+    await deleteDoc(arvoreRef);
+    
+    // Resetar variáveis locais
+    pontosSemanais.abelha = 0;
+    pontosSemanais.joaninha = 0;
+    pontosSemanais.vagalume = 0;
+    
+    // RESETAR RANKING GERAL LOCAL
+    rankingGeral.abelha = 0;
+    rankingGeral.joaninha = 0;
+    rankingGeral.vagalume = 0;
+    
+    // Recarregar dados atualizados
+    await carregarPresenca();
+    await carregarTotalDias();
+    await carregarPontosSemanais();
+    await carregarRankingGeral();
+    await carregarArvoreEpica();
+    
+    // Atualizar UI
+    atualizarPlacarSemanal();
+    atualizarRankingGeral();
+    atualizarMedalhas();
+    atualizarExibicaoArvore();
+    
+    mostrarPopup("✅ Reset Completo", "Todos os dados foram resetados com sucesso!", 5000);
+  } catch (error) {
+    console.error("Erro ao resetar dados:", error);
+    mostrarPopup("❌ Erro no Reset", "Ocorreu um erro ao tentar resetar os dados.", 5000);
+  }
+}
+
+// Substitua a função resetarDia por esta versão atualizada:
+window.resetarDia = async function(automatico = false) {
+  if (!automatico && !confirm('⚠️ ATENÇÃO: Você está prestes a desmarcar TODOS os checkboxes do dia atual e zerar o contador do dia.\n\nIsso não afetará os pontos semanais ou streaks.\n\nDeseja continuar?')) return;
+  
+  try {
+    // Desmarcar todas as checkboxes
+    todosMembros.forEach(nome => {
+      const checkbox = document.getElementById(nome);
+      if (checkbox) {
+        checkbox.checked = false;
+        const label = checkbox.nextElementSibling;
+        if (label) {
+          label.classList.remove('checked');
+        }
+      }
+    });
+    
+    // Apagar o documento de presenças do dia atual
+    const hojeISO = getHojeISO();
+    const presencaRef = doc(db, "presencas", hojeISO);
+    await deleteDoc(presencaRef);
+    
+    // Atualizar a interface
+    if (document.getElementById("contadorGeral")) {
+      document.getElementById("contadorGeral").textContent = "0 épicos focaram hoje!";
+      document.getElementById("progresso-barra").style.width = "0%";
+    }
+    
+    // Atualizar resumos das equipes
+    atualizarPlacarSemanal();
+    
+    // CORREÇÃO: Recarregar streaks e total de dias
+    await Promise.all([
+      carregarStreaks(),
+      carregarTotalDias(),
+      carregarArvoreEpica()
+    ]);
+    
+    if (!automatico) {
+      mostrarPopup("✅ Dia Resetado", "Todos os checkboxes foram desmarcados e o dia foi zerado.", 5000);
+    }
+  } catch (error) {
+    console.error("Erro ao resetar o dia:", error);
+    mostrarPopup("❌ Erro", "Ocorreu um erro ao resetar o dia.", 5000);
+  }
+}
+
+async function carregarStreaks() {
+  for (const nome of todosMembros) {
+    const docRef = doc(db, "streak", nome);
+    const docSnap = await getDoc(docRef);
+    
+    if (docSnap.exists()) {
+      // Atualizar badge de dias
+      const diasElement = document.getElementById(`dias-${nome}`);
+      if (diasElement) {
+        diasElement.textContent = docSnap.data().streak || 0;
+      }
+    }
+  }
+}
+
+  // ===== FUNÇÕES PARA A ÁRVORE ÉPICA =====
+  const fasesArvore = [
+    { dias: 1, nome: "Semente", emoji: "🌱", desc: "A jornada começa com um único dia de foco. Vamos plantar nossa semente e cultivar nossa dedicação diária!" },
+    { dias: 15, nome: "Broto", emoji: "🌿", desc: "Com 15 dias consecutivos, nosso esforço começa a brotar. Vamos continuar regando nossa determinação!" },
+    { dias: 60, nome: "Árvore", emoji: "🌳", desc: "60 dias de foco ininterrupto! Nossa árvore cresce forte, simbolizando nossa consistência e perseverança." },
+    { dias: 180, nome: "Flores", emoji: "🌸", desc: "180 dias de dedicação fazem florescer resultados. Cada flor representa uma conquista em nossa jornada!" },
+    { dias: 365, nome: "Frutos", emoji: "🍎", desc: "365 dias de foco contínuo! Agora colhemos os frutos do nosso trabalho árduo e da nossa dedicação inabalável." }
+  ];
+  
+  let arvoreEpica = {
+    consecutivos: 0,
+    ultimoDia: null,
+    faseAtual: 0
+  };
+  
+  async function carregarEstadoArvore() {
+    const arvoreRef = doc(db, "arvoreEpica", "progresso");
+    const docSnap = await getDoc(arvoreRef);
+    
+    if (docSnap.exists()) {
+      arvoreEpica = docSnap.data();
+    } else {
+      arvoreEpica = {
+        consecutivos: 0,
+        ultimoDia: null,
+        faseAtual: 0
+      };
+      await setDoc(arvoreRef, arvoreEpica);
+    }
+  }
+  
+  async function verificarArvoreEpica(totalCheckins) {
+    const hojeISO = getHojeISO();
+    await carregarEstadoArvore();
+
+    // Verifica se atingiu o mínimo OU se já havia uma sequência em andamento
+    if (arvoreEpica.consecutivos > 0 || totalCheckins >= 10) {
+      const ultimoDia = arvoreEpica.ultimoDia;
+      const ontem = new Date(getHoje());
+      ontem.setDate(ontem.getDate() - 1);
+      const ontemISO = ontem.toISOString().slice(0,10);
+      
+      // Se não tem último dia registrado ou se o último dia foi ontem, incrementa
+      if (!ultimoDia || ultimoDia === ontemISO) {
+        arvoreEpica.consecutivos++;
+      } else {
+        // Se não for consecutivo, reinicia contagem
+        arvoreEpica.consecutivos = 1;
+      }
+      
+      arvoreEpica.ultimoDia = hojeISO;
+    } else {
+      // Se não atingiu, resetamos a contagem
+      arvoreEpica.consecutivos = 0;
+      arvoreEpica.ultimoDia = null;
+    }
+    
+    // Atualizar fase atual
+    let novaFase = 0;
+    for (let i = fasesArvore.length - 1; i >= 0; i--) {
+      if (arvoreEpica.consecutivos >= fasesArvore[i].dias) {
+        novaFase = i;
+        break;
+      }
+    }
+    arvoreEpica.faseAtual = novaFase;
+    
+    // Salvar no Firestore
+    const arvoreRef = doc(db, "arvoreEpica", "progresso");
+    await setDoc(arvoreRef, arvoreEpica);
+    
+    // Atualizar a exibição
+    atualizarExibicaoArvore();
+    
+    // Mostrar notificação se mudou de fase
+    if (novaFase > 0 && arvoreEpica.consecutivos === fasesArvore[novaFase].dias) {
+      const somConquista = document.getElementById("som-conquista");
+      if (somConquista) {
+        somConquista.currentTime = 0;
+        somConquista.play();
+      }
+      mostrarPopup("🌳 Árvore Épica", `Parabéns! A árvore evoluiu para: ${fasesArvore[novaFase].nome} ${fasesArvore[novaFase].emoji}`, 5000);
+      dispararConfete();
+    }
+  }
+  
+  async function carregarArvoreEpica() {
+    await carregarEstadoArvore();
+    atualizarExibicaoArvore();
+  }
+  
+  function criarEstrelas() {
+    const starsContainer = document.querySelector('.stars-container');
+    if (!starsContainer) return;
+    
+    const starCount = 150;
+    starsContainer.innerHTML = '';
+    
+    for (let i = 0; i < starCount; i++) {
+      const star = document.createElement('div');
+      star.classList.add('star');
+      
+      // Tamanho aleatório
+      const size = Math.random() * 3 + 1;
+      star.style.width = `${size}px`;
+      star.style.height = `${size}px`;
+      
+      // Posição aleatória
+      star.style.left = `${Math.random() * 100}%`;
+      star.style.top = `${Math.random() * 100}%`;
+      
+      // Atraso de animação
+      star.style.animationDelay = `${Math.random() * 4}s`;
+      
+      // Duração da animação
+      star.style.animationDuration = `${2 + Math.random() * 3}s`;
+      
+      starsContainer.appendChild(star);
+    }
+  }
+  
+  function atualizarExibicaoArvore() {
+    if (!document.getElementById("stage-name")) return;
+    
+    const fase = fasesArvore[arvoreEpica.faseAtual];
+    document.getElementById("stage-name").textContent = fase.nome + " " + fase.emoji;
+    document.getElementById("stage-desc").textContent = fase.desc;
+    document.getElementById("dias-consecutivos").textContent = arvoreEpica.consecutivos;
+    
+    // Mostrar a imagem da fase atual e esconder as outras
+    const imagens = ["seed", "sprout", "tree", "flowers", "fruits"];
+    imagens.forEach((img, index) => {
+      const el = document.getElementById(img);
+      if (el) {
+        if (index === arvoreEpica.faseAtual) {
+          el.style.display = "block";
+        } else {
+          el.style.display = "none";
+        }
+      }
+    });
+    
+    // Próxima fase
+    const proximaFase = arvoreEpica.faseAtual < fasesArvore.length - 1 ? fasesArvore[arvoreEpica.faseAtual + 1] : null;
+    const proximaFaseEl = document.getElementById("proxima-fase");
+    if (proximaFaseEl) {
+      if (proximaFase) {
+        const diasFaltando = proximaFase.dias - arvoreEpica.consecutivos;
+        proximaFaseEl.textContent = `Faltam ${diasFaltando} dias para ${proximaFase.nome} ${proximaFase.emoji}`;
+      } else {
+        proximaFaseEl.textContent = "Você alcançou o nível máximo!";
+      }
+    }
+    
+    // Verificar modo noite (após 18h)
+    const agora = getHoje();
+    const horas = agora.getHours();
+    const modoNoite = horas >= 18 || horas < 6;
+    
+    // Aplicar modo noite
+    const treeSky = document.querySelector(".tree-sky");
+    if (treeSky) {
+      if (modoNoite) {
+        treeSky.classList.add("night-mode");
+        treeSky.classList.remove("day-mode");
+        // Criar estrelas se necessário
+        if (document.querySelector('.stars-container')?.children.length === 0) {
+          criarEstrelas();
+        }
+        document.querySelector('.stars-container').style.opacity = "1";
+      } else {
+        treeSky.classList.remove("night-mode");
+        treeSky.classList.add("day-mode");
+        if (document.querySelector('.stars-container')) {
+          document.querySelector('.stars-container').style.opacity = "0";
+        }
+      }
+    }
+    
+    // Controle de visibilidade sol/lua
+    const solEl = document.getElementById("sol");
+    const luaEl = document.getElementById("lua");
+    if (solEl && luaEl) {
+      solEl.style.opacity = modoNoite ? "0" : "1";
+      luaEl.style.opacity = modoNoite ? "1" : "0";
+    }
+  }
+  
+// Substitua a função verificarMudancaData por esta versão atualizada:
+async function verificarMudancaData() {
+  const novaData = getHojeISO();
+  
+  if (dataAtual !== novaData) {
+      dataAtual = novaData;
+      
+      await carregarAniversariantes();
+      
+      // NOVO: Resetar o dia automaticamente (sem confirmação)
+      await resetarDia(true);
+      
+      // Atualizar informações de data no cabeçalho
+      atualizarDataCabecalho();
+      atualizarInfoSemana();
+      
+      // Verificar se ontem foi domingo para finalizar a semana
+      const ontem = new Date(getHoje());
+      ontem.setDate(ontem.getDate() - 1);
+      if (ontem.getDay() === 0) {
+        await finalizarSemana();
+      }
+      
+      // Recarregar pontos semanais
+      await carregarPontosSemanais();
+      atualizarPlacarSemanal();
+      
+      // Recarregar Árvore Épica
+      await carregarArvoreEpica();
+      
+      // Garantir que a semana atual existe
+      const semanaAtual = getSemanaAtual();
+      const semanaKey = semanaAtual.inicio.toISOString().slice(0, 10);
+      const semanaRef = doc(db, "semanas", semanaKey);
+      const semanaDoc = await getDoc(semanaRef);
+      
+      if (!semanaDoc.exists()) {
+        await setDoc(semanaRef, {
+          abelha: 0,
+          joaninha: 0,
+          vagalume: 0,
+          finalizada: false
+        });
+      }
+    }
+    atualizarDataCabecalho(); // Garante atualização visual
+}
+  
+  // Função para atualizar o cabeçalho com a data
+  function atualizarDataCabecalho() {
+    const hoje = getHoje();
+    const dataHoje = hoje.toLocaleDateString('pt-BR', { 
+      weekday: 'long', 
+      day: 'numeric', 
+      month: 'long'
+    });
+    
+    const dataHojeEl = document.getElementById("dataHoje");
+    if (dataHojeEl) {
+      // Correção: Capitaliza a primeira letra corretamente
+      dataHojeEl.textContent = dataHoje.charAt(0).toUpperCase() + dataHoje.slice(1);
+    }
+  }
+  
+  // Função para atualizar informações da semana
+  function atualizarInfoSemana() {
+    const semanaAtual = getSemanaAtual();
+    const infoSemanaEl = document.getElementById("info-semana");
+    if (infoSemanaEl) {
+      infoSemanaEl.innerHTML = `
+        <div style="font-weight:bold"><span class="destaque-semana">Semana ${semanaAtual.numero}</span></div>
+        <div>(${semanaAtual.inicioFormatado} a ${semanaAtual.fimFormatado})</div>
+        <div style="font-size:0.9rem;margin-top:5px;color:#7f8c8d">
+          A competição será encerrada sábado (${semanaAtual.fimCompeticao}), às 23:59h.
+        </div>
+      `;
+    }
+  }
+  
+  // ===== FUNCIONALIDADES DO MURAL =====
+  window.toggleColorPicker = function() {
+    const painel = document.getElementById('painel-cores');
+    if (painel.style.display === 'flex') {
+      painel.style.display = 'none';
+    } else {
+      painel.style.display = 'flex';
+    }
+  }
+
+  window.selecionarCor = function(cor) {
+    corSelecionada = cor;
+    const botao = document.getElementById('botao-cor');
+    botao.style.backgroundColor = cor;
+    document.getElementById('painel-cores').style.display = 'none';
+    
+    // Atualizar o texto do botão para mostrar confirmação
+    botao.innerHTML = "Cor selecionada ✓";
+    setTimeout(() => {
+      botao.innerHTML = "Escolha a cor da sua mensagem";
+    }, 2000);
+  }
+
+  window.enviarMensagem = async function() {
+    const nomeInput = document.getElementById('mensagem-nome');
+    const textoInput = document.getElementById('mensagem-input');
+    const nome = nomeInput.value.trim() || "Anônimo";
+    const texto = textoInput.value.trim();
+    
+    // Validação combinada (texto vazio + tamanho máximo)
+    if (!texto) {
+      mostrarPopup("✍️ Atenção", "Digite uma mensagem antes de enviar", 3000);
+      return;
+    }
+    
+    if (texto.length > 200) {
+      mostrarPopup("✋ Limite", "Máximo 200 caracteres", 3000);
+      return;
+    }
+        
+    try {
+      const mensagemRef = doc(collection(db, "mural"));
+      await setDoc(mensagemRef, {
+        nome: nome,
+        texto: texto,
+        timestamp: new Date(),
+        reacoes: { "👍": 0, "😂": 0, "😭": 0, "💖": 0, "😡": 0 },
+        semana: getSemanaAtual().numero,
+        cor: corSelecionada // Adicionando a cor selecionada
+      });
+      
+      textoInput.value = '';
+      nomeInput.value = '';
+      mostrarPopup("✅ Sucesso", "Mensagem enviada com sucesso!", 3000);
+    } catch (error) {
+      console.error("Erro ao enviar mensagem:", error);
+      mostrarPopup("❌ Erro", "Ocorreu um erro ao enviar sua mensagem", 3000);
+    }
+  }
+  
+  function configurarMuralTempoReal() {
+    const muralContainer = document.getElementById('mural-mensagens');
+    if (!muralContainer) return;
+
+    muralContainer.innerHTML = '<div class="carregando">Carregando mensagens...</div>';
+
+    const q = collection(db, "mural");
+    
+    // Ouvinte em tempo real
+    onSnapshot(q, (querySnapshot) => {
+      const mensagens = [];
+      
+      querySnapshot.forEach(doc => {
+        const data = doc.data();
+        mensagens.push({
+          id: doc.id,
+          ...data,
+          timestamp: data.timestamp.toDate ? data.timestamp.toDate() : new Date(data.timestamp.seconds * 1000)
+        });
+      });
+
+      // Ordenar por data (mais recente primeiro)
+      mensagens.sort((a, b) => b.timestamp - a.timestamp);
+      
+      muralContainer.innerHTML = '';
+      
+      if (mensagens.length === 0) {
+        muralContainer.innerHTML = '<div class="sem-mensagens">Nenhuma mensagem ainda. Seja o primeiro a escrever!</div>';
+        return;
+      }
+
+      // Exibir todas as mensagens
+      mensagens.forEach(msg => {
+        muralContainer.appendChild(criarElementoMensagem(msg));
+      });
+    });
+  }
+
+  function criarElementoMensagem(mensagem) {
+    const cor = mensagem.cor || "#f8d5cc";
+    const hora = mensagem.timestamp.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+    const data = mensagem.timestamp.toLocaleDateString('pt-BR');
+    
+    const mensagemEl = document.createElement('div');
+    mensagemEl.className = `mensagem`;
+    mensagemEl.style.backgroundColor = cor;
+    mensagemEl.dataset.id = mensagem.id;
+    
+    // Construir contadores visíveis apenas para reações > 0
+    const reacoesHTML = Object.entries(mensagem.reacoes)
+      .filter(([_, count]) => count > 0)
+      .map(([emoji, count]) => 
+        `<span class="contador-reacoes">${emoji} ${count}</span>`
+      ).join('');
+    
+    mensagemEl.innerHTML = `
+      <div class="mensagem-texto">${mensagem.texto}</div>
+      <div class="mensagem-info">
+        <div class="mensagem-autor">${mensagem.nome}</div>
+        <div class="mensagem-data">${hora} - ${data}</div>
+      </div>
+      <div class="contadores-container">
+        ${reacoesHTML}
+      </div>
+      <div class="mensagem-reacoes">
+        ${Object.entries(mensagem.reacoes).map(([emoji]) => `
+          <button class="reacao-btn" data-emoji="${emoji}" 
+                  onclick="adicionarReacao('${mensagem.id}', '${emoji}')">
+            ${emoji}
+          </button>
+        `).join('')}
+      </div>
+    `;
+    
+    // Adicionar animação de entrada
+    mensagemEl.style.animation = 'entrarMensagem 0.5s ease-out forwards';
+    
+    // Adicionar evento de clique para expandir/contratar
+    mensagemEl.addEventListener('click', function() {
+      this.classList.toggle('ativa');
+    });
+    
+    return mensagemEl;
+  }
+  
+  window.adicionarReacao = async function(mensagemId, emoji) {
+    try {
+      const mensagemRef = doc(db, "mural", mensagemId);
+      const docSnap = await getDoc(mensagemRef);
+      
+      if (docSnap.exists()) {
+        const dados = docSnap.data();
+        const reacoes = dados.reacoes || {};
+        
+        // Incrementar contador para esta reação
+        reacoes[emoji] = (reacoes[emoji] || 0) + 1;
+        
+        await updateDoc(mensagemRef, { reacoes });
+        
+        // Atualizar visualmente
+        const mensagemEl = document.querySelector(`.mensagem[data-id="${mensagemId}"]`);
+        if (mensagemEl) {
+          const botao = mensagemEl.querySelector(`.reacao-btn[data-emoji="${emoji}"]`);
+          if (botao) {
+            const contador = botao.querySelector('.contador');
+            contador.textContent = reacoes[emoji];
+            
+            // Efeito visual
+            botao.classList.add('reacao-animacao');
+            setTimeout(() => botao.classList.remove('reacao-animacao'), 500);
+          }
+        }
+      }
+    } catch (error) {
+      console.error("Erro ao adicionar reação:", error);
+    }
+  }
+  
+  function configurarInputMensagem() {
+    const input = document.getElementById('mensagem-input');
+    if (input) {
+      input.addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') {
+          enviarMensagem();
+        }
+      });
+    }
+  }
+  
+  async function carregarTop5Semana() {
+    try {
+      const semanaAtual = getSemanaAtual();
+      const inicioSemana = semanaAtual.inicio.toISOString().slice(0, 10);
+      const fimSemana = semanaAtual.fim.toISOString().slice(0, 10);
+      
+      const q = query(
+        collection(db, "presencas"), 
+        where('__name__', '>=', inicioSemana),
+        where('__name__', '<=', fimSemana)
+      );
+      
+      const querySnapshot = await getDocs(q);
+      const contagemMembros = {};
+      
+      // Contar os dias de cada membro
+      querySnapshot.forEach(doc => {
+        const presencas = doc.data();
+        for (const [membro, presente] of Object.entries(presencas)) {
+          if (presente && todosMembros.includes(membro)) {
+            contagemMembros[membro] = (contagemMembros[membro] || 0) + 1;
+          }
+        }
+      });
+      
+      // Converter para array e ordenar
+      const ranking = Object.entries(contagemMembros)
+        .map(([nome, pontos]) => ({ nome, pontos }))
+        .sort((a, b) => b.pontos - a.pontos)
+        .slice(0, 5);
+      
+      // Atualizar a interface
+      const listaEl = document.getElementById('ranking-top-lista');
+      if (!listaEl) return;
+      
+      listaEl.innerHTML = '';
+      
+      ranking.forEach((membro, index) => {
+        const posicao = index + 1;
+        let emoji = '';
+        
+        if (posicao === 1) emoji = '🥇';
+        else if (posicao === 2) emoji = '🥈';
+        else if (posicao === 3) emoji = '🥉';
+        else emoji = '⭐';
+        
+        const itemEl = document.createElement('div');
+        itemEl.className = 'ranking-item';
+        itemEl.style.setProperty('--i', index); // Para delay de animação
+        itemEl.innerHTML = `
+          <div class="ranking-posicao">${emoji} ${posicao}º</div>
+          <div class="ranking-nome">${membro.nome}</div>
+          <div class="ranking-pontos">${membro.pontos} dias</div>
+        `;
+        listaEl.appendChild(itemEl);
+      });
+      
+      // Caso não haja dados suficientes
+      if (ranking.length === 0) {
+        listaEl.innerHTML = '<div class="ranking-item">Ainda não há dados esta semana</div>';
+      }
+      
+      // Resetar scroll para início
+      setTimeout(() => {
+        listaEl.scrollLeft = 0;
+      }, 100);
+      
+    } catch (error) {
+      console.error("Erro ao carregar top 5:", error);
+    }
+  }
+
+  // ===== FUNÇÕES ADICIONADAS PARA MEMBROS DINÂMICOS =====
+  async function carregarMembros() {
+    const querySnapshot = await getDocs(collection(db, "membros"));
+    
+    // Resetar estruturas
+    todosMembros = [];
+    equipes = {
+      abelha: { membros: [], lider: null },
+      joaninha: { membros: [], lider: null },
+      vagalume: { membros: [], lider: null }
+    };
+    liderGeral = null;
+
+    querySnapshot.forEach(doc => {
+      const data = doc.data();
+      const membro = {
+        nome: doc.id,
+        equipe: data.equipe,
+        papel: data.papel,
+        folga: data.folga || "",
+        aniversario: data.aniversario || ""
+      };
+
+      todosMembros.push(membro.nome);
+
+      if (membro.papel === "lider") {
+        liderGeral = membro;
+      } else if (membro.papel === "lider-equipe") {
+        if (equipes[membro.equipe]) {
+          equipes[membro.equipe].lider = membro;
+        }
+      }
+
+      if (membro.equipe && equipes[membro.equipe]) {
+        equipes[membro.equipe].membros.push(membro);
+      }
+    });
+  }
+
+  // Função para reconstruir a interface com os membros carregados
+  function construirInterface() {
+    const gruposContainer = document.querySelector('.grupos-container');
+    if (!gruposContainer) return;
+    
+    gruposContainer.innerHTML = '';
+
+    // Grupo do Líder Geral
+    const grupoLiderGeral = document.createElement('div');
+    grupoLiderGeral.className = 'grupo';
+    grupoLiderGeral.id = 'lider-geral';
+    grupoLiderGeral.innerHTML = `
+      <h2>Líder Geral</h2>
+      <div class="membros-grid">
+        ${liderGeral ? `
+          <div class="membro">
+            <input type="checkbox" id="${liderGeral.nome}">
+            <label for="${liderGeral.nome}">
+              ${liderGeral.nome}
+              <span id="dias-${liderGeral.nome}" class="dias-badge">0</span>
+              <span class="medalha-container">
+                <span id="medalha-${liderGeral.nome}" class="medalha escondido"></span>
+              </span>
+            </label>
+          </div>
+        ` : ''}
+      </div>
+    `;
+    gruposContainer.appendChild(grupoLiderGeral);
+
+    // Grupos para cada equipe
+    for (const [equipeNome, equipe] of Object.entries(equipes)) {
+      const grupo = document.createElement('div');
+      grupo.className = 'grupo';
+      grupo.id = `equipe-${equipeNome}`;
+
+      let emoji = '';
+      if (equipeNome === 'abelha') emoji = '🐝';
+      else if (equipeNome === 'joaninha') emoji = '🐞';
+      else if (equipeNome === 'vagalume') emoji = '💡';
+
+      grupo.innerHTML = `
+        <h2>${emoji} Equipe ${equipeNome.charAt(0).toUpperCase() + equipeNome.slice(1)}</h2>
+        <div class="resumo" id="resumo-${equipeNome}">
+          <div>0 focaram hoje!</div>
+          <div>0 pontos na semana</div>
+        </div>
+      `;
+
+      // Área do líder da equipe
+      const liderEquipeDiv = document.createElement('div');
+      liderEquipeDiv.className = 'lider-equipe';
+      liderEquipeDiv.innerHTML = `
+        <div class="titulo-lider">Líder da Equipe</div>
+      `;
+
+      if (equipe.lider) {
+        const liderMembroDiv = document.createElement('div');
+        liderMembroDiv.className = 'membro';
+        liderMembroDiv.innerHTML = `
+          <input type="checkbox" id="${equipe.lider.nome}">
+          <label for="${equipe.lider.nome}">
+            ${equipe.lider.nome}
+            <span id="dias-${equipe.lider.nome}" class="dias-badge">0</span>
+            <span class="medalha-container">
+              <span id="medalha-${equipe.lider.nome}" class="medalha escondido"></span>
+            </span>
+          </label>
+        `;
+        liderEquipeDiv.appendChild(liderMembroDiv);
+      } else {
+        const semLider = document.createElement('div');
+        semLider.className = 'sem-lider';
+        semLider.textContent = 'Sem líder';
+        liderEquipeDiv.appendChild(semLider);
+      }
+
+      grupo.appendChild(liderEquipeDiv);
+
+      // Lista de membros (excluindo líder)
+      const membrosGrid = document.createElement('div');
+      membrosGrid.className = 'membros-grid';
+
+      equipe.membros.forEach(membro => {
+        if (equipe.lider && membro.nome === equipe.lider.nome) return;
+        
+        const membroDiv = document.createElement('div');
+        membroDiv.className = 'membro';
+        membroDiv.innerHTML = `
+          <input type="checkbox" id="${membro.nome}">
+          <label for="${membro.nome}">
+            ${membro.nome}
+            <span id="dias-${membro.nome}" class="dias-badge">0</span>
+            <span class="medalha-container">
+              <span id="medalha-${membro.nome}" class="medalha escondido"></span>
+            </span>
+          </label>
+        `;
+        membrosGrid.appendChild(membroDiv);
+      });
+
+      grupo.appendChild(membrosGrid);
+      gruposContainer.appendChild(grupo);
+    }
+    
+    // Adicionar evento de mudança apenas uma vez
+    todosMembros.forEach(nome => {
+      const checkbox = document.getElementById(nome);
+      if (checkbox) {
+        checkbox.onchange = () => marcarCheckbox(nome);
+      }
+    });
+  }
+
+  // ===== FUNÇÕES PARA O PAINEL SECRETO =====
+  window.togglePainelSecreto = function(show) {
+    const painel = document.getElementById('painel-secreto');
+    if (show) {
+      painel.style.display = 'block';
+    } else {
+      painel.style.display = 'none';
+    }
+  }
+
+  // Ativar painel secreto após 5 cliques na medalha de diamante
+  function verificarCliquesDiamante() {
+    cliqueCount++;
+    clearTimeout(timeoutClique);
+    
+    if (cliqueCount === 5) {
+      const senha = prompt("🔐 Digite a senha para acessar o painel secreto:");
+      if (senha === "goiaba") {
+        togglePainelSecreto(true);
+      } else {
+        alert("❌ Senha incorreta!");
+      }
+      cliqueCount = 0;
+    } else {
+      timeoutClique = setTimeout(() => {
+        cliqueCount = 0;
+      }, 3000);
+    }
+  }
+  
+  let intervaloConfete = null;
+
+async function carregarAniversariantes() {
+  const hoje = getHoje();
+  const mesAtual = hoje.getMonth() + 1;
+  const diaAtual = hoje.getDate();
+  
+  const membrosSnapshot = await getDocs(collection(db, "membros"));
+  const aniversariantes = [];
+  let proximoAniversario = null;
+  let menorDiferenca = Infinity;
+
+  membrosSnapshot.forEach(doc => {
+    const data = doc.data();
+    if (data.aniversario) {
+      const [dia, mes] = data.aniversario.split('/').map(Number);
+      
+      // Verifica se é aniversário este mês
+      if (mes === mesAtual) {
+        aniversariantes.push({
+          nome: doc.id,
+          data: data.aniversario,
+          hoje: (dia === diaAtual)
+        });
+      }
+      
+      // Calcula próximo aniversário
+      let dataAniversario = new Date(hoje.getFullYear(), mes - 1, dia);
+      if (dataAniversario < hoje) {
+        dataAniversario.setFullYear(hoje.getFullYear() + 1);
+      }
+      
+      const diff = Math.ceil((dataAniversario - hoje) / (1000 * 60 * 60 * 24));
+      if (diff < menorDiferenca) {
+        menorDiferenca = diff;
+        proximoAniversario = {
+          nome: doc.id,
+          dias: diff,
+          data: data.aniversario
+        };
+      }
+    }
+  });
+
+  // Atualiza a interface
+  atualizarInterfaceAniversariantes(aniversariantes, proximoAniversario);
+  
+  // Se houver aniversariante hoje, inicia o confete
+  if (aniversariantes.some(a => a.hoje)) {
+    iniciarConfetePeriodico();
+  } else {
+    pararConfetePeriodico();
+  }
+}
+
+function atualizarInterfaceAniversariantes(aniversariantes, proximo) {
+  const hojeContainer = document.getElementById('aniversariantes-hoje');
+  const proximosContainer = document.getElementById('proximos-aniversarios');
+  
+  hojeContainer.innerHTML = '';
+  proximosContainer.innerHTML = '';
+  
+  if (aniversariantes.length > 0) {
+    aniversariantes.forEach(aniversariante => {
+      const card = document.createElement('div');
+      card.className = 'aniversariante-card';
+      if (aniversariante.hoje) {
+        card.classList.add('hoje');
+      }
+      card.innerHTML = `
+        <div class="aniversariante-nome">${aniversariante.nome}</div>
+        <div class="aniversariante-data">${aniversariante.data}</div>
+      `;
+      hojeContainer.appendChild(card);
+    });
+  } else {
+    hojeContainer.innerHTML = '<div>Nenhum aniversariante neste mês</div>';
+  }
+  
+  if (proximo) {
+    // ADICIONADO SUBTÍTULO AQUI
+    proximosContainer.innerHTML = `
+      <div style="font-weight:bold; margin-bottom:8px; font-size:1.1rem;">Próximo Aniversariante:</div>
+      <div>Faltam <strong>${proximo.dias}</strong> dias para o aniversário de</div>
+      <div><strong>${proximo.nome}</strong> (${proximo.data})</div>
+    `;
+  } else {
+    proximosContainer.innerHTML = '<div>Nenhum próximo aniversário cadastrado</div>';
+  }
+}
+
+function iniciarConfetePeriodico() {
+  pararConfetePeriodico();
+  intervaloConfete = setInterval(criarConfeteSuave, 3000);
+  
+  // Adicionar confetes imediatamente ao iniciar
+  criarConfeteSuave();
+}
+
+function pararConfetePeriodico() {
+  if (intervaloConfete) {
+    clearInterval(intervaloConfete);
+    intervaloConfete = null;
+  }
+}
+
+function criarConfeteSuave() {
+  const cores = ['#ff0000', '#00ff00', '#0000ff', '#ffff00', '#ff00ff'];
+  for (let i = 0; i < 7; i++) {
+    const confete = document.createElement('div');
+    confete.className = 'confete-leve';
+    confete.style.backgroundColor = cores[Math.floor(Math.random() * cores.length)];
+    confete.style.left = `${Math.random() * 100}%`;
+    confete.style.top = '-10px'; // Inicia acima da viewport
+    confete.style.zIndex = '9999'; // Garante que fique acima de tudo
+    
+    document.body.appendChild(confete);
+    
+    // Animação otimizada
+    confete.animate([
+      { top: '-10px', opacity: 1 },
+      { top: '100vh', opacity: 0 }
+    ], {
+      duration: 4000 + Math.random() * 2000,
+      easing: 'cubic-bezier(0.3, 0, 0.7, 1)'
+    });
+    
+    // Remove após animação
+    setTimeout(() => {
+      if (confete.parentNode) {
+        confete.remove();
+      }
+    }, 6000);
+  }
+}
+  
+  // ===== FUNÇÃO PARA EXIBIR QUADRO DE FOLGAS (ATUALIZADA) =====
+  async function exibirQuadroFolgas() {
+    try {
+      const membrosSnapshot = await getDocs(collection(db, "membros"));
+      const hoje = getHoje().toLocaleDateString("pt-BR", { weekday: "long" });
+      // Normalizar o dia da semana: remover "-feira" e acentos, converter para minúsculas
+      const hojeNormalizado = hoje.toLowerCase()
+        .replace(/-feira$/, "")
+        .normalize('NFD').replace(/[\u0300-\u036f]/g, ""); // remove acentos
+
+      // Limpar listas
+      const dias = ["segunda", "terca", "quarta", "quinta", "sexta", "sabado", "domingo"];
+      dias.forEach(dia => {
+        const lista = document.getElementById(dia);
+        if (lista) lista.innerHTML = "";
+      });
+
+      // Remover destaque de todos os dias
+      document.querySelectorAll('.dia-col').forEach(col => {
+        col.classList.remove('dia-hoje');
+      });
+
+      // Destacar coluna do dia atual
+      const diaHojeElement = document.getElementById(hojeNormalizado);
+      if (diaHojeElement) {
+        // A coluna é a div pai da lista (a div com classe 'dia-col')
+        const colunaDiaAtual = diaHojeElement.closest('.dia-col');
+        if (colunaDiaAtual) {
+          colunaDiaAtual.classList.add('dia-hoje');
+        }
+      }
+
+      membrosSnapshot.forEach(doc => {
+        const nome = doc.id;
+        const folga = doc.data().folga || "";
+        // Normalizar o dia de folga: remover "-feira" e acentos, converter para minúsculas
+        const diaFolga = folga.toLowerCase()
+          .replace(/-feira$/, "")
+          .normalize('NFD').replace(/[\u0300-\u036f]/g, ""); // remove acentos
+        
+        if (diaFolga) {
+          const lista = document.getElementById(diaFolga);
+          if (lista) {
+            const membroEl = document.createElement('div');
+            membroEl.className = 'membro-folga';
+            
+            // DESTAQUE ESPECIAL PARA PARTICIPANTES QUE FOLGAM HOJE
+            if (diaFolga === hojeNormalizado) {
+              membroEl.classList.add('membro-folga-hoje');
+              membroEl.innerHTML = `
+                <div style="display:flex;align-items:center;gap:5px;">
+                  ${nome}
+                </div>
+              `;
+            } else {
+              membroEl.textContent = nome;
+            }
+            
+            lista.appendChild(membroEl);
+          }
+        }
+      });
+
+      // Preencher dias vazios com textos personalizados
+      dias.forEach(dia => {
+        const lista = document.getElementById(dia);
+        if (lista && lista.children.length === 0) {
+          if (dia === 'domingo') {
+            lista.innerHTML = '<div class="membro-folga">Folga Coletiva</div>';
+          } else {
+            lista.innerHTML = '<div class="membro-folga">Ninguém</div>';
+          }
+        }
+      });
+    } catch (error) {
+      console.error("Erro ao carregar folgas:", error);
+    }
+  }
+
+  // Funções de manipulação do painel secreto
+  window.adicionarPontos = function(tipo) {
+    let equipe, pontos;
+    
+    if (tipo === 'semana') {
+      equipe = document.getElementById(`equipe-${tipo}`).value;
+      pontos = parseInt(document.getElementById(`pontos-${tipo}`).value) || 0;
+      
+      pontosSemanais[equipe] += pontos;
+      const semanaAtual = getSemanaAtual();
+      const semanaKey = semanaAtual.inicio.toISOString().slice(0, 10);
+      setDoc(doc(db, "semanas", semanaKey), pontosSemanais, { merge: true });
+      mostrarPopup("✅ Sucesso", `Adicionados ${pontos} pontos semanais à equipe ${equipe}`, 3000);
+    } 
+    else if (tipo === 'geral') {
+      equipe = document.getElementById(`equipe-${tipo}`).value;
+      pontos = parseInt(document.getElementById(`pontos-${tipo}`).value) || 0;
+      
+      rankingGeral[equipe] += pontos;
+      setDoc(doc(db, "ranking", "geral"), rankingGeral);
+      mostrarPopup("✅ Sucesso", `Adicionados ${pontos} pontos gerais à equipe ${equipe}`, 3000);
+    }
+    
+    atualizarPlacarSemanal();
+    atualizarRankingGeral();
+  }
+
+  window.removerPontos = function(tipo) {
+    let equipe, pontos;
+    
+    if (tipo === 'semana') {
+      equipe = document.getElementById(`equipe-${tipo}-remover`).value;
+      pontos = parseInt(document.getElementById(`pontos-${tipo}-remover`).value) || 0;
+      
+      pontosSemanais[equipe] = Math.max(0, pontosSemanais[equipe] - pontos);
+      const semanaAtual = getSemanaAtual();
+      const semanaKey = semanaAtual.inicio.toISOString().slice(0, 10);
+      setDoc(doc(db, "semanas", semanaKey), pontosSemanais, { merge: true });
+      mostrarPopup("✅ Sucesso", `Removidos ${pontos} pontos semanais da equipe ${equipe}`, 3000);
+    } 
+    else if (tipo === 'geral') {
+      equipe = document.getElementById(`equipe-${tipo}-remover`).value;
+      pontos = parseInt(document.getElementById(`pontos-${tipo}-remover`).value) || 0;
+      
+      rankingGeral[equipe] = Math.max(0, rankingGeral[equipe] - pontos);
+      setDoc(doc(db, "ranking", "geral"), rankingGeral);
+      mostrarPopup("✅ Sucesso", `Removidos ${pontos} pontos gerais da equipe ${equipe}`, 3000);
+    }
+    
+    atualizarPlacarSemanal();
+    atualizarRankingGeral();
+  }
+
+  window.adicionarMembro = async function() {
+    const nome = document.getElementById('novo-membro-nome').value.trim();
+    const equipe = document.getElementById('novo-membro-equipe').value;
+    const folga = document.getElementById('novo-membro-folga').value;
+
+    if (!nome) {
+      mostrarPopup("❌ Erro", "Digite um nome para o novo membro", 3000);
+      return;
+    }
+    
+    try {
+      await setDoc(doc(db, "membros", nome), {
+        equipe: equipe,
+        papel: "membro",
+        folga: folga // Salvar a folga
+      });
+      
+      mostrarPopup("✅ Sucesso", `Membro "${nome}" adicionado à equipe ${equipe}`, 3000);
+      location.reload();
+    } catch (error) {
+      console.error("Erro ao adicionar membro:", error);
+      mostrarPopup("❌ Erro", "Ocorreu um erro ao adicionar o membro", 3000);
+    }
+  }
+
+  window.removerMembro = async function() {
+    const nome = document.getElementById('remover-membro-nome').value.trim();
+    
+    if (!nome) {
+      mostrarPopup("❌ Erro", "Digite o nome do membro a ser removido", 3000);
+      return;
+    }
+    
+    if (!confirm(`Tem certeza que deseja remover o membro "${nome}" permanentemente?`)) {
+      return;
+    }
+    
+    try {
+      await deleteDoc(doc(db, "membros", nome));
+      mostrarPopup("✅ Sucesso", `Membro "${nome}" removido com sucesso`, 3000);
+      location.reload();
+    } catch (error) {
+      console.error("Erro ao remover membro:", error);
+      mostrarPopup("❌ Erro", "Ocorreu um erro ao remover o membro", 3000);
+    }
+  }
+  
+  function atualizarRelogio() {
+  const agora = new Date();
+  const horas = String(agora.getHours()).padStart(2, '0');
+  const minutos = String(agora.getMinutes()).padStart(2, '0');
+  const segundos = String(agora.getSeconds()).padStart(2, '0');
+  document.getElementById('relogio').textContent = `${horas}:${minutos}:${segundos}`;
+}
+
+  window.onload = async () => {
+    // Carregar membros do Firebase primeiro
+    await carregarMembros();
+    
+    // Construir interface com membros carregados
+    construirInterface();
+    
+    dataAtual = getHojeISO();
+    
+    // Paralelizar carregamentos iniciais
+    await Promise.all([
+      carregarPresenca(),
+      carregarPontosSemanais(),
+      carregarRankingGeral(),
+      carregarAniversariantes(),
+      carregarArvoreEpica(),
+	  carregarStreaks()
+    ]);
+    
+    // Se for domingo, pontos semanais = 0
+    if (getHoje().getDay() === 0) {
+      pontosSemanais.abelha = 0;
+      pontosSemanais.joaninha = 0;
+      pontosSemanais.vagalume = 0;
+    }
+
+    const semanaAtual = getSemanaAtual();
+    const semanaDocRef = doc(db, "semanas", semanaAtual.inicio.toISOString().slice(0, 10));
+    const semanaDoc = await getDoc(semanaDocRef);
+    if (!semanaDoc.exists()) {
+      await setDoc(semanaDocRef, {
+        abelha: 0,
+        joaninha: 0,
+        vagalume: 0,
+        finalizada: false
+      });
+    }
+    
+    const rankingRef = doc(db, "ranking", "geral");
+    const rankingDoc = await getDoc(rankingRef);
+    if (!rankingDoc.exists()) await setDoc(rankingRef, rankingGeral);
+    
+    atualizarPlacarSemanal();
+    atualizarRankingGeral();
+    await finalizarSemana();
+
+    // Tema dinâmico corrigido
+    const hora = new Date().getHours();
+    const body = document.body;
+    body.classList.remove("tema-manha", "tema-tarde", "tema-noite");
+    if (hora >= 5 && hora < 12) body.classList.add("tema-manha");
+    else if (hora >= 12 && hora < 18) body.classList.add("tema-tarde");
+    else body.classList.add("tema-noite");
+
+    // Atualizar informações de data
+    atualizarDataCabecalho();
+    atualizarInfoSemana();
+    
+    // Adicionar evento à medalha de diamante
+    const medalhaDiamante = document.getElementById('medalha-diamante');
+    if (medalhaDiamante) {
+      medalhaDiamante.addEventListener('click', verificarCliquesDiamante);
+    }
+    
+    // Atualizar resumo e verificar equipes completas
+    await atualizarResumo();
+    verificarEquipeCompleta();
+    
+    // Iniciar verificação periódica de mudança de data (a cada 1 minuto)
+    setInterval(verificarMudancaData, 60000);
+  
+    configurarMuralTempoReal();
+    configurarInputMensagem();
+    
+    await exibirQuadroFolgas();
+    carregarTop5Semana();
+    
+    // Verificar a cada minuto se é meia-noite
+    setInterval(() => {
+      const agora = new Date();
+      if (agora.getHours() === 0 && agora.getMinutes() === 0) {
+        verificarMudancaData();
+      }
+    }, 60000); // Verifica a cada minuto
+
+    // Verificar mudança quando a página ganha foco
+    window.addEventListener('focus', verificarMudancaData);
+    
+    // ATUALIZAÇÃO FINAL: Garantir verificação inicial
+    await verificarMudancaData();
+    
+    window.addEventListener('beforeunload', () => {
+      pararConfetePeriodico();
+    });
+
+// Iniciar o relógio
+atualizarRelogio();
+setInterval(atualizarRelogio, 1000);
+
+  }
+  
+</script>
+<style>
+  /* MODIFICAÇÕES SOLICITADAS */
+  
+  /* 1. Adicionar emoji 👑 nos líderes */
+  .grupo:first-child h2::before {
+    content: "👑 ";
+  }
+  
+  /* 4. Alinhar pontuação à direita */
+  .membro label {
+    display: flex;
+    justify-content: space-between;
+    width: 100%;
+    align-items: center;
+  }
+  .dias-badge {
+    margin-left: auto;
+    margin-right: 5px;
+  }
+  
+  /* AJUSTES ADICIONAIS PARA MELHOR VISUALIZAÇÃO */
+  .medalha-container {
+    margin-left: 8px; /* Alterado para aparecer depois do nome */
+  }
+  
+  /* Estilos para cores por equipe */
+  #equipe-abelha .membro input:checked + label { color: #FFD700; }
+  #equipe-joaninha .membro input:checked + label { color: #FF6B6B; }
+  #equipe-vagalume .membro input:checked + label { color: #27ae60; }
+  
+  .tema-noite #equipe-abelha .membro input:checked + label { color: #FFD700; }
+  .tema-noite #equipe-joaninha .membro input:checked + label { color: #FF6B6B; }
+  .tema-noite #equipe-vagalume .membro input:checked + label { color: #2ecc71; }
+  
+  /* Animação de equipe completa personalizada por equipe */
+  .equipe-completa.abelha {
+    animation: glow-abelha 2s infinite alternate;
+  }
+  .equipe-completa.joaninha {
+    animation: glow-joaninha 2s infinite alternate;
+  }
+  .equipe-completa.vagalume {
+    animation: glow-vagalume 2s infinite alternate;
+  }
+  
+  @keyframes glow-abelha {
+    0% { box-shadow: 0 0 5px rgba(255, 215, 0, 0.7); }
+    100% { box-shadow: 0 0 20px rgba(255, 215, 0, 0.9), 0 0 30px rgba(255, 215, 0, 0.7); }
+  }
+  @keyframes glow-joaninha {
+    0% { box-shadow: 0 0 5px rgba(255, 107, 107, 0.7); }
+    100% { box-shadow: 0 0 20px rgba(255, 107, 107, 0.9), 0 0 30px rgba(255, 107, 107, 0.7); }
+  }
+  @keyframes glow-vagalume {
+    0% { box-shadow: 0 0 5px rgba(46, 204, 113, 0.7); }
+    100% { box-shadow: 0 0 20px rgba(46, 204, 113, 0.9), 0 0 30px rgba(46, 204, 113, 0.7); }
+  }
+  
+  .lider-equipe {
+    margin-bottom: 15px;
+    padding: 10px;
+    border-radius: 10px;
+    background: rgba(255, 255, 255, 0.2);
+    text-align: center;
+    border: 1px dashed rgba(0,0,0,0.1);
+  }
+  
+  .tema-noite .lider-equipe {
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px dashed rgba(255,255,255,0.1);
+  }
+  
+  .titulo-lider {
+    font-weight: bold;
+    margin-bottom: 5px;
+    color: #7f8c8d;
+    text-transform: uppercase;
+    font-size: 0.9rem;
+  }
+  
+  .tema-noite .titulo-lider {
+    color: #bdc3c7;
+  }
+  
+  .lider-equipe .membro {
+    background: rgba(255, 255, 255, 0.3);
+    margin-top: 8px;
+  }
+  
+  .tema-noite .lider-equipe .membro {
+    background: rgba(255, 255, 255, 0.1);
+  }
+  
+  /* EFEITO NEON PERSONALIZADO POR EQUIPE */
+  .equipe-abelha input:checked + label::after {
+    animation: glowCheckAbelha 2s infinite alternate;
+  }
+  @keyframes glowCheckAbelha {
+    from { box-shadow: 0 0 5px #FFD700; }
+    to { box-shadow: 0 0 15px #FFD700; }
+  }
+
+  .equipe-joaninha input:checked + label::after {
+    animation: glowCheckJoaninha 2s infinite alternate;
+  }
+  @keyframes glowCheckJoaninha {
+    from { box-shadow: 0 0 5px #FF6B6B; }
+    to { box-shadow: 0 0 15px #FF6B6B; }
+  }
+
+  .equipe-vagalume input:checked + label::after {
+    animation: glowCheckVagalume 2s infinite alternate;
+  }
+  @keyframes glowCheckVagalume {
+    from { box-shadow: 0 0 5px #27ae60; }
+    to { box-shadow: 0 0 15px #2ecc71; }
+  }
+
+/* QUADRO DE FOLGAS - ESTILOS ATUALIZADOS */
+.folgas-container {
+  margin-top: 30px;
+  margin-bottom: 40px;
+  background: rgba(255, 255, 255, 0.85);
+  border-radius: 15px;
+  padding: 20px;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
+}
+
+.tema-noite .folgas-container {
+  background: rgba(43, 57, 87, 0.85);
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+}
+
+.dias-container {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 15px;
+  margin-top: 15px;
+}
+
+.dia-col {
+  border-radius: 10px;
+  padding: 15px;
+  background: rgba(240, 240, 240, 0.7);
+  text-align: center;
+  transition: all 0.3s ease;
+}
+
+.tema-noite .dia-col {
+  background: rgba(60, 60, 60, 0.5);
+}
+
+.dia-col h3 {
+  margin-bottom: 12px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid #ddd;
+  font-size: 1.1rem;
+  color: #2c3e50;
+}
+
+.tema-noite .dia-col h3 {
+  color: #ecf0f1;
+  border-bottom: 1px solid #555;
+}
+
+.lista-membros {
+  min-height: 120px;
+}
+
+.membro-folga {
+  padding: 8px;
+  border-radius: 6px;
+  margin-bottom: 6px;
+  font-size: 0.9rem;
+  background: rgba(255, 255, 255, 0.5);
+}
+
+.tema-noite .membro-folga {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+/* Destaque para o dia atual */
+.dia-hoje {
+  background: #e3f2fd !important;
+  box-shadow: 0 0 15px rgba(33, 150, 243, 0.4);
+  transform: scale(1.03);
+}
+
+.tema-noite .dia-hoje {
+  background: #0d47a1 !important;
+  box-shadow: 0 0 15px rgba(33, 150, 243, 0.6);
+}
+
+.dia-hoje h3 {
+  color: #2196F3;
+  font-weight: bold;
+}
+
+.tema-noite .dia-hoje h3 {
+  color: #64b5f6;
+}
+
+/* Destaque para membros de folga no dia */
+.membro-folga-hoje {
+  background: #bbdefb !important;
+  font-weight: bold;
+}
+
+.tema-noite .membro-folga-hoje {
+  background: #1e88e5 !important;
+}
+
+/* ============ ESTILOS PARA ANIVERSARIANTES ============ */
+.aniversariantes-container {
+  background: rgba(255, 255, 255, 0.85);
+  border-radius: 15px;
+  padding: 20px;
+  margin-bottom: 25px;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+  width: 100%;
+}
+
+.tema-manha .aniversariantes-container {
+  background: rgba(255, 251, 235, 0.85);
+}
+
+.tema-tarde .aniversariantes-container {
+  background: rgba(255, 247, 230, 0.85);
+}
+
+.tema-noite .aniversariantes-container {
+  background: rgba(43, 57, 87, 0.85);
+}
+
+.aniversariantes-container h2 {
+  text-align: center;
+  margin-bottom: 15px;
+  color: #2C3E50;
+}
+
+.tema-noite .aniversariantes-container h2 {
+  color: #ecf0f1;
+}
+
+.aniversariantes-hoje {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 20px;
+  margin: 15px 0;
+}
+
+.aniversariante-card {
+  background: #f8f9fa;
+  border-radius: 10px;
+  padding: 15px;
+  text-align: center;
+  min-width: 160px;
+  position: relative;
+  overflow: hidden;
+  transition: transform 0.3s ease;
+}
+
+.aniversariante-card:hover {
+  transform: translateY(-5px);
+}
+
+.tema-noite .aniversariante-card {
+  background: #3B4C6B;
+}
+
+.aniversariante-card.hoje {
+  background: #fffacd;
+  box-shadow: 0 0 15px rgba(255, 215, 0, 0.5);
+  animation: pulse 1.5s infinite;
+  z-index: 2;
+}
+
+@keyframes pulse {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.05); }
+  100% { transform: scale(1); }
+}
+
+.tema-noite .aniversariante-card.hoje {
+  background: #2b3a4a;
+  box-shadow: 0 0 15px rgba(255, 215, 0, 0.7);
+}
+
+.aniversariante-nome {
+  font-size: 1.1rem;
+  margin-bottom: 5px;
+  font-weight: bold;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.aniversariante-data {
+  font-size: 0.9rem;
+  color: #7f8c8d;
+}
+
+.tema-noite .aniversariante-data {
+  color: #bdc3c7;
+}
+
+.proximos-aniversarios {
+  text-align: center;
+  font-size: 1.1rem;
+  padding: 15px;
+  background: #e1f5fe;
+  border-radius: 10px;
+  margin-top: 15px;
+}
+
+.tema-noite .proximos-aniversarios {
+  background: #0d47a1;
+  color: #81d4fa;
+}
+
+/* Layout responsivo para desktop */
+@media (min-width: 769px) {
+  .aniversariantes-container {
+    display: grid;
+    grid-template-columns: 1fr;
+  }
+  
+  .aniversariantes-hoje {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    gap: 20px;
+  }
+  
+  .proximos-aniversarios {
+    margin-top: 20px;
+  }
+}
+
+/* ============ CORREÇÕES PARA TOP 5 ============ */
+.container-top5 {
+  background: rgba(255, 255, 255, 0.85);
+  border-radius: 15px;
+  padding: 20px;
+  margin-top: 30px;
+  margin-bottom: 30px;
+  box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+}
+
+.tema-manha .container-top5 {
+  background: rgba(255, 251, 235, 0.85);
+}
+
+.tema-tarde .container-top5 {
+  background: rgba(255, 247, 230, 0.85);
+}
+
+.tema-noite .container-top5 {
+  background: rgba(43, 57, 87, 0.85);
+  box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+}
+
+.ranking-top-container {
+  text-align: center;
+}
+
+.ranking-top-container h2 {
+  font-size: 1.8rem;
+  color: #2C3E50;
+  margin-bottom: 20px;
+}
+
+.tema-noite .ranking-top-container h2 {
+  color: #ecf0f1;
+}
+
+.ranking-lista {
+  display: flex;
+  justify-content: center;
+  gap: 15px;
+  margin: 0 auto;
+  flex-wrap: wrap;
+  padding: 15px 0;
+  width: 100%;
+}
+
+@media (max-width: 768px) {
+  .ranking-lista {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    justify-content: flex-start;
+    padding: 10px 15px;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: thin;
+    scrollbar-color: #3498db #f0f0f0;
+  }
+
+  .ranking-lista::-webkit-scrollbar {
+    height: 6px;
+  }
+
+  .ranking-lista::-webkit-scrollbar-track {
+    background: #f0f0f0;
+    border-radius: 3px;
+  }
+
+  .ranking-lista::-webkit-scrollbar-thumb {
+    background: #3498db;
+    border-radius: 3px;
+  }
+
+  .ranking-lista::-webkit-scrollbar-thumb:hover {
+    background: #2980b9;
+  }
+}
+
+ .ranking-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 15px;
+  background: rgba(240, 240, 240, 0.7);
+  border-radius: 12px;
+  min-width: 140px;
+  position: relative;
+  z-index: 2;
+  border: 1px solid #64b5f6;
+  box-shadow: 0 0 10px rgba(100, 181, 246, 0.3);
+  transition: all 0.3s ease;
+  min-height: 150px;
+  justify-content: center;
+}
+
+.tema-manha .ranking-item {
+  background: rgba(255, 251, 235, 0.7);
+}
+
+.tema-tarde .ranking-item {
+  background: rgba(255, 247, 230, 0.7);
+}
+
+.tema-noite .ranking-item {
+  background: rgba(52, 73, 94, 0.7);
+}
+
+.ranking-posicao {
+  font-size: 1.5rem;
+  font-weight: bold;
+  color: #2196F3;
+  margin-bottom: 5px;
+}
+
+.tema-noite .ranking-posicao {
+  color: #64b5f6;
+}
+
+.ranking-nome {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #2c3e50;
+  margin: 8px 0;
+  text-align: center;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.tema-noite .ranking-nome {
+  color: #ecf0f1;
+}
+
+.ranking-pontos {
+  background: #2196F3;
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-weight: bold;
+  font-size: 1.1rem;
+  color: white;
+}
+
+.tema-noite .ranking-pontos {
+  background: #64b5f6;
+}
+
+.ranking-mensagem {
+  margin-top: 15px;
+  font-size: 1rem;
+  color: #7f8c8d;
+  font-style: italic;
+}
+
+.tema-noite .ranking-mensagem {
+  color: #bdc3c7;
+}
+
+/* GARANTIR VISUALIZAÇÃO DOS CARTOES NO DESKTOP */
+@media (min-width: 769px) {
+  .ranking-lista {
+    max-width: 1000px;
+  }
+  
+  .ranking-item {
+    flex: 1;
+    max-width: 180px;
+  }
+}
+
+/* ===== MELHORIAS PARA A ÁRVORE ÉPICA ===== */
+.arvore-epica-container {
+  border-radius: 15px;
+  padding: 20px;
+  margin-top: 30px;
+  background: rgba(255, 255, 255, 0.9);
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+}
+
+.tema-noite .arvore-epica-container {
+  background: rgba(43, 57, 87, 0.9);
+}
+
+.arvore-epica-container h2 {
+  text-align: center;
+  margin-bottom: 20px;
+  color: #2C3E50;
+}
+
+.tema-noite .arvore-epica-container h2 {
+  color: #ecf0f1;
+}
+
+.tree-display {
+  position: relative;
+  height: 400px; 
+  margin: 20px auto;
+  display: flex;
+  justify-content: center;
+  align-items: flex-end;
+  overflow: hidden;
+  background: transparent;
+  border-radius: 20px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  box-shadow: inset 0 0 30px rgba(0, 0, 0, 0.7);
+}
+
+.tree-sky {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 1;
+  transition: all 1.5s ease;
+}
+
+.tree-sky.day-mode {
+  background: url('https://i.ibb.co/35cdphm4/ceu-dia.png');
+  background-size: cover;
+  background-position: center;
+}
+
+.tree-sky.night-mode {
+  background: url('https://i.ibb.co/BHNXckSp/ceu-noite.png');
+  background-size: cover;
+  background-position: center;
+}
+
+.sky-object, .nuvem, .ground, .tree-image {
+  position: absolute;
+}
+
+/* Sol com efeito de pulsação */
+#sol {
+  top: 15px;
+  right: 40px;
+  width: 50px;
+  height: 50px;
+  z-index: 2;
+  transition: opacity 1.5s ease;
+  opacity: 1;
+  animation: pulsate 3s infinite alternate;
+}
+
+/* Lua sem efeito de pulsação */
+#lua {
+  top: 15px;
+  right: 40px;
+  width: 50px;
+  height: 50px;
+  z-index: 2;
+  transition: opacity 1.5s ease;
+  opacity: 0;
+}
+
+#sol img, #lua img {
+  width: 100%;
+  height: 100%;
+}
+
+@keyframes pulsate {
+  0% { transform: scale(1); }
+  100% { transform: scale(1.1); }
+}
+
+/* Nuvens com início imediato e posições iniciais variadas */
+.nuvem {
+  width: 56px;
+  height: auto;
+  z-index: 2;
+  opacity: 0.7;
+  filter: drop-shadow(0 3px 3px rgba(0, 0, 0, 0.2));
+  animation: float-cloud 60s infinite linear;
+}
+
+/* Tamanhos específicos reduzidos */
+.nuvem-1 {
+  top: 15%;
+  left: -20%;
+  width: 42px;
+  animation-duration: 80s;
+}
+
+.nuvem-2 {
+  top: 30%;
+  left: -20%;
+  width: 70px;
+  animation-duration: 70s;
+}
+
+.nuvem-3 {
+  top: 45%;
+  left: -20%;
+  width: 56px;
+  animation-duration: 90s;
+}
+
+/* Novas nuvens - posicionadas mais acima */
+.nuvem-4 {
+  top: 20%;
+  left: -20%;
+  width: 49px;
+  animation-duration: 75s;
+  animation-delay: 15s;
+}
+
+.nuvem-5 {
+  top: 35%;
+  left: -20%;
+  width: 63px;
+  animation-duration: 85s;
+  animation-delay: 30s;
+}
+
+.nuvem-6 {
+  top: 50%;
+  left: -20%;
+  width: 77px;
+  animation-duration: 95s;
+  animation-delay: 45s;
+}
+
+/* Animação com movimento contínuo */
+@keyframes float-cloud {
+  0% { 
+    transform: translateX(0);
+    opacity: 0;
+  }
+  1% {
+    opacity: 0.7;
+  }
+  100% { 
+    transform: translateX(calc(100vw + 150px));
+    opacity: 0.7; 
+  }
+}
+
+/* Grama mais verde e lisa */
+.ground {
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 80px;
+  z-index: 5;
+  background: linear-gradient(to top, 
+    #1b5e20, 
+    #2e7d32, 
+    #4caf50);
+  box-shadow: 0 -5px 15px rgba(0, 0, 0, 0.3);
+  position: relative;
+}
+
+/* Árvore sobre a grama - posicionamento mais baixo */
+.tree-image {
+  bottom: 70px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 6;
+  animation: sway 8s infinite ease-in-out;
+  transform-origin: bottom center;
+  transition: transform 0.5s ease, max-height 0.5s ease;
+  max-height: 75%;
+}
+
+/* Ajustes de tamanho para as fases da árvore */
+#seed { max-width: 20%; max-height: 40%; }
+#sprout { max-width: 35%; max-height: 50%; }
+#tree { max-width: 60%; max-height: 65%; }
+#flowers { 
+  max-width: 95%; 
+  max-height: 85%;
+  bottom: 65px;
+}
+#fruits { 
+  max-width: 100%; 
+  max-height: 90%;
+  bottom: 60px;
+}
+
+/* Animação especial para fases maiores */
+#flowers, #fruits {
+  animation: sway-large 10s infinite ease-in-out;
+}
+
+@keyframes sway {
+  0% { transform: translateX(-50%) rotate(-3deg); }
+  50% { transform: translateX(-50%) rotate(3deg); }
+  100% { transform: translateX(-50%) rotate(-3deg); }
+}
+
+@keyframes sway-large {
+  0% { transform: translateX(-50%) rotate(-2deg); }
+  50% { transform: translateX(-50%) rotate(2deg); }
+  100% { transform: translateX(-50%) rotate(-2deg); }
+}
+
+.tree-info {
+  border-radius: 20px;
+  padding: 25px;
+  margin: 25px auto;
+  max-width: 800px;
+  border: 2px solid rgba(0, 180, 216, 0.4);
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+  text-align: center;
+}
+
+/* Adicione estes temas */
+.tema-manha .tree-info {
+  background: rgba(255, 236, 210, 0.7);
+}
+
+.tema-tarde .tree-info {
+  background: rgba(255, 247, 230, 0.7);
+}
+
+.tema-noite .tree-info {
+  background: rgba(43, 57, 87, 0.7);
+}
+
+.stage-info {
+  font-size: 2.5rem;
+  margin-bottom: 15px;
+  font-weight: 700;
+  color: #00b4d8;
+  text-shadow: 0 0 15px rgba(0, 180, 216, 0.7);
+}
+
+.stage-desc {
+  font-size: 1.3rem;
+  margin: 20px 0;
+  line-height: 1.6;
+  text-shadow: none !important;
+}
+
+.tema-manha .stage-desc,
+.tema-tarde .stage-desc {
+  color: #2c3e50 !important;
+}
+
+.tema-noite .stage-desc {
+  color: #ffffff !important;
+}
+
+.progresso-consecutivo {
+  margin-top: 20px;
+  font-size: 1.2rem;
+  padding: 15px;
+  background: rgba(0, 180, 216, 0.15);
+  border-radius: 15px;
+  color: #80deea;
+  border: 1px solid rgba(0, 180, 216, 0.3);
+}
+
+/* Criar estrelas para o modo noturno */
+.stars-container {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 1s ease;
+}
+
+.star {
+  position: absolute;
+  background: white;
+  border-radius: 50%;
+  animation: twinkle 2s infinite alternate;
+}
+
+@keyframes twinkle {
+  0% { opacity: 0.3; transform: scale(0.9); }
+  100% { opacity: 1; transform: scale(1.1); }
+}
+
+/* ===== CORREÇÕES PARA MURAL DE MENSAGENS ===== */
+.tema-noite .mensagem-texto {
+  color: #000 !important;
+  text-shadow: none !important;
+  font-weight: 500;
+}
+
+.contadores-container {
+  display: block !important;
+  margin-top: 8px;
+  min-height: 24px;
+}
+
+/* ===== ESTILOS RESTANTES ===== */
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  color: #333;
+  padding: 20px;
+  transition: background-color 0.5s ease;
+  min-height: 100vh;
+  background: linear-gradient(135deg, #f5f7fa, #e4edf5);
+}
+
+/* TEMA MANHÃ */
+.tema-manha { 
+  background: linear-gradient(135deg, #ffecd2, #fcb69f);
+  color: #2c3e50;
+}
+.tema-manha header {
+  background: rgba(255, 251, 235, 0.85);
+  box-shadow: 0 5px 15px rgba(252, 182, 159, 0.3);
+}
+.tema-manha .global-stats,
+.tema-manha .competicao-container,
+.tema-manha .grupo,
+.tema-manha .medalha-info,
+.tema-manha .arvore-epica-container {
+  background: rgba(255, 251, 235, 0.8);
+  box-shadow: 0 8px 20px rgba(252, 182, 159, 0.2);
+}
+.tema-manha .equipe-competicao {
+  background: rgba(255, 251, 235, 0.95);
+  box-shadow: 0 5px 15px rgba(252, 182, 159, 0.2);
+}
+.tema-manha .membro {
+  background: rgba(255, 251, 235, 0.7);
+}
+.tema-manha .resumo {
+  background: rgba(252, 182, 159, 0.15);
+  color: #e74c3c;
+}
+.tema-manha #progresso-barra {
+  background: linear-gradient(90deg, #ff9a9e, #fad0c4);
+}
+
+/* TEMA TARDE */
+.tema-tarde { 
+  background: linear-gradient(135deg, #f6d365, #fda085);
+  color: #2c3e50;
+}
+.tema-tarde header {
+  background: rgba(255, 247, 230, 0.85);
+  box-shadow: 0 5px 15px rgba(253, 160, 133, 0.3);
+}
+.tema-tarde .global-stats,
+.tema-tarde .competicao-container,
+.tema-tarde .grupo,
+.tema-tarde .medalha-info,
+.tema-tarde .arvore-epica-container {
+  background: rgba(255, 247, 230, 0.8);
+  box-shadow: 0 8px 20px rgba(253, 160, 133, 0.2);
+}
+.tema-tarde .equipe-competicao {
+  background: rgba(255, 247, 230, 0.95);
+  box-shadow: 0 5px 15px rgba(253, 160, 133, 0.2);
+}
+.tema-tarde .membro {
+  background: rgba(255, 247, 230, 0.7);
+}
+.tema-tarde .resumo {
+  background: rgba(253, 160, 133, 0.15);
+  color: #e67e22;
+}
+.tema-tarde #progresso-barra {
+  background: linear-gradient(90deg, #f6d365, #fda085);
+}
+
+/* TEMA NOITE */
+.tema-noite { 
+  background: linear-gradient(135deg, #0c0e30, #2a0845);
+  color: #ecf0f1;
+}
+.tema-noite header {
+  background: rgba(26, 37, 51, 0.9);
+  box-shadow: 0 5px 15px rgba(106, 27, 154, 0.4);
+}
+.tema-noite .global-stats,
+.tema-noite .competicao-container,
+.tema-noite .grupo,
+.tema-noite .medalha-info,
+.tema-noite .arvore-epica-container {
+  background: rgba(26, 37, 51, 0.85);
+  box-shadow: 0 8px 20px rgba(106, 27, 154, 0.3);
+}
+.tema-noite .equipe-competicao {
+  background: rgba(43, 57, 87, 0.9);
+  box-shadow: 0 5px 15px rgba(106, 27, 154, 0.3);
+}
+.tema-noite .membro {
+  background: rgba(52, 73, 94, 0.7);
+}
+.tema-noite .resumo {
+  background: rgba(106, 27, 154, 0.2);
+  color: #9b59b6;
+}
+.tema-noite #progresso-barra {
+  background: linear-gradient(90deg, #8e2de2, #4a00e0);
+}
+
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+header {
+  text-align: center;
+  margin-bottom: 25px;
+  padding: 15px;
+  border-radius: 15px;
+  position: relative;
+  background: rgba(255, 255, 255, 0.8);
+}
+.tema-noite header {
+  background: rgba(43, 57, 87, 0.8);
+}
+
+h1 {
+  font-size: 2.5rem;
+  margin-bottom: 5px;
+  color: #2C3E50;
+  text-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  position: relative;
+  z-index: 2;
+}
+.tema-manha h1 { color: #e74c3c; }
+.tema-tarde h1 { color: #e67e22; }
+.tema-noite h1 { 
+  color: #9b59b6;
+  text-shadow: 0 0 10px rgba(155, 89, 182, 0.5);
+}
+
+#dataHoje {
+  font-size: 1.2rem;
+  margin-bottom: 5px;
+  font-weight: 500;
+  color: #7f8c8d;
+}
+.tema-noite #dataHoje { color: #bdc3c7; }
+
+#info-semana {
+  font-size: 1.1rem;
+  margin-bottom: 15px;
+  font-weight: 600;
+  color: #3498db;
+  background: #e1f5fe;
+  padding: 10px 15px;
+  border-radius: 20px;
+  display: inline-block;
+  text-align: center;
+  line-height: 1.4;
+}
+.tema-noite #info-semana {
+  color: #81d4fa;
+  background: #0d47a1;
+}
+
+.stats-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 20px;
+  margin-bottom: 30px;
+}
+
+.global-stats {
+  flex: 1;
+  min-width: 300px;
+  border-radius: 15px;
+  padding: 20px;
+  text-align: center;
+  background: rgba(255, 255, 255, 0.9);
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+}
+.tema-noite .global-stats {
+  background: rgba(43, 57, 87, 0.9);
+}
+
+#contadorGeral {
+  font-size: 1.8rem;
+  font-weight: bold;
+  margin: 15px 0;
+  color: #2C3E50;
+}
+.tema-noite #contadorGeral { color: #ecf0f1; }
+
+.progresso-container {
+  height: 20px;
+  background: #e0e0e0;
+  border-radius: 10px;
+  margin: 20px auto;
+  max-width: 90%;
+  overflow: hidden;
+  box-shadow: inset 0 2px 5px rgba(0,0,0,0.1);
+}
+
+#progresso-barra {
+  height: 100%;
+  width: 0%;
+  border-radius: 10px;
+  transition: width 0.8s cubic-bezier(0.22, 0.61, 0.36, 1);
+  position: relative;
+  overflow: hidden;
+}
+#progresso-barra::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+  animation: progressShine 2s infinite;
+}
+@keyframes progressShine {
+  100% { left: 100%; }
+}
+
+.competicao-container {
+  border-radius: 15px;
+  padding: 20px;
+  margin-bottom: 30px;
+  text-align: center;
+  background: rgba(255, 255, 255, 0.9);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
+}
+.tema-noite .competicao-container {
+  background: rgba(43, 57, 87, 0.9);
+}
+
+.competicao-container h2 {
+  text-align: center;
+  margin-bottom: 20px;
+  padding-bottom: 10px;
+  border-bottom: 2px solid #eee;
+  color: #2C3E50;
+}
+.tema-noite .competicao-container h2 {
+  color: #ecf0f1;
+  border-bottom: 2px solid #3a506b;
+}
+
+.equipes-competicao {
+  display: flex;
+  justify-content: space-around;
+  gap: 15px;
+  flex-wrap: wrap;
+}
+
+.equipe-competicao {
+  border-radius: 10px;
+  padding: 15px;
+  text-align: center;
+  flex: 1;
+  min-width: 120px;
+  transition: transform 0.3s ease;
+  background: #f8f9fa;
+  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.08);
+}
+.equipe-competicao:hover { transform: translateY(-5px); }
+.tema-noite .equipe-competicao { background: #3B4C6B; }
+
+.equipe-competicao h3 {
+  font-size: 1.1rem;
+  margin-bottom: 10px;
+}
+
+.equipe-competicao .score {
+  font-size: 2rem;
+  font-weight: bold;
+  color: #3498db;
+}
+.tema-noite .equipe-competicao .score { color: #1abc9c; }
+
+.grupos-container {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 25px;
+  margin-bottom: 30px;
+}
+
+.grupo {
+  border-radius: 15px;
+  padding: 20px;
+  transition: transform 0.3s ease;
+  background: rgba(255, 255, 255, 0.9);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
+}
+.grupo:hover { transform: translateY(-5px); }
+.tema-noite .grupo { background: rgba(43, 57, 87, 0.9); }
+
+.grupo h2 {
+  font-size: 1.5rem;
+  margin-bottom: 15px;
+  padding-bottom: 10px;
+  border-bottom: 2px solid #eee;
+  color: #2C3E50;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.tema-noite .grupo h2 {
+  color: #ecf0f1;
+  border-bottom: 2px solid #3a506b;
+}
+
+.resumo {
+  font-weight: bold;
+  margin-bottom: 15px;
+  text-align: center;
+  font-size: 1.1rem;
+  padding: 8px;
+  border-radius: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  background: #f0f7ff;
+  color: #3498db;
+}
+.tema-noite .resumo {
+  color: #1abc9c;
+  background: #1c2e3f;
+}
+
+.membros-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  gap: 10px;
+}
+
+.membro {
+  display: flex;
+  align-items: center;
+  padding: 8px 12px;
+  border-radius: 8px;
+  transition: all 0.3s ease;
+  background: #f8f9fa;
+}
+.membro:hover {
+  background: #e9ecef;
+  transform: scale(1.03);
+}
+.tema-noite .membro { background: #2c3e50; }
+.tema-noite .membro:hover { background: #34495e; }
+
+.membro input[type="checkbox"] {
+  margin-right: 10px;
+  width: 18px;
+  height: 18px;
+  cursor: pointer;
+}
+
+.membro label {
+  cursor: pointer;
+  flex: 1;
+  font-size: 1rem;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  position: relative;
+}
+.membro input:checked + label { font-weight: bold; }
+.tema-noite .membro input:checked + label { font-weight: bold; }
+
+.membro input:checked + label::after {
+  content: "";
+  position: absolute;
+  top: -5px;
+  left: -5px;
+  right: -5px;
+  bottom: -5px;
+  border-radius: 8px;
+  z-index: -1;
+}
+
+#popup {
+  position: fixed;
+  bottom: 40px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: linear-gradient(135deg, #4facfe, #00f2fe);
+  color: white;
+  padding: 15px 30px;
+  border-radius: 50px;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.5s, transform 0.5s;
+  z-index: 1000;
+  font-size: 1.1rem;
+  font-weight: 500;
+  text-align: center;
+  backdrop-filter: blur(5px);
+  box-shadow: 0 5px 20px rgba(0,0,0,0.2);
+  max-width: 90%;
+  line-height: 1.5;
+}
+.tema-noite #popup {
+  background: linear-gradient(135deg, #8e2de2, #4a00e0);
+}
+#popup.mostrar {
+  opacity: 1;
+  transform: translateX(-50%) translateY(-10px);
+}
+
+#confetti-canvas {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 999;
+}
+
+.medalha-info {
+  border-radius: 15px;
+  padding: 20px;
+  margin-top: 30px;
+  background: rgba(255, 255, 255, 0.9);
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+}
+.tema-noite .medalha-info {
+  background: rgba(43, 57, 87, 0.9);
+}
+
+.medalha-info h2 {
+  text-align: center;
+  margin-bottom: 20px;
+  color: #2C3E50;
+}
+.tema-noite .medalha-info h2 { color: #ecf0f1; }
+
+.medalhas-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: 15px;
+}
+
+.medalha-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 10px;
+  background: #f8f9fa;
+  border-radius: 10px;
+  text-align: center;
+}
+.tema-noite .medalha-item { background: #3B4C6B; }
+
+.medalha-emoji {
+  font-size: 2.5rem;
+  margin-bottom: 8px;
+  animation: float 3s ease-in-out infinite;
+}
+@keyframes float {
+  0% { transform: translateY(0px); }
+  50% { transform: translateY(-8px); }
+  100% { transform: translateY(0px); }
+}
+
+.medalha-nome {
+  font-weight: bold;
+  margin-bottom: 5px;
+}
+
+.medalha-dias {
+  font-size: 0.9rem;
+  color: #7f8c8d;
+}
+.tema-noite .medalha-dias { color: #bdc3c7; }
+
+.destaque {
+  animation: highlight 1s ease;
+}
+@keyframes highlight {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.05); background: rgba(255, 215, 0, 0.3); }
+  100% { transform: scale(1); }
+}
+
+.sem-lider {
+  font-style: italic;
+  color: #7f8c8d;
+  padding: 8px 12px;
+  width: 100%;
+}
+.tema-noite .sem-lider { color: #bdc3c7; }
+
+/* EFEITO NEON PERSONALIZADO POR EQUIPE */
+.equipe-abelha input:checked + label::after {
+  animation: glowCheckAbelha 2s infinite alternate;
+}
+@keyframes glowCheckAbelha {
+  from { box-shadow: 0 0 5px #FFD700; }
+  to { box-shadow: 0 0 15px #FFD700; }
+}
+
+.equipe-joaninha input:checked + label::after {
+  animation: glowCheckJoaninha 2s infinite alternate;
+}
+@keyframes glowCheckJoaninha {
+  from { box-shadow: 0 0 5px #FF6B6B; }
+  to { box-shadow: 0 0 15px #FF6B6B; }
+}
+
+.equipe-vagalume input:checked + label::after {
+  animation: glowCheckVagalume 2s infinite alternate;
+}
+@keyframes glowCheckVagalume {
+  from { box-shadow: 0 0 5px #27ae60; }
+  to { box-shadow: 0 0 15px #2ecc71; }
+}
+
+.membro-folga {
+  display: flex;
+  justify-content: center;
+  text-align: center;
+}
+
+/* ===== ESTILOS DO PAINEL SECRETO ===== */
+#painel-secreto {
+  display: none;
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: white;
+  padding: 20px;
+  border-radius: 15px;
+  box-shadow: 0 0 30px rgba(0,0,0,0.5);
+  z-index: 2000;
+  width: 90%;
+  max-width: 600px;
+  max-height: 90vh;
+  overflow-y: auto;
+  border: 3px solid #3498db;
+}
+
+.tema-noite #painel-secreto {
+  background: #2c3e50;
+  color: #ecf0f1;
+  border-color: #9b59b6;
+}
+
+.painel-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+  padding-bottom: 10px;
+  border-bottom: 2px solid #eee;
+}
+
+.tema-noite .painel-header {
+  border-bottom: 2px solid #3a506b;
+}
+
+.painel-section {
+  margin-bottom: 25px;
+  padding: 15px;
+  background: #f9f9f9;
+  border-radius: 10px;
+  border: 1px solid #eee;
+}
+
+.tema-noite .painel-section {
+  background: rgba(43, 57, 87, 0.8);
+  border: 1px solid #3a506b;
+}
+
+.painel-section h3 {
+  margin-top: 0;
+  color: #2c3e50;
+  border-bottom: 1px dashed #ccc;
+  padding-bottom: 8px;
+}
+
+.tema-noite .painel-section h3 {
+  color: #ecf0f1;
+  border-bottom: 1px dashed #7f8c8d;
+}
+
+.controle-pontos {
+  display: grid;
+  grid-template-columns: 1fr auto auto;
+  gap: 10px;
+  margin-bottom: 10px;
+  align-items: center;
+}
+
+.painel-input {
+  padding: 10px;
+  border-radius: 5px;
+  border: 1px solid #ddd;
+  width: 100%;
+}
+
+.tema-noite .painel-input {
+  background: #34495e;
+  border-color: #2c3e50;
+  color: white;
+}
+
+.painel-btn {
+  padding: 8px 15px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  font-weight: bold;
+  transition: all 0.2s;
+}
+
+.btn-adicionar {
+  background: #2ecc71;
+  color: white;
+}
+
+.btn-remover {
+  background: #e74c3c;
+  color: white;
+}
+
+.btn-adicionar:hover {
+  background: #27ae60;
+}
+
+.btn-remover:hover {
+  background: #c0392b;
+}
+
+.btn-fechar {
+  background: #7f8c8d;
+  color: white;
+}
+
+@media (max-width: 768px) {
+  .stats-container { flex-direction: column; }
+  .grupos-container { grid-template-columns: 1fr; }
+  h1 { font-size: 2rem; }
+  #contadorGeral { font-size: 1.5rem; }
+  .membros-grid { grid-template-columns: 1fr 1fr; }
+  
+  /* Responsividade para Árvore Épica */
+  .tree-display {
+    height: 300px !important;
+  }
+  
+  .tree-image {
+    max-height: 70% !important;
+    bottom: 60px !important;
+  }
+  
+  #sol, #lua {
+    width: 38px;
+    height: 38px;
+    top: 12px;
+    right: 30px;
+  }
+  
+  .nuvem {
+    width: 40px !important;
+  }
+  
+  .arvore-epica-container {
+    padding: 15px;
+    margin-top: 20px;
+  }
+  
+  .tree-info {
+    padding: 15px;
+    margin: 15px 0;
+  }
+  
+  .stage-info {
+    font-size: 1.8rem !important;
+  }
+  
+  .stage-desc {
+    font-size: 1rem !important;
+  }
+}
+
+@media (max-width: 480px) {
+  body { padding: 15px; }
+  #popup { padding: 12px 20px; font-size: 0.95rem; }
+  .membros-grid { grid-template-columns: 1fr; }
+  .equipes-competicao { flex-direction: column; }
+  
+  /* Responsividade para Árvore Épica */
+  .tree-display {
+    height: 250px !important;
+  }
+  
+  .tree-image {
+    max-height: 65% !important;
+    bottom: 50px !important;
+  }
+  
+  #sol, #lua {
+    width: 31px;
+    height: 31px;
+    top: 8px;
+    right: 25px;
+  }
+  
+  .nuvem {
+    width: 30px !important;
+  }
+}
+
+/* ===== ESTILOS PARA O MURAL DE MENSAGENS ===== */
+.mural-container {
+  background: rgba(255, 255, 255, 0.9);
+  border-radius: 15px;
+  padding: 20px;
+  margin-top: 30px;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+}
+
+.tema-noite .mural-container {
+  background: rgba(43, 57, 87, 0.9);
+}
+
+.mural-header {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-bottom: 20px;
+  padding-bottom: 10px;
+  border-bottom: 2px solid #eee;
+}
+
+.tema-noite .mural-header {
+  border-bottom: 2px solid #3a506b;
+}
+
+.mural-header h2 {
+  font-size: 1.8rem;
+  color: #2C3E50;
+}
+
+.tema-noite .mural-header h2 {
+  color: #ecf0f1;
+}
+
+.mural-inputs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+.mural-inputs input {
+  flex: 1;
+  min-width: 150px;
+  padding: 12px 15px;
+  border-radius: 8px;
+  border: 1px solid #ddd;
+  font-size: 1rem;
+  background: #f8f9fa;
+}
+
+.tema-noite .mural-inputs input {
+  background: #34495e;
+  border-color: #2c3e50;
+  color: white;
+}
+
+.mural-inputs input::placeholder {
+  color: #7f8c8d;
+}
+
+.tema-noite .mural-inputs input::placeholder {
+  color: #bdc3c7;
+}
+
+.color-picker-container {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+}
+
+.botao-cor {
+  padding: 12px 15px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  background: #f8f9fa;
+  color: #7f8c8d;
+  cursor: pointer;
+  text-align: center;
+  min-width: 200px;
+  transition: all 0.3s;
+  position: relative;
+}
+
+.tema-noite .botao-cor {
+  background: #34495e;
+  border-color: #2c3e50;
+  color: #bdc3c7;
+}
+
+.botao-cor:hover {
+  background: #e9ecef;
+}
+
+.tema-noite .botao-cor:hover {
+  background: #3d5066;
+}
+
+.painel-cores {
+  display: none;
+  position: absolute;
+  top: 100%;
+  left: 0;
+  background: white;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  padding: 10px;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 8px;
+  width: 100%;
+  max-width: 250px;
+  z-index: 100;
+  box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+  margin-top: 5px;
+}
+
+.tema-noite .painel-cores {
+  background: #2c3e50;
+  border-color: #3a506b;
+}
+
+.opcao-cor {
+  width: 30px;
+  height: 30px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s;
+  border: 2px solid transparent;
+}
+
+.opcao-cor:hover {
+  transform: scale(1.1);
+  border-color: #3498db;
+}
+
+.tema-noite .opcao-cor:hover {
+  border-color: #9b59b6;
+}
+
+.mural-inputs button {
+  padding: 12px 25px;
+  border: none;
+  border-radius: 8px;
+  background: #3498db;
+  color: white;
+  font-weight: bold;
+  cursor: pointer;
+  transition: background 0.3s;
+}
+
+.mural-inputs button:hover {
+  background: #2980b9;
+}
+
+.tema-noite .mural-inputs button {
+  background: #9b59b6;
+}
+
+.tema-noite .mural-inputs button:hover {
+  background: #8e44ad;
+}
+
+#mural-mensagens {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 20px;
+  margin-top: 20px;
+}
+
+.mensagem {
+  position: relative;
+  padding: 20px;
+  border-radius: 10px;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+  min-height: 180px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  overflow: hidden;
+  transform: translateY(20px);
+  opacity: 0;
+  animation: entrarMensagem 0.5s ease-out forwards;
+}
+
+@keyframes entrarMensagem {
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.mensagem-texto {
+  font-size: 1.1rem;
+  line-height: 1.5;
+  margin-bottom: 15px;
+  color: #000000;
+}
+
+.mensagem-info {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.9rem;
+  color: #7f8c8d;
+  margin-top: auto;
+}
+
+.tema-noite .mensagem-info {
+  color: #bdc3c7;
+}
+
+.mensagem-autor {
+  font-weight: bold;
+  font-style: italic;
+}
+
+.mensagem-reacoes {
+  display: none;
+  margin-top: 15px;
+}
+
+.mensagem.ativa .mensagem-reacoes {
+  display: flex;
+}
+
+.contador-reacoes {
+  display: inline-block;
+  margin-left: 5px;
+  font-size: 0.85rem;
+  font-weight: bold;
+}
+
+.mensagem-reacoes {
+  display: none;
+  gap: 8px;
+  margin-top: 15px;
+  flex-wrap: wrap;
+}
+
+.mensagem.ativa .mensagem-reacoes {
+  display: flex;
+}
+
+.reacao-btn {
+  background: rgba(255, 255, 255, 0.7);
+  border: 1px solid #ddd;
+  border-radius: 20px;
+  padding: 5px 10px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  transition: all 0.2s;
+}
+
+.reacao-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+}
+
+.tema-noite .reacao-btn {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: #3a506b;
+  color: white;
+}
+
+.contador {
+  font-size: 0.85rem;
+  font-weight: bold;
+}
+
+.reacao-animacao {
+  animation: reacaoPulse 0.5s ease;
+}
+
+@keyframes reacaoPulse {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.2); }
+  100% { transform: scale(1); }
+}
+
+.carregando, .sem-mensagens, .erro {
+  grid-column: 1 / -1;
+  text-align: center;
+  padding: 30px;
+  font-size: 1.2rem;
+  color: #7f8c8d;
+}
+
+.tema-noite .carregando, 
+.tema-noite .sem-mensagens, 
+.tema-noite .erro {
+  color: #bdc3c7;
+}
+
+/* Responsividade */
+@media (max-width: 768px) {
+  .mural-inputs {
+    flex-direction: column;
+  }
+  
+  .mural-inputs button {
+    width: 100%;
+  }
+  
+  .botao-cor {
+    min-width: 100%;
+    order: 3;
+    margin-top: 10px;
+  }
+  
+  .painel-cores {
+    max-width: 100%;
+    grid-template-columns: repeat(4, 1fr);
+  }
+  
+  #mural-mensagens {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 480px) {
+  .mensagem {
+    min-height: 160px;
+  }
+  
+  .mensagem-texto {
+    font-size: 1rem;
+  }
+  
+/* Adicione isto na seção de estilos */
+.membro-folga-hoje {
+  background: #fffacd !important;
+  font-weight: bold;
+  border: 2px solid #ffd700;
+  animation: pulse 1.5s infinite;
+}
+
+@keyframes pulse {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.03); }
+  100% { transform: scale(1); }
+}
+
+.tema-noite .membro-folga-hoje {
+  background: #2b3a4a !important;
+  border-color: #ffd700;
+}
+
+/* ===== ESTILOS PARA CONFETES LEVES ===== */
+.confete-leve {
+  position: absolute;
+  width: 8px;
+  height: 8px;
+  background-color: #f00;
+  border-radius: 50%;
+  pointer-events: none;
+  opacity: 0.7;
+}
+
+/* Centralizar aniversariante do dia */
+.aniversariante-card.hoje {
+  margin: 0 auto;
+}
+
+/* Garantir layout responsivo */
+.aniversariantes-hoje {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center; /* Alterado para centralizar */
+  gap: 20px;
+  margin: 15px 0;
+}
+
+/* Garantir que confetes apareçam em desktop */
+.confete-leve {
+  position: fixed;
+  z-index: 9999;
+  pointer-events: none;
+}
+
+/* Correções para aniversariantes */
+.aniversariante-card.hoje {
+  margin: 0 auto;
+}
+
+/* Ajuste extra para confetes */
+.confete-leve {
+  z-index: 99999 !important; /* Garante que apareça acima de tudo */
+}
+
+#relogio {
+  font-size: 1.2rem;
+  margin-bottom: 5px;
+  font-weight: 500;
+  color: #7f8c8d;
+  text-align: center;
+}
+
+.tema-noite #relogio {
+  color: #bdc3c7;
+}
+
+.tema-tarde .folgas-container,
+.tema-tarde .mural-container {
+  background: rgba(255, 247, 230, 0.85) !important;
+}
+
+</style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>Épicos 亗 🌱</h1>
+      <div id="dataHoje"></div>
+	  <div id="relogio"></div>
+      <div id="info-semana"></div>
+    </header>
+    
+	<div class="aniversariantes-container">
+  <h2 style="text-align: center;">🎂 Aniversariantes do Mês</h2>
+  <div id="aniversariantes-hoje" class="aniversariantes-hoje">
+    <!-- Conteúdo gerado dinamicamente -->
+  </div>
+  <div id="proximos-aniversarios" class="proximos-aniversarios">
+    <!-- Conteúdo gerado dinamicamente -->
+  </div>
+</div>
+	
+    <div class="stats-container">
+      <div class="global-stats">
+        <div id="contadorGeral">0 épicos focaram hoje!</div>
+        <div class="progresso-container">
+          <div id="progresso-barra"></div>
+        </div>
+      </div>
+    </div>
+    
+    <div class="competicao-container">
+      <h2>🏆 Competição de Equipes</h2>
+      <div class="equipes-competicao">
+        <div class="equipe-competicao">
+          <h3>🐝 Abelha</h3>
+          <div class="score" id="ranking-abelha">0</div>
+          <div>Vitórias</div>
+        </div>
+        <div class="equipe-competicao">
+          <h3>🐞 Joaninha</h3>
+          <div class="score" id="ranking-joaninha">0</div>
+          <div>Vitórias</div>
+        </div>
+        <div class="equipe-competicao">
+          <h3>💡 Vaga-lume</h3>
+          <div class="score" id="ranking-vagalume">0</div>
+          <div>Vitórias</div>
+        </div>
+      </div>
+      <p style="margin-top: 15px; font-size: 0.9em; color: #7f8c8d;">
+        Competição semanal: Segunda a Sábado.<br>
+        A equipe com mais pontos ao final da competição ganha +1 ponto no ranking de equipes.<br>
+        <strong>Em caso de empate, todas as equipes empatadas ganham +1 ponto.</strong>
+      </p>
+    </div>
+	
+		<div class="container-top5">
+  <div class="ranking-top-container">
+    <h2>🌟 Top 5 Épicos da Semana</h2>
+    <div id="ranking-top-lista" class="ranking-lista">
+      <!-- Ranking será gerado dinamicamente aqui -->
+    </div>
+    <div class="ranking-mensagem">Parabéns aos mais focados entre todos os Épicos!</div>
+  </div>
+</div>
+	
+    <div class="grupos-container" id="grupos-container">
+      <!-- Conteúdo será gerado dinamicamente pelo JavaScript -->
+    </div>
+    
+	<!-- Quadro de Folgas -->
+<div class="folgas-container">
+  <h2 style="text-align: center;">📅 Quadro de Folgas</h2>
+  <div class="dias-container">
+    <div class="dia-col">
+      <h3>Segunda</h3>
+      <div class="lista-membros" id="segunda"></div>
+    </div>
+    <div class="dia-col">
+      <h3>Terça</h3>
+      <div class="lista-membros" id="terca"></div>
+    </div>
+    <div class="dia-col">
+      <h3>Quarta</h3>
+      <div class="lista-membros" id="quarta"></div>
+    </div>
+    <div class="dia-col">
+      <h3>Quinta</h3>
+      <div class="lista-membros" id="quinta"></div>
+    </div>
+    <div class="dia-col">
+      <h3>Sexta</h3>
+      <div class="lista-membros" id="sexta"></div>
+    </div>
+    <div class="dia-col">
+      <h3>Sábado</h3>
+      <div class="lista-membros" id="sabado"></div>
+    </div>
+    <div class="dia-col">
+      <h3>Domingo</h3>
+      <div class="lista-membros" id="domingo"></div>
+    </div>
+  </div>
+</div>
+    
+    <!-- SEÇÃO ATUALIZADA: Árvore Épica com espaço idêntico ao código de referência -->
+    <div class="arvore-epica-container">
+      <h2>🌳 Árvore Épica</h2>
+      
+      <div class="tree-display">
+        <!-- Céu (fundo) -->
+        <div class="tree-sky day-mode">
+          <div class="stars-container"></div>
+        </div>
+        
+        <!-- Sol com efeito de pulsação -->
+        <div id="sol" class="sky-object">
+          <img src="https://i.ibb.co/yFW4Lq73/sol.png" alt="Sol">
+        </div>
+        
+        <!-- Lua sem efeito de pulsação -->
+        <div id="lua" class="sky-object">
+          <img src="https://i.ibb.co/LDdHmbP6/lua.png" alt="Lua">
+        </div>
+        
+        <!-- Nuvens simplificadas (3 iniciais) -->
+        <img class="nuvem nuvem-1" src="https://i.ibb.co/rfsS1Tp9/nuvem.png" alt="Nuvem">
+        <img class="nuvem nuvem-2" src="https://i.ibb.co/rfsS1Tp9/nuvem.png" alt="Nuvem">
+        <img class="nuvem nuvem-3" src="https://i.ibb.co/rfsS1Tp9/nuvem.png" alt="Nuvem">
+        
+        <!-- Novas nuvens (surgem após as iniciais desaparecerem) -->
+        <img class="nuvem nuvem-4" src="https://i.ibb.co/rfsS1Tp9/nuvem.png" alt="Nuvem">
+        <img class="nuvem nuvem-5" src="https://i.ibb.co/rfsS1Tp9/nuvem.png" alt="Nuvem">
+        <img class="nuvem nuvem-6" src="https://i.ibb.co/rfsS1Tp9/nuvem.png" alt="Nuvem">
+        
+        <!-- Grama mais verde e lisa -->
+        <div class="ground"></div>
+        
+        <!-- Árvores com posicionamento muito mais baixo e fases maiores -->
+        <img id="seed" class="tree-image" src="https://i.ibb.co/7xsw9ZVd/semente.png" alt="Semente">
+        <img id="sprout" class="tree-image" src="https://i.ibb.co/WNcWgWgn/broto.png" alt="Broto" style="display: none;">
+        <img id="tree" class="tree-image" src="https://i.ibb.co/0jS2220Z/arvore.png" alt="Árvore" style="display: none;">
+        <!-- Nova imagem para flores -->
+        <img id="flowers" class="tree-image" src="https://i.ibb.co/FrMst3S/flores.png" alt="Flores" style="display: none;">
+        <img id="fruits" class="tree-image" src="https://i.ibb.co/9k6HjBFk/frutos.png" alt="Frutos" style="display: none;">
+      </div>
+      
+      <div class="tree-info">
+        <div class="stage-info" id="stage-name">Semente</div>
+        <div class="stage-desc" id="stage-desc">A jornada começa com um único dia de foco. Vamos plantar nossa semente e cultivar nossa dedicação diária!</div>
+        <div class="progresso-consecutivo">
+          <strong>Dias consecutivos: <span id="dias-consecutivos">0</span></strong><br>
+          <span id="proxima-fase"></span>
+        </div>
+      </div>
+    </div>
+	
+	<!-- Seção do Mural de Mensagens -->
+    <div class="mural-container">
+      <div class="mural-header">
+        <h2>✍️ Mural de Mensagens</h2>
+      </div>
+      
+      <div class="mural-inputs">
+        <input type="text" id="mensagem-nome" placeholder="Seu nome (opcional)">
+        <input type="text" id="mensagem-input" placeholder="Escreva sua mensagem">
+        <div class="color-picker-container">
+          <button id="botao-cor" class="botao-cor" onclick="toggleColorPicker()">
+            Escolha a cor da sua mensagem
+          </button>
+          <div id="painel-cores" class="painel-cores">
+            <div class="opcao-cor" style="background-color: #f8d5cc" onclick="selecionarCor('#f8d5cc')"></div>
+            <div class="opcao-cor" style="background-color: #d4edda" onclick="selecionarCor('#d4edda')"></div>
+            <div class="opcao-cor" style="background-color: #cce5ff" onclick="selecionarCor('#cce5ff')"></div>
+            <div class="opcao-cor" style="background-color: #fff3cd" onclick="selecionarCor('#fff3cd')"></div>
+            <div class="opcao-cor" style="background-color: #e2e3e5" onclick="selecionarCor('#e2e3e5')"></div>
+            <div class="opcao-cor" style="background-color: #f5d0fe" onclick="selecionarCor('#f5d0fe')"></div>
+            <div class="opcao-cor" style="background-color: #d9f99d" onclick="selecionarCor('#d9f99d')"></div>
+            <div class="opcao-cor" style="background-color: #cffafe" onclick="selecionarCor('#cffafe')"></div>
+            <div class="opcao-cor" style="background-color: #fef3c7" onclick="selecionarCor('#fef3c7')"></div>
+            <div class="opcao-cor" style="background-color: #dcfce7" onclick="selecionarCor('#dcfce7')"></div>
+          </div>
+        </div>
+        <button onclick="enviarMensagem()">Enviar</button>
+      </div>
+      
+      <div id="mural-mensagens">
+        <!-- As mensagens serão carregadas aqui -->
+      </div>
+    </div>
+
+    <div class="medalha-info">
+      <h2>🏅 Sistema de Medalhas</h2>
+      <div class="medalhas-grid">
+        <div class="medalha-item">
+          <div class="medalha-emoji">🔥</div>
+          <div class="medalha-nome">Fagulha</div>
+          <div class="medalha-dias">3 dias</div>
+        </div>
+        <div class="medalha-item">
+          <div class="medalha-emoji">👑</div>
+          <div class="medalha-nome">Lenda</div>
+          <div class="medalha-dias">10 dias</div>
+        </div>
+        <div class="medalha-item">
+          <div class="medalha-emoji">🌟</div>
+          <div class="medalha-nome">Constante</div>
+          <div class="medalha-dias">30 dias</div>
+        </div>
+        <div class="medalha-item" id="medalha-diamante">
+          <div class="medalha-emoji">💎</div>
+          <div class="medalha-nome">Diamante</div>
+          <div class="medalha-dias">60 dias</div>
+        </div>
+        <div class="medalha-item">
+          <div class="medalha-emoji">🚀</div>
+          <div class="medalha-nome">Foguete</div>
+          <div class="medalha-dias">120 dias</div>
+        </div>
+        <div class="medalha-item">
+          <div class="medalha-emoji">🏆</div>
+          <div class="medalha-nome">Troféu</div>
+          <div class="medalha-dias">150 dias</div>
+        </div>
+        <div class="medalha-item">
+          <div class="medalha-emoji">🔮</div>
+          <div class="medalha-nome">Bola de cristal</div>
+          <div class="medalha-dias">240 dias</div>
+        </div>
+        <div class="medalha-item">
+          <div class="medalha-emoji">🌞</div>
+          <div class="medalha-nome">Solar</div>
+          <div class="medalha-dias">365 dias</div>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <div id="popup"></div>
+  <canvas id="confetti-canvas"></canvas>
+  
+  <!-- Painel Secreto (adicionado no final do body) -->
+  <div id="painel-secreto">
+    <div class="painel-header">
+      <h2>Painel de Controle Secreto</h2>
+      <button class="painel-btn btn-fechar" onclick="togglePainelSecreto(false)">Fechar</button>
+    </div>
+
+    <div class="painel-section">
+      <h3>📊 Pontos Semanais</h3>
+      
+      <div class="controle-pontos">
+        <select class="painel-input" id="equipe-semana">
+          <option value="abelha">Abelha</option>
+          <option value="joaninha">Joaninha</option>
+          <option value="vagalume">Vaga-lume</option>
+        </select>
+        <input type="number" class="painel-input" id="pontos-semana" value="5" min="1">
+        <button class="painel-btn btn-adicionar" onclick="adicionarPontos('semana')">+</button>
+      </div>
+      
+      <div class="controle-pontos">
+        <select class="painel-input" id="equipe-semana-remover">
+          <option value="abelha">Abelha</option>
+          <option value="joaninha">Joaninha</option>
+          <option value="vagalume">Vaga-lume</option>
+        </select>
+        <input type="number" class="painel-input" id="pontos-semana-remover" value="5" min="1">
+        <button class="painel-btn btn-remover" onclick="removerPontos('semana')">-</button>
+      </div>
+    </div>
+
+    <div class="painel-section">
+      <h3>🏆 Pontos Gerais</h3>
+      
+      <div class="controle-pontos">
+        <select class="painel-input" id="equipe-geral">
+          <option value="abelha">Abelha</option>
+          <option value="joaninha">Joaninha</option>
+          <option value="vagalume">Vaga-lume</option>
+        </select>
+        <input type="number" class="painel-input" id="pontos-geral" value="1" min="1">
+        <button class="painel-btn btn-adicionar" onclick="adicionarPontos('geral')">+</button>
+      </div>
+      
+      <div class="controle-pontos">
+        <select class="painel-input" id="equipe-geral-remover">
+          <option value="abelha">Abelha</option>
+          <option value="joaninha">Joaninha</option>
+          <option value="vagalume">Vaga-lume</option>
+        </select>
+        <input type="number" class="painel-input" id="pontos-geral-remover" value="1" min="1">
+        <button class="painel-btn btn-remover" onclick="removerPontos('geral')">-</button>
+      </div>
+    </div>
+
+<div class="painel-section">
+  <h3>👥 Gerenciar Membros</h3>
+  
+  <div class="controle-pontos">
+    <input type="text" class="painel-input" id="novo-membro-nome" placeholder="Nome do novo membro">
+    <select class="painel-input" id="novo-membro-equipe">
+      <option value="abelha">Abelha</option>
+      <option value="joaninha">Joaninha</option>
+      <option value="vagalume">Vaga-lume</option>
+    </select>
+    <!-- NOVO CAMPO DE FOLGA -->
+    <select class="painel-input" id="novo-membro-folga">
+      <option value="">Sem folga</option>
+      <option value="segunda-feira">Segunda-feira</option>
+      <option value="terça-feira">Terça-feira</option>
+      <option value="quarta-feira">Quarta-feira</option>
+      <option value="quinta-feira">Quinta-feira</option>
+      <option value="sexta-feira">Sexta-feira</option>
+      <option value="sábado">Sábado</option>
+      <option value="domingo">Domingo</option>
+    </select>
+    <button class="painel-btn btn-adicionar" onclick="adicionarMembro()">Adicionar</button>
+  </div>
+  
+  <div class="controle-pontos">
+    <input type="text" class="painel-input" id="remover-membro-nome" placeholder="Nome do membro">
+    <button class="painel-btn btn-remover" onclick="removerMembro()">Remover</button>
+  </div>
+</div>
+
+<div class="painel-section">
+  <h3>🗑️ Reset do Dia</h3>
+  <button class="painel-btn btn-remover" style="width:100%" onclick="resetarDia()">Desmarcar Todos e Zerar o Dia</button>
+  <p style="font-size:0.8rem; margin-top:10px; color:#e74c3c">
+    ATENÇÃO: Esta ação irá desmarcar todos os checkboxes do dia atual e zerar o contador de foco do dia. Os pontos semanais e streaks NÃO serão alterados.
+  </p>
+</div>
+
+    <div class="painel-section">
+      <h3>⚠️ Reset Geral</h3>
+      <button class="painel-btn btn-remover" style="width:100%" onclick="resetarTudo()">Resetar Todos os Dados</button>
+      <p style="font-size:0.8rem; margin-top:10px; color:#e74c3c">
+        ATENÇÃO: Esta ação apagará todo o histórico e não pode ser desfeita!
+      </p>
+    </div>
+  </div>
+
+  <!-- Elementos de áudio -->
+  <audio id="som-check" src="https://assets.mixkit.co/sfx/preview/mixkit-unlock-game-notification-253.mp3"></audio>
+  <audio id="som-conquista" src="https://assets.mixkit.co/sfx/preview/mixkit-achievement-bell-600.mp3"></audio>
+</body>
+</html>
