@@ -1,0 +1,575 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Épicos 亗 🌱</title>
+    
+	<link rel="stylesheet" href="estilos.css">
+	
+</head>
+<body>
+
+<!-- Container de autenticação -->
+<div id="auth-container">
+  <div class="auth-form">
+    <h2>Grupo Épicos 亗 🌱</h2>
+    <div id="login-form">
+      <input type="text" id="login-username" class="auth-input" placeholder="Seu nome" autocomplete="username">
+      <div class="password-wrapper">
+  <input type="password" id="login-password" class="auth-input" placeholder="Senha" autocomplete="current-password">
+  <button type="button" id="toggle-password-btn" class="toggle-password" style="display: none;">Ver</button>
+</div>
+      <div id="login-message" class="auth-message"></div>
+      <button id="login-btn" class="auth-btn">Entrar</button>
+      <div class="auth-links">
+        <span id="forgot-password-link" class="auth-link">Esqueceu a senha?</span>
+      </div>
+    </div>
+    
+	<div id="forgot-password-form" class="hidden">
+  <h3>Recuperação de Senha</h3>
+  <p style="margin-bottom: 20px; font-size: 0.9rem; color: #7f8c8d;">
+    Para começar, informe seu nome e responda à sua pergunta secreta.
+  </p>
+  <input type="text" id="forgot-username" class="auth-input" placeholder="Seu nome" autocomplete="username">
+  <label for="secret-answer" style="display: block; text-align: left; margin-bottom: 10px; font-weight: 500;">
+    Qual é o nome do primeiro pet que você já teve (ou tem)?
+  </label>
+  <input type="text" id="secret-answer" class="auth-input" placeholder="Resposta secreta">
+  <div id="forgot-message" class="auth-message"></div>
+  <button id="verify-answer-btn" class="auth-btn">Verificar Resposta</button>
+  <button id="cancel-forgot-password" class="auth-link" style="margin-top: 15px;">Voltar para o Login</button>
+</div>
+	
+    <div id="change-password-form" class="hidden">
+      <input type="password" id="new-password" class="auth-input" placeholder="Nova senha">
+      <input type="password" id="confirm-new-password" class="auth-input" placeholder="Confirme a nova senha">
+      <div class="password-strength">
+        <div id="password-strength-bar" class="password-strength-bar"></div>
+      </div>
+      <div id="password-message" class="auth-message"></div>
+      <button id="change-password-btn" class="auth-btn secondary">Salvar nova senha</button>
+     <button class="btn-cancelar" onclick="showLoginForm()">Cancelar</button>
+    </div>
+	
+	<div id="secret-question-form" class="hidden">
+  <h3>Recuperação de Senha</h3>
+  <p style="margin-bottom: 20px; font-size: 0.9rem; color: #7f8c8d;">
+    Para proteger sua conta, vamos criar um método de recuperação.
+  </p>
+  <label for="setup-secret-answer" style="display: block; text-align: left; margin-bottom: 10px; font-weight: 500;">
+    Qual é o nome do primeiro pet que você já teve (ou tem)?
+  </label>
+  <input type="text" id="setup-secret-answer" class="auth-input" placeholder="Digite a resposta aqui">
+  <button id="save-secret-answer-btn" class="auth-btn">Salvar e Continuar</button>
+</div>
+	
+  </div>
+</div>
+
+<div id="main-content" class="hidden">
+
+  <div class="container">
+    <header>
+      <h1>Épicos 亗 🌱</h1>
+      <div id="dataHoje"></div>
+	  <div id="relogio"></div>
+      <div id="info-semana"></div>
+	  
+	  <div id="user-menu-container" class="hidden">
+  <button id="user-menu-btn">👤</button>
+  <div id="user-menu-dropdown" class="hidden">
+  <div id="user-greeting" class="user-greeting">Olá, Usuário!</div>
+    <button id="menu-option-control-panel" class="menu-option hidden">Painel de Controle</button>
+    <button id="menu-option-change-password" class="menu-option">Trocar senha</button>
+    <button id="menu-option-change-secret" class="menu-option">Trocar pergunta secreta</button>
+    <button id="menu-option-logout" class="menu-option logout">Sair</button>
+  </div>
+</div>
+
+    </header>
+    
+	<div class="aniversariantes-container">
+  <h2 style="text-align: center;">🎂 Aniversariantes do Mês</h2>
+  <div id="aniversariantes-hoje" class="aniversariantes-hoje">
+    <!-- Conteúdo gerado dinamicamente -->
+  </div>
+  <div id="proximos-aniversarios" class="proximos-aniversarios">
+    <!-- Conteúdo gerado dinamicamente -->
+  </div>
+</div>
+	
+    <div class="stats-container">
+      <div class="global-stats">
+        <div id="contadorGeral">0 épicos focaram hoje!</div>
+        <div class="progresso-container">
+          <div id="progresso-barra"></div>
+  </div>
+  <div id="mensagem-todos-focados" class="hidden" style="margin-top: 15px; font-weight: bold; color: #9b59b6; font-size: 1.1rem;"></div>
+</div>
+      </div>
+    
+    <div class="competicao-container">
+      <h2>🏆 Competição de Equipes</h2>
+      <div class="equipes-competicao">
+        <div class="equipe-competicao">
+          <h3>🐝 Abelha</h3>
+          <div class="score" id="ranking-abelha">0</div>
+          <div>Vitórias</div>
+        </div>
+        <div class="equipe-competicao">
+          <h3>🐞 Joaninha</h3>
+          <div class="score" id="ranking-joaninha">0</div>
+          <div>Vitórias</div>
+        </div>
+        <div class="equipe-competicao">
+          <h3>💡 Vaga-lume</h3>
+          <div class="score" id="ranking-vagalume">0</div>
+          <div>Vitórias</div>
+        </div>
+      </div>
+      <p style="margin-top: 15px; font-size: 0.9em; color: #7f8c8d;">
+	  <strong>Foque no mínimo 20 minutos, cuide da fazenda do grupo e marque seu ponto!</strong><br>
+        Competição semanal: Segunda a Sábado.<br>
+        A equipe com mais pontos ao final da competição ganha +1 ponto no ranking de equipes.<br>
+        Em caso de empate, todas as equipes empatadas ganham +1 ponto.<br>
+      </p>
+    </div>
+	
+		<div class="container-top5">
+  <div class="ranking-top-container">
+    <h2>🌟 Top 5 Épicos da Semana</h2>
+    <div id="ranking-top-lista" class="ranking-lista">
+      <!-- Ranking será gerado dinamicamente aqui -->
+    </div>
+    <div class="ranking-mensagem">Parabéns aos mais focados entre todos os Épicos!</div>
+  </div>
+</div>
+	
+	<div class="vantagem-container">
+  <h2>🎮 Jogo da Vantagem</h2>
+  <p class="vantagem-descricao">
+  <div id="leader-advantage-controls" class="hidden" style="margin-bottom: 20px;">
+    <button id="leader-test-button" class="painel-btn btn-adicionar">Testar Jogos</button>
+    <div id="leader-test-panel" class="hidden">
+        <h4>Selecione um jogo para testar:</h4>
+        <ul id="leader-game-list">
+            </ul>
+    </div>
+</div>
+    Disponível de Segunda a Sexta. Conclua o desafio dessa semana até às 23:59 de sexta para garantir <strong>+3 pontos</strong> para sua equipe no Sábado!
+  </p>
+  
+  <p class="vantagem-jogo-atual" id="vantagem-jogo-nome"></p>
+
+  <div class="vantagem-game-wrapper">
+    <div id="advantage-game-board"></div>
+
+    <div id="vantagem-locked-overlay" class="hidden">
+      <div class="lock-icon">🔐</div>
+      <p id="vantagem-lock-message">Desafio concluído esta semana! Volte na segunda-feira para o próximo.</p>
+    </div>
+  </div>
+</div>
+	
+    <div class="grupos-container" id="grupos-container">
+      <!-- Conteúdo será gerado dinamicamente pelo JavaScript -->
+    </div>
+    
+	<!-- Quadro de Folgas -->
+<div class="folgas-container">
+  
+  <h2>📅 Quadro de Folgas</h2>
+<button id="change-folga-btn" class="rectangular-button" title="Alterar minha folga">Trocar Folga</button>
+  
+  <div class="dias-container">
+    <div class="dia-col">
+      <h3>Segunda</h3>
+      <div class="lista-membros" id="segunda"></div>
+    </div>
+    <div class="dia-col">
+      <h3>Terça</h3>
+      <div class="lista-membros" id="terca"></div>
+    </div>
+    <div class="dia-col">
+      <h3>Quarta</h3>
+      <div class="lista-membros" id="quarta"></div>
+    </div>
+    <div class="dia-col">
+      <h3>Quinta</h3>
+      <div class="lista-membros" id="quinta"></div>
+    </div>
+    <div class="dia-col">
+      <h3>Sexta</h3>
+      <div class="lista-membros" id="sexta"></div>
+    </div>
+    <div class="dia-col">
+      <h3>Sábado</h3>
+      <div class="lista-membros" id="sabado"></div>
+    </div>
+    <div class="dia-col">
+      <h3>Domingo</h3>
+      <div class="lista-membros" id="domingo"></div>
+    </div>
+  </div>
+</div>
+    
+    <!-- SEÇÃO ATUALIZADA: Árvore Épica com espaço idêntico ao código de referência -->
+    <div class="arvore-epica-container">
+      <h2>🌳 Árvore Épica</h2>
+      
+      <div class="tree-display">
+        <!-- Céu (fundo) -->
+        <div class="tree-sky day-mode">
+          <div class="stars-container"></div>
+        </div>
+        
+        <!-- Sol com efeito de pulsação -->
+        <div id="sol" class="sky-object">
+          <img src="https://i.ibb.co/yFW4Lq73/sol.png" alt="Sol">
+        </div>
+        
+        <!-- Lua sem efeito de pulsação -->
+        <div id="lua" class="sky-object">
+          <img src="https://i.ibb.co/LDdHmbP6/lua.png" alt="Lua">
+        </div>
+        
+        <!-- Nuvens simplificadas (3 iniciais) -->
+        <img class="nuvem nuvem-1" src="https://i.ibb.co/rfsS1Tp9/nuvem.png" alt="Nuvem">
+        <img class="nuvem nuvem-2" src="https://i.ibb.co/rfsS1Tp9/nuvem.png" alt="Nuvem">
+        <img class="nuvem nuvem-3" src="https://i.ibb.co/rfsS1Tp9/nuvem.png" alt="Nuvem">
+        
+        <!-- Novas nuvens (surgem após as iniciais desaparecerem) -->
+        <img class="nuvem nuvem-4" src="https://i.ibb.co/rfsS1Tp9/nuvem.png" alt="Nuvem">
+        <img class="nuvem nuvem-5" src="https://i.ibb.co/rfsS1Tp9/nuvem.png" alt="Nuvem">
+        <img class="nuvem nuvem-6" src="https://i.ibb.co/rfsS1Tp9/nuvem.png" alt="Nuvem">
+        
+        <!-- Grama mais verde e lisa -->
+        <div class="ground"></div>
+        
+        <!-- Árvores com posicionamento muito mais baixo e fases maiores -->
+        <img id="seed" class="tree-image" src="https://i.ibb.co/7xsw9ZVd/semente.png" alt="Semente">
+        <img id="sprout" class="tree-image" src="https://i.ibb.co/WNcWgWgn/broto.png" alt="Broto" style="display: none;">
+        <img id="tree" class="tree-image" src="https://i.ibb.co/0jS2220Z/arvore.png" alt="Árvore" style="display: none;">
+        <!-- Nova imagem para flores -->
+        <img id="flowers" class="tree-image" src="https://i.ibb.co/FrMst3S/flores.png" alt="Flores" style="display: none;">
+        <img id="fruits" class="tree-image" src="https://i.ibb.co/9k6HjBFk/frutos.png" alt="Frutos" style="display: none;">
+      </div>
+      
+      <div class="tree-info">
+        <div class="stage-info" id="stage-name">Semente</div>
+        <div class="stage-desc" id="stage-desc">A jornada começa com um único dia de foco. Vamos plantar nossa semente e cultivar nossa dedicação diária!</div>
+        <div class="progresso-consecutivo">
+          <strong>Dias consecutivos: <span id="dias-consecutivos">0</span></strong><br>
+          <span id="proxima-fase"></span>
+        </div>
+      </div>
+    </div>
+	
+	<!-- Seção do Mural de Mensagens -->
+    <div class="mural-container">
+  <h2>✍️ Mural de Mensagens</h2>
+  <div class="mural-actions">
+    <button id="open-composer-btn">Escrever Mensagem</button>
+  </div>
+  <div class="mural-scroll-wrapper"> 
+    <div id="mural-mensagens">
+    </div>
+  </div>
+  </div>
+    
+   <div class="nossas-informacoes">
+  <h2>💖 Nossas Informações</h2>
+  
+  <div class="carrossel-wrapper">
+    <div class="carrossel-controles">
+  <button class="controle-btn" onclick="mudarSlide(-1)">❮</button>
+  <button class="controle-btn" id="botao-pausa" onclick="togglePausa()">⏸</button>
+  <button class="controle-btn" onclick="mudarSlide(1)">❯</button>
+</div>
+    
+    <div class="carrossel">
+      <div class="carrossel-container" id="carrossel-container">
+        <!-- Cards serão inseridos aqui pelo JavaScript -->
+      </div>
+    </div>
+  </div>
+  
+<div class="progresso-indicador" style="margin-top: 15px;">
+  <div class="progresso-indicador-barra" id="progresso-indicador-barra"></div>
+</div>
+  
+  <div class="carrossel-indicadores" id="carrossel-indicadores">
+    <!-- Indicadores serão gerados aqui -->
+  </div>
+</div>
+
+    <div class="medalha-info">
+      <h2>🏅 Sistema de Medalhas</h2>
+      <div class="medalhas-grid">
+        <div class="medalha-item">
+          <div class="medalha-emoji">🔥</div>
+          <div class="medalha-nome">Fagulha</div>
+          <div class="medalha-dias">3 dias</div>
+        </div>
+        <div class="medalha-item">
+          <div class="medalha-emoji">👑</div>
+          <div class="medalha-nome">Lenda</div>
+          <div class="medalha-dias">10 dias</div>
+        </div>
+        <div class="medalha-item">
+          <div class="medalha-emoji">🌟</div>
+          <div class="medalha-nome">Constante</div>
+          <div class="medalha-dias">30 dias</div>
+        </div>
+        <div class="medalha-item" id="medalha-diamante">
+          <div class="medalha-emoji">💎</div>
+          <div class="medalha-nome">Diamante</div>
+          <div class="medalha-dias">60 dias</div>
+        </div>
+        <div class="medalha-item">
+          <div class="medalha-emoji">🚀</div>
+          <div class="medalha-nome">Foguete</div>
+          <div class="medalha-dias">120 dias</div>
+        </div>
+        <div class="medalha-item">
+          <div class="medalha-emoji">🏆</div>
+          <div class="medalha-nome">Troféu</div>
+          <div class="medalha-dias">150 dias</div>
+        </div>
+        <div class="medalha-item">
+          <div class="medalha-emoji">🔮</div>
+          <div class="medalha-nome">Bola de cristal</div>
+          <div class="medalha-dias">240 dias</div>
+        </div>
+        <div class="medalha-item">
+          <div class="medalha-emoji">🌞</div>
+          <div class="medalha-nome">Solar</div>
+          <div class="medalha-dias">365 dias</div>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <div id="popup"></div>
+  <canvas id="confetti-canvas"></canvas>
+  
+  <!-- Painel Secreto (adicionado no final do body) -->
+  <div id="painel-secreto">
+    <div class="painel-header">
+      <h2>Painel de Controle Secreto</h2>
+      <button class="painel-btn btn-fechar" onclick="togglePainelSecreto(false)">Fechar</button>
+    </div>
+
+<div class="painel-section">
+  <h3>🗑️ Reset do Dia</h3>
+  <button class="painel-btn btn-remover" style="width:100%" onclick="resetarDia()">Desmarcar Todos e Zerar o Dia</button>
+  <p style="font-size:0.8rem; margin-top:10px; color:#e74c3c">
+    ATENÇÃO: Esta ação irá desmarcar todos os checkboxes do dia atual e zerar o contador de foco do dia. Os pontos semanais e streaks NÃO serão alterados.
+  </p>
+</div>
+
+    <div class="painel-section">
+      <h3>⚠️ Reset Geral</h3>
+      <button class="painel-btn btn-remover" style="width:100%" onclick="resetarTudo()">Resetar Todos os Dados</button>
+      <p style="font-size:0.8rem; margin-top:10px; color:#e74c3c">
+        ATENÇÃO: Esta ação apagará todo o histórico e não pode ser desfeita!
+      </p>
+    </div>
+  </div>
+
+  <!-- Elementos de áudio -->
+  <audio id="som-check" src="https://assets.mixkit.co/sfx/preview/mixkit-unlock-game-notification-253.mp3"></audio>
+  <audio id="som-conquista" src="https://assets.mixkit.co/sfx/preview/mixkit-achievement-bell-600.mp3"></audio>
+  
+  </div>
+  
+    <div id="popup-message" class="popup-container">
+    <h3 id="popup-title"></h3>
+    <p id="popup-text"></p>
+  </div>
+  
+  <div id="change-password-modal" class="modal-overlay">
+  <div class="modal-content">
+    <h3>Trocar Senha</h3>
+    <input type="password" id="logged-in-new-password" class="auth-input" placeholder="Nova senha">
+    <input type="password" id="logged-in-confirm-password" class="auth-input" placeholder="Confirme a nova senha">
+    <button id="save-new-password-btn" class="auth-btn">Salvar Nova Senha</button>
+    <button class="btn-cancelar" onclick="closeModal('change-password-modal')">Cancelar</button>
+  </div>
+</div>
+
+<div id="change-secret-modal" class="modal-overlay">
+  <div class="modal-content">
+    <h3>Trocar Pergunta Secreta</h3>
+    <label for="new-secret-answer" style="display: block; text-align: left; margin-bottom: 10px;">
+      Qual é o nome do primeiro pet que você já teve (ou tem)?
+    </label>
+    <input type="text" id="new-secret-answer" class="auth-input" placeholder="Sua nova resposta">
+    <button id="save-new-secret-btn" class="auth-btn">Salvar Nova Resposta</button>
+    <button class="btn-cancelar" onclick="closeModal('change-secret-modal')">Cancelar</button>
+  </div>
+</div>
+  
+  <div id="change-folga-modal" class="modal-overlay">
+  <div class="modal-content">
+    <h3>Alterar Dia de Folga</h3>
+    <p style="margin-bottom: 20px; font-size: 0.9rem; color: #7f8c8d;">
+      Você só pode alterar sua folga <strong>uma vez por semana</strong>. Domingo é folga coletiva e não pode ser selecionado.
+    </p>
+    <select id="select-new-folga" class="auth-input">
+      <option value="segunda-feira">Segunda-feira</option>
+      <option value="terça-feira">Terça-feira</option>
+      <option value="quarta-feira">Quarta-feira</option>
+      <option value="quinta-feira">Quinta-feira</option>
+      <option value="sexta-feira">Sexta-feira</option>
+      <option value="sábado">Sábado</option>
+    </select>
+    <button id="save-new-folga-btn" class="auth-btn">Salvar Alteração</button>
+    <button class="btn-cancelar" onclick="closeModal('change-folga-modal')">Cancelar</button>
+  </div>
+</div>
+  
+  <div id="message-composer-modal" class="modal-overlay">
+  <div id="composer-card" class="composer-card">
+    <div class="composer-header">
+      <button id="composer-color-btn" title="Mudar cor do card">Escolha a cor</button>
+      <div id="composer-color-palette" class="hidden"></div>
+      <button id="composer-close-btn" title="Fechar">✖</button>
+    </div>
+    <textarea id="composer-textarea" placeholder="O que você está pensando?"></textarea>
+    <div class="composer-footer">
+      <div class="composer-author-info">
+        <div id="composer-author" class="mensagem-autor"></div>
+        <div id="composer-timestamp" class="mensagem-data"></div>
+      </div>
+      <div class="composer-actions">
+        <div class="anonymous-option">
+          <input type="checkbox" id="composer-anonymous-check">
+          <label for="composer-anonymous-check">Postar como Anônimo</label>
+        </div>
+        <button id="composer-send-btn">Enviar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="message-viewer-modal" class="modal-overlay">
+  <div id="viewer-card" class="composer-card">
+    <button id="viewer-close-btn" title="Fechar">✖</button>
+    
+    <div class="composer-header">
+      </div>
+    
+    <div id="viewer-text" class="mensagem-texto expanded"></div>
+    
+    <div id="viewer-reacoes-container" class="reacoes-display-container" style="display: none; margin-top: 15px;">
+      </div>
+
+    <div class="reacao-seletor-bar" style="margin-top: 15px;">
+      </div>
+
+    <div class="composer-footer" style="margin-top: 15px;">
+      <div class="composer-author-info">
+        <div id="viewer-author" class="mensagem-autor"></div>
+        <div id="viewer-timestamp" class="mensagem-data"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="confirm-delete-modal" class="modal-overlay">
+  <div class="modal-content" style="max-width: 400px;">
+    <h3>Confirmar Exclusão</h3>
+    <p style="margin-bottom: 25px;">Você tem certeza que deseja excluir esta mensagem permanentemente?</p>
+    <div style="display: flex; justify-content: space-around; gap: 15px;">
+      <button class="btn-cancelar" style="flex: 1;" onclick="closeModal('confirm-delete-modal')">Cancelar</button>
+      <button id="confirm-delete-btn" class="auth-btn" style="flex: 1; background-color: #e74c3c;">Excluir</button>
+    </div>
+  </div>
+</div>
+  
+  <div id="control-panel-modal" class="modal-overlay">
+  <div class="modal-content" style="max-width: 800px; width: 95%; max-height: 90vh; overflow-y: auto;">
+    <div class="painel-header">
+      <h2>Painel de Controle</h2>
+      <button class="painel-btn btn-fechar" onclick="closeModal('control-panel-modal')">Fechar</button>
+    </div>
+
+    <div class="painel-section">
+      <h3>Adicionar Novo Membro</h3>
+      <div class="controle-pontos" style="grid-template-columns: 1fr 1fr 1fr auto; gap: 15px;">
+        <input type="text" id="new-member-name" class="painel-input" placeholder="Nome do Membro">
+        
+        <select id="new-member-team" class="painel-input">
+          <option value="abelha">Equipe Abelha</option>
+          <option value="joaninha">Equipe Joaninha</option>
+          <option value="vagalume">Equipe Vaga-lume</option>
+        </select>
+
+        <select id="new-member-role" class="painel-input">
+          <option value="membro">Membro</option>
+          <option value="lider-equipe">Líder de Equipe</option>
+        </select>
+
+        <button id="add-member-btn" class="painel-btn btn-adicionar">Adicionar</button>
+      </div>
+      <div id="new-member-result" style="margin-top: 15px; font-weight: bold; color: #27ae60;"></div>
+    </div>
+
+    <div class="painel-section">
+      <h3>Remover Membro</h3>
+      <div class="controle-pontos" style="grid-template-columns: 1fr auto; gap: 15px;">
+        <select id="select-member-to-remove" class="painel-input">
+          </select>
+        <button id="remove-member-btn" class="painel-btn btn-remover">Remover</button>
+      </div>
+    </div>
+  </div>
+</div>
+  
+  <div id="new-member-success-modal" class="modal-overlay">
+  <div class="modal-content">
+    <h3>✅ Membro Adicionado com Sucesso!</h3>
+    <p class="modal-description">Repasse os dados de login para o novo membro. Use os botões para copiar as informações.</p>
+    
+    <div class="copy-info-container">
+      <strong>Usuário:</strong>
+      <div class="copy-field">
+        <span id="success-username"></span>
+        <button onclick="copyToClipboard(document.getElementById('success-username').innerText, 'Usuário')">Copiar</button>
+      </div>
+    </div>
+    
+    <div class="copy-info-container">
+      <strong>Senha Provisória:</strong>
+      <div class="copy-field">
+        <span id="success-password"></span>
+        <button onclick="copyToClipboard(document.getElementById('success-password').innerText, 'Senha')">Copiar</button>
+      </div>
+    </div>
+
+    <button class="auth-btn" style="margin-top: 25px;" onclick="closeModal('new-member-success-modal')">OK</button>
+  </div>
+</div>
+
+<div id="confirm-remove-modal" class="modal-overlay">
+  <div class="modal-content" style="max-width: 450px;">
+    <h3>⚠️ Confirmar Remoção</h3>
+    <p style="margin-bottom: 25px;">
+      Você tem certeza que deseja remover o membro <strong id="member-to-remove-name" style="color: #e74c3c;"></strong>?
+      <br><br>
+      Esta ação é permanente e não pode ser desfeita.
+    </p>
+    <div style="display: flex; justify-content: space-around; gap: 15px;">
+      <button class="btn-cancelar" style="flex: 1;" onclick="closeModal('confirm-remove-modal')">Cancelar</button>
+      <button id="confirm-remove-button" class="auth-btn" style="flex: 1; background-color: #e74c3c;">Sim, Remover</button>
+    </div>
+  </div>
+</div>
+  
+  <script type="module" src="logica.js"></script>
+  
+</body>
+</html>
