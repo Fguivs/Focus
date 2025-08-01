@@ -3764,17 +3764,17 @@ input[type="password"]::-webkit-password-toggle-button {
 
 .clicker-target {
   position: absolute;
-  width: 60px;
-  height: 60px;
+  width: 45px;   /* Original: 60px */
+  height: 45px;  /* Original: 60px */
   background-color: #3498db;
   border-radius: 50%;
   cursor: pointer;
   display: flex;
   justify-content: center;
   align-items: center;
-  font-size: 2rem;
+  font-size: 1.5rem; /* Original: 2rem */
   box-shadow: 0 5px 10px rgba(0,0,0,0.2);
-  animation: pop-in 0.3s ease-out;
+  animation: pop-in 0.3s ease-out, moveTarget 4s ease-in-out infinite; 
 }
 .clicker-target.abelha { background-color: #f1c40f; }
 .clicker-target.joaninha { background-color: #e74c3c; }
@@ -3782,6 +3782,26 @@ input[type="password"]::-webkit-password-toggle-button {
 
 .clicker-target.clicked {
   animation: pop-out 0.3s ease-in forwards;
+}
+
+/* Adicione no final do arquivo estilos.css */
+
+@keyframes moveTarget {
+  0% {
+    transform: translate(0, 0) rotate(0deg);
+  }
+  25% {
+    transform: translate(20px, 30px) rotate(20deg);
+  }
+  50% {
+    transform: translate(-30px, -10px) rotate(-15deg);
+  }
+  75% {
+    transform: translate(10px, -25px) rotate(10deg);
+  }
+  100% {
+    transform: translate(0, 0) rotate(0deg);
+  }
 }
 
 @keyframes pop-in {
