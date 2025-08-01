@@ -1,0 +1,27 @@
+{
+  "name": "Foco Diário Épicos",
+  "short_name": "Épicos 亗 🌱",
+  "description": "Acompanhamento de foco e metas do grupo Épicos.",
+  "start_url": ".",
+  "display": "standalone",
+  "background_color": "#2a0845",
+  "theme_color": "#0c0e30",
+  "icons": [
+    {
+      "src": "https://i.ibb.co/1n0gS9v/icon-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "https://i.ibb.co/gZ8qL09/icon-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    },
+    {
+      "src": "https://i.ibb.co/gZ8qL09/icon-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}
