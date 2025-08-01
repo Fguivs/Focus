@@ -172,7 +172,7 @@
     <div id="advantage-game-board"></div>
 
     <div id="vantagem-locked-overlay" class="hidden">
-      <div class="lock-icon">✅</div>
+      <div class="lock-icon">✔️</div>
       <p id="vantagem-lock-message">Desafio concluído esta semana! Volte na segunda-feira para o próximo.</p>
     </div>
   </div>
@@ -223,41 +223,27 @@
     <!-- SEÇÃO ATUALIZADA: Árvore Épica com espaço idêntico ao código de referência -->
     <div class="arvore-epica-container">
       <h2>🌳 Árvore Épica</h2>
+
+      <p class="arvore-explicacao">
+        A árvore cresce com o esforço coletivo! Se <strong>10 ou mais épicos</strong> focarem no mesmo dia, a árvore avança um dia em sua jornada de crescimento. Caso contrário, a sequência é quebrada. Vamos cultivar nosso foco juntos!
+      </p>
       
       <div class="tree-display">
-        <!-- Céu (fundo) -->
         <div class="tree-sky day-mode">
           <div class="stars-container"></div>
         </div>
-        
-        <!-- Sol com efeito de pulsação -->
-        <div id="sol" class="sky-object">
-          <img src="https://i.ibb.co/yFW4Lq73/sol.png" alt="Sol">
-        </div>
-        
-        <!-- Lua sem efeito de pulsação -->
-        <div id="lua" class="sky-object">
-          <img src="https://i.ibb.co/LDdHmbP6/lua.png" alt="Lua">
-        </div>
-        
-        <!-- Nuvens simplificadas (3 iniciais) -->
+        <div id="sol" class="sky-object"><img src="https://i.ibb.co/yFW4Lq73/sol.png" alt="Sol"></div>
+        <div id="lua" class="sky-object"><img src="https://i.ibb.co/LDdHmbP6/lua.png" alt="Lua"></div>
         <img class="nuvem nuvem-1" src="https://i.ibb.co/rfsS1Tp9/nuvem.png" alt="Nuvem">
         <img class="nuvem nuvem-2" src="https://i.ibb.co/rfsS1Tp9/nuvem.png" alt="Nuvem">
         <img class="nuvem nuvem-3" src="https://i.ibb.co/rfsS1Tp9/nuvem.png" alt="Nuvem">
-        
-        <!-- Novas nuvens (surgem após as iniciais desaparecerem) -->
         <img class="nuvem nuvem-4" src="https://i.ibb.co/rfsS1Tp9/nuvem.png" alt="Nuvem">
         <img class="nuvem nuvem-5" src="https://i.ibb.co/rfsS1Tp9/nuvem.png" alt="Nuvem">
         <img class="nuvem nuvem-6" src="https://i.ibb.co/rfsS1Tp9/nuvem.png" alt="Nuvem">
-        
-        <!-- Grama mais verde e lisa -->
         <div class="ground"></div>
-        
-        <!-- Árvores com posicionamento muito mais baixo e fases maiores -->
         <img id="seed" class="tree-image" src="https://i.ibb.co/7xsw9ZVd/semente.png" alt="Semente">
         <img id="sprout" class="tree-image" src="https://i.ibb.co/WNcWgWgn/broto.png" alt="Broto" style="display: none;">
         <img id="tree" class="tree-image" src="https://i.ibb.co/0jS2220Z/arvore.png" alt="Árvore" style="display: none;">
-        <!-- Nova imagem para flores -->
         <img id="flowers" class="tree-image" src="https://i.ibb.co/FrMst3S/flores.png" alt="Flores" style="display: none;">
         <img id="fruits" class="tree-image" src="https://i.ibb.co/9k6HjBFk/frutos.png" alt="Frutos" style="display: none;">
       </div>
@@ -265,6 +251,12 @@
       <div class="tree-info">
         <div class="stage-info" id="stage-name">Semente</div>
         <div class="stage-desc" id="stage-desc">A jornada começa com um único dia de foco. Vamos plantar nossa semente e cultivar nossa dedicação diária!</div>
+        
+        <div class="arvore-status-diario">
+          <div id="status-focado" class="status-badge">✅ 0 épicos focaram hoje</div>
+          <div id="status-nao-focado" class="status-badge">❌ 0 épicos ainda não focaram</div>
+        </div>
+
         <div class="progresso-consecutivo">
           <strong>Dias consecutivos: <span id="dias-consecutivos">0</span></strong><br>
           <span id="proxima-fase"></span>
