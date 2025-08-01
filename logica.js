@@ -4153,9 +4153,9 @@ function initClickerGame() {
     const scoreDisplay = document.getElementById('clicker-score');
     const timerDisplay = document.getElementById('clicker-timer');
     const startButton = document.getElementById('clicker-start-button');
-    const TARGET_SCORE = 25;
+    const TARGET_SCORE = 40; // Alterado de 25 para 40
     let score = 0;
-    let timeLeft = 30;
+    let timeLeft = 25; // Alterado de 30 para 25
     let gameInterval = null;
     let targetCreatorInterval = null;
 
@@ -4167,7 +4167,7 @@ function initClickerGame() {
         if (!startButton) return;
         startButton.style.display = 'none';
         score = 0;
-        timeLeft = 30;
+        timeLeft = 25; // Garante que o tempo reinicie com o novo valor
         
         if (scoreDisplay) scoreDisplay.textContent = `Pontos: 0 / ${TARGET_SCORE}`;
         if (timerDisplay) {
@@ -4182,7 +4182,8 @@ function initClickerGame() {
             if (timeLeft <= 0) endGame(false); // Passa 'false' para indicar derrota
         }, 1000);
         
-        targetCreatorInterval = setInterval(createTarget, 600);
+        // Alvos aparecem mais rápido (a cada 450ms)
+        targetCreatorInterval = setInterval(createTarget, 450);
     }
     
     function createTarget() {
@@ -4195,8 +4196,9 @@ function initClickerGame() {
         target.classList.add(randomTeam);
         target.textContent = teamEmojis[Math.floor(Math.random() * 3)];
         
-        target.style.top = `${Math.random() * 85}%`;
-        target.style.left = `${Math.random() * 85}%`;
+        // Posição ajustada para não começar tão perto das bordas (para a animação de movimento)
+        target.style.top = `${10 + Math.random() * 70}%`;
+        target.style.left = `${10 + Math.random() * 70}%`;
         
         target.onclick = () => {
             score++;
@@ -4210,9 +4212,10 @@ function initClickerGame() {
         
         board.appendChild(target);
         
+        // Alvos desaparecem mais rápido (duração de 1.5 segundos)
         setTimeout(() => {
             if (target && target.parentElement) target.remove();
-        }, 2000);
+        }, 1500);
     }
     
     function endGame(isWinner) {
@@ -4231,19 +4234,14 @@ function initClickerGame() {
             resultText.style.textAlign = 'center';
             board.appendChild(resultText);
             
-            // ===== INÍCIO DA CORREÇÃO =====
             setTimeout(() => {
-                // Ao invés de recriar só o botão, recriamos TODA a estrutura inicial do jogo.
                 const clickerGameData = todosOsJogos.find(jogo => jogo.nome === "Acerte o Alvo");
                 if (clickerGameData) {
                     const gameContainer = document.getElementById('advantage-game-board');
-                    // Recarrega o HTML original do jogo
                     gameContainer.innerHTML = clickerGameData.htmlContent;
-                    // RE-INICIA a lógica do jogo para reconectar os botões e variáveis
                     initClickerGame(); 
                 }
             }, 4000);
-            // ===== FIM DA CORREÇÃO =====
         }
     }
 }
