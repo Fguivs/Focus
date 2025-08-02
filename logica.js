@@ -275,42 +275,62 @@ let unsubscribeViewerListener = null;
     // A lógica de premiação agora roda no SÁBADO, às 23:59.
     // A lógica de apagar o placar antigo e resetar, roda no DOMINGO.
 
-    // LÓGICA DE PREMIAÇÃO (SÁBADO)
-    if (hoje.getDay() === 6) { // 6 = Sábado
-        const semana = getSemanaAtual();
-        const docId = `semana_${semana.numero}_${semana.inicio.getFullYear()}`;
-        const advantageRef = doc(db, "vantagemSemanal", docId);
-        const advantageSnap = await getDoc(advantageRef);
+    // LÓGICA DE PREMIAÇÃO (SÁBADO - CORRIGIDA PARA RODAR UMA ÚNICA VEZ)
+if (hoje.getDay() === 6) { // 6 = Sábado
+    const semana = getSemanaAtual();
+    const docId = `semana_${semana.numero}_${semana.inicio.getFullYear()}`;
+    const advantageRef = doc(db, "vantagemSemanal", docId);
+    const pontosRef = doc(db, "semanas", "pontosSemanais");
 
-        const pontosBonus = { abelha: 0, joaninha: 0, vagalume: 0 };
-        let bonusAplicado = false;
+    try {
+        await runTransaction(db, async (transaction) => {
+            const advantageDoc = await transaction.get(advantageRef);
 
-        if (advantageSnap.exists()) {
-            const completadoPor = advantageSnap.data().completadoPor || {};
-            for (const nomeMembro in completadoPor) {
-                const membro = todosMembros.find(m => m.nome === nomeMembro);
-                if (membro && membro.equipe) {
-                    pontosBonus[membro.equipe] += 3; // +3 pontos por conclusão
-                    bonusAplicado = true;
+            // 1. VERIFICA O "TRAVÃO": Se o bônus já foi aplicado, interrompe a execução.
+            if (advantageDoc.exists() && advantageDoc.data().bonusAplicado) {
+                console.log("Bônus da vantagem já foi aplicado esta semana.");
+                return; 
+            }
+
+            const pontosBonus = { abelha: 0, joaninha: 0, vagalume: 0 };
+            let bonusSeraAplicado = false;
+
+            if (advantageDoc.exists()) {
+                const completadoPor = advantageDoc.data().completadoPor || {};
+                for (const nomeMembro in completadoPor) {
+                    const membro = todosMembros.find(m => m.nome === nomeMembro);
+                    if (membro && membro.equipe) {
+                        pontosBonus[membro.equipe] += 3; // +3 pontos por conclusão
+                        bonusSeraAplicado = true;
+                    }
                 }
             }
-        }
 
-        // Atualizar placar local e no Firestore com os pontos de bônus
-        if (bonusAplicado) {
-            pontosSemanais.abelha += pontosBonus.abelha;
-            pontosSemanais.joaninha += pontosBonus.joaninha;
-            pontosSemanais.vagalume += pontosBonus.vagalume;
+            if (bonusSeraAplicado) {
+                // 2. ATUALIZA OS PONTOS E ATIVA O "TRAVÃO"
+                // Atualiza o placar de pontos da semana
+                transaction.update(pontosRef, {
+                    abelha: increment(pontosBonus.abelha),
+                    joaninha: increment(pontosBonus.joaninha),
+                    vagalume: increment(pontosBonus.vagalume)
+                });
 
-            const pontosRef = doc(db, "semanas", "pontosSemanais");
-            await updateDoc(pontosRef, {
-                abelha: increment(pontosBonus.abelha),
-                joaninha: increment(pontosBonus.joaninha),
-                vagalume: increment(pontosBonus.vagalume)
-            });
-            mostrarPopup("✨ Bônus Aplicado!", "Pontos do Jogo da Vantagem foram adicionados!", 6000);
-        }
+                // Ativa o "travão" para não rodar de novo
+                transaction.set(advantageRef, { bonusAplicado: true }, { merge: true });
+
+                // Atualiza as variáveis locais para refletir na interface imediatamente
+                pontosSemanais.abelha += pontosBonus.abelha;
+                pontosSemanais.joaninha += pontosBonus.joaninha;
+                pontosSemanais.vagalume += pontosBonus.vagalume;
+                
+                // Exibe o popup de sucesso
+                mostrarPopup("✨ Bônus Aplicado!", "Pontos do Jogo da Vantagem foram adicionados!", 6000);
+            }
+        });
+    } catch (error) {
+        console.error("Erro na transação de bônus da vantagem:", error);
     }
+}
 
     // LÓGICA DE FINALIZAÇÃO E RESET (DOMINGO)
     if (hoje.getDay() === 0 && hoje.getBrasiliaHours() >= 0) {
@@ -558,18 +578,18 @@ let unsubscribeViewerListener = null;
           const ontemISO = ontem.toISOString().slice(0,10);
 
           if (acao === 'adicionar') {
-            if (ultimoDia !== ontemISO && ultimoDia !== hojeISO) {
-              streak = 0;
-            }
-            if (ultimoDia !== hojeISO) {
+            // Caso 1: O último foco foi ontem? É um dia consecutivo!
+            if (ultimoDia === ontemISO) {
               streak += 1;
+            } 
+            // Caso 2: Não foi ontem, e também não é um novo clique hoje? Streak quebrado.
+            else if (ultimoDia !== hojeISO) {
+              streak = 1; // Começa um novo streak de 1 dia.
             }
-            ultimoDia = hojeISO;
-          } else if (acao === 'remover') {
-            if (ultimoDia === hojeISO) {
-              streak = Math.max(0, streak - 1);
-              ultimoDia = streak === 0 ? null : ontemISO;
-            }
+            // (Caso implícito: se ultimoDia === hojeISO, não faz nada com o streak,
+            // pois o usuário está apenas desmarcando e marcando no mesmo dia).
+
+            ultimoDia = hojeISO; // Atualiza a data do último foco para hoje.
           }
           
           transaction.set(docRef, { streak, ultimoDia });
