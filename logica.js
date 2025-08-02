@@ -578,18 +578,15 @@ if (hoje.getDay() === 6) { // 6 = Sábado
           const ontemISO = ontem.toISOString().slice(0,10);
 
           if (acao === 'adicionar') {
-            // Caso 1: O último foco foi ontem? É um dia consecutivo!
-            if (ultimoDia === ontemISO) {
-              streak += 1;
-            } 
-            // Caso 2: Não foi ontem, e também não é um novo clique hoje? Streak quebrado.
-            else if (ultimoDia !== hojeISO) {
-              streak = 1; // Começa um novo streak de 1 dia.
+            // NOVA LÓGICA: Apenas incrementa se o foco de hoje ainda não foi contado.
+            // Isso ignora se o último foco foi ontem ou há um mês.
+            if (ultimoDia !== hojeISO) {
+              streak += 1; 
             }
-            // (Caso implícito: se ultimoDia === hojeISO, não faz nada com o streak,
-            // pois o usuário está apenas desmarcando e marcando no mesmo dia).
-
-            ultimoDia = hojeISO; // Atualiza a data do último foco para hoje.
+            
+            // O streak só é decrementado se a ação for 'remover'.
+            // Mantém a data do último foco para evitar contagem dupla no mesmo dia.
+            ultimoDia = hojeISO; 
           }
           
           transaction.set(docRef, { streak, ultimoDia });
