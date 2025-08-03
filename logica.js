@@ -156,7 +156,6 @@ let unsubscribeViewerListener = null;
   // ATUALIZADA: Verificação de data atual
   async function salvarPresenca() {
     const hoje = getHoje();
-    if (hoje.getDay() === 0) return;
 
     // Adicione esta linha para definir hojeISO
     const hojeISO = getHojeISO();
@@ -226,18 +225,7 @@ let unsubscribeViewerListener = null;
   async function carregarPontosSemanais() {
     const hoje = getHoje();
     
-    // Se for domingo, zerar pontos e apagar documento se existir
-    if (hoje.getDay() === 0) {
-      const pontosRef = doc(db, "semanas", "pontosSemanais");
-      const docSnap = await getDoc(pontosRef);
-      if (docSnap.exists()) {
-        await deleteDoc(pontosRef);
-      }
-      pontosSemanais.abelha = 0;
-      pontosSemanais.joaninha = 0;
-      pontosSemanais.vagalume = 0;
-      return;
-    }
+    // O bloco de código que apagava os pontos no domingo foi REMOVIDO.
 
     // Carregar pontos do documento único
     const pontosRef = doc(db, "semanas", "pontosSemanais");
@@ -249,12 +237,18 @@ let unsubscribeViewerListener = null;
       pontosSemanais.joaninha = data.joaninha || 0;
       pontosSemanais.vagalume = data.vagalume || 0;
     } else {
-      // Criar documento apenas se não for domingo
-      await setDoc(pontosRef, {
-        abelha: 0,
-        joaninha: 0,
-        vagalume: 0
-      });
+      // Se não existe e não for domingo (dia de reset), cria um novo.
+      if (hoje.getDay() !== 0) {
+          await setDoc(pontosRef, {
+            abelha: 0,
+            joaninha: 0,
+            vagalume: 0
+          });
+      }
+      // Se for domingo e não existe, está correto, pois a semana ainda vai começar.
+      pontosSemanais.abelha = 0;
+      pontosSemanais.joaninha = 0;
+      pontosSemanais.vagalume = 0;
     }
   }
 
@@ -827,30 +821,24 @@ if (hoje.getDay() === 6) { // 6 = Sábado
     const acao = checkbox.checked ? 'adicionar' : 'remover';
 
     // 1. Feedback visual imediato para o usuário
-    if (isDomingo) {
-        mostrarPopup("ℹ️ Domingo", "Pontos não são contabilizados durante a folga coletiva.", 3000);
-    } else if (acao === 'adicionar') {
+    if (acao === 'adicionar') {
         mostrarPopup("🎉 Foco Registrado", `${nome}, parabéns por ter focado hoje!`, 3000);
     } else {
         mostrarPopup("ℹ️ Foco Removido", `${nome}, seu foco de hoje foi removido`, 3000);
     }
 
     // 2. Atualiza pontos da equipe e resumo geral (isso já era rápido)
-    if (!isDomingo) {
         let equipeDoMembro = membroAlvo.equipe;
         if (equipeDoMembro) {
             const valorIncremento = checkbox.checked ? 1 : -1;
             pontosSemanais[equipeDoMembro] += valorIncremento;
         }
-    }
     await atualizarResumo();
 
     // 3. Processa a lógica de streak e pontos em segundo plano
     (async () => {
-      if (isDomingo) return; 
 
       // Atualiza pontos da equipe no Firestore
-      let equipeDoMembro = membroAlvo.equipe;
       if (equipeDoMembro) {
         const pontosRef = doc(db, "semanas", "pontosSemanais");
         const valorIncremento = checkbox.checked ? 1 : -1;
@@ -1097,9 +1085,6 @@ if (hoje.getDay() === 6) { // 6 = Sábado
 
     // Se for domingo, não faz nada
     const hoje = getHoje();
-    if (hoje.getDay() === 0) {
-      return;
-    }
 	
 	// =======================================================
     //  INÍCIO DA LÓGICA ADICIONADA
