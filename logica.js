@@ -817,29 +817,34 @@ if (hoje.getDay() === 6) { // 6 = Sábado
     }
 
     const hoje = getHoje();
-    const isDomingo = hoje.getDay() === 0;
+    const isDomingo = hoje.getDay() === 0; // Verifica se é domingo (0)
     const acao = checkbox.checked ? 'adicionar' : 'remover';
 
     // 1. Feedback visual imediato para o usuário
     if (acao === 'adicionar') {
         mostrarPopup("🎉 Foco Registrado", `${nome}, parabéns por ter focado hoje!`, 3000);
+        // Exibe o aviso específico se for domingo
+        if (isDomingo) {
+            mostrarPopup("Aviso", "Pontos semanais não são contabilizados aos domingos", 5000);
+        }
     } else {
         mostrarPopup("ℹ️ Foco Removido", `${nome}, seu foco de hoje foi removido`, 3000);
     }
 
     // 2. Atualiza pontos da equipe e resumo geral (isso já era rápido)
-        let equipeDoMembro = membroAlvo.equipe;
-        if (equipeDoMembro) {
-            const valorIncremento = checkbox.checked ? 1 : -1;
-            pontosSemanais[equipeDoMembro] += valorIncremento;
-        }
+    let equipeDoMembro = membroAlvo.equipe;
+    // SÓ ATUALIZA OS PONTOS SE NÃO FOR DOMINGO
+    if (!isDomingo && equipeDoMembro) {
+        const valorIncremento = checkbox.checked ? 1 : -1;
+        pontosSemanais[equipeDoMembro] += valorIncremento;
+    }
     await atualizarResumo();
 
     // 3. Processa a lógica de streak e pontos em segundo plano
     (async () => {
-
-      // Atualiza pontos da equipe no Firestore
-      if (equipeDoMembro) {
+      
+      // SÓ ATUALIZA OS PONTOS NO FIREBASE SE NÃO FOR DOMINGO
+      if (!isDomingo && equipeDoMembro) {
         const pontosRef = doc(db, "semanas", "pontosSemanais");
         const valorIncremento = checkbox.checked ? 1 : -1;
         try {
@@ -852,17 +857,9 @@ if (hoje.getDay() === 6) { // 6 = Sábado
         }
       }
       
-      // =================================================================
-      //  AQUI ESTÁ A MÁGICA DA VELOCIDADE E PRECISÃO
-      // =================================================================
-      // 1. Pega o streak CORRETO do banco de dados (a parte que pode demorar um pouco)
+      // A lógica de streaks continua funcionando normalmente em qualquer dia
       const { streakAtual } = await verificarConquista(nome, acao);
-
-      // 2. Atualiza nosso cache local com o novo valor, para consistência
       streaksCache[nome] = streakAtual;
-
-      // 3. ATUALIZA A TELA IMEDIATAMENTE usando o valor correto.
-      //    Esta função não acessa o banco de dados e é instantânea.
       atualizarStreakVisualMembro(nome, streakAtual);
       
     })();
