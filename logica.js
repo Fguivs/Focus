@@ -819,15 +819,20 @@ if (hoje.getDay() === 6) { // 6 = Sábado
     const hoje = getHoje();
     const isDomingo = hoje.getDay() === 0; // Verifica se é domingo (0)
     const acao = checkbox.checked ? 'adicionar' : 'remover';
-
+   
     // 1. Feedback visual imediato para o usuário
     if (acao === 'adicionar') {
+        // Sempre exibe a mensagem de parabéns primeiro, para qualquer dia.
         mostrarPopup("🎉 Foco Registrado", `${nome}, parabéns por ter focado hoje!`, 3000);
-        // Exibe o aviso específico se for domingo
+
+        // Se for domingo, agenda a exibição do segundo popup para depois que o primeiro sumir.
         if (isDomingo) {
-            mostrarPopup("Aviso", "Pontos semanais não são contabilizados aos domingos", 5000);
+            setTimeout(() => {
+                mostrarPopup("⚠️ Aviso", "Pontos semanais não são contabilizados aos domingos", 5000);
+            }, 3000); // O tempo de espera (3000ms) é igual à duração do primeiro popup.
         }
     } else {
+        // A lógica para remover o foco permanece a mesma.
         mostrarPopup("ℹ️ Foco Removido", `${nome}, seu foco de hoje foi removido`, 3000);
     }
 
