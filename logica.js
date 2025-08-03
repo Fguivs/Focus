@@ -4235,7 +4235,7 @@ function startLeaderTestGame(gameIndex) {
 // --- JOGO 1: JOGO DA MEMÓRIA (CÓDIGO EXISTENTE ADAPTADO) ---
 // ==========================================================
 function initMemoryGame() {
-    const EMOJIS = ['🧠', '🔥', '🚀', '💎', '🏆', '🌞'];
+    const EMOJIS = ['🧠', '🔥', '🚀', '💎', '🏆', '🌞', '🧸', '🐸'];
     let gameFlippedCards = [];
     let gameMatchedPairs = 0;
     let gameLockBoard = false;
@@ -4502,3 +4502,4 @@ function initSimonGame() {
 }
 
 // ===== FIM DA LÓGICA DO JOGO DA VANTAGEM =====
+
