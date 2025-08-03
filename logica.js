@@ -348,7 +348,7 @@ if (hoje.getDay() === 6) { // 6 = Sábado
             const empate = equipesComPontuacao.length > 1;
             const vencedoras = equipesComPontuacao.filter(eq => pontos[eq] === maxPontos);
 
-            if (vencedoras.length > 0) {
+            if (vencedoras.length > 0 && maxPontos > 0) {
                 const rankingRef = doc(db, "ranking", "geral");
                 const atualizacoes = {};
                 vencedoras.forEach(equipe => {
