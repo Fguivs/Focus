@@ -78,6 +78,24 @@
 	  <div id="relogio"></div>
       <div id="info-semana"></div>
 	  
+	  <div class="botoes-info-container">
+        <button id="btn-instrucoes" class="botao-info">📜 Instruções</button>
+        <button id="btn-advertencias" class="botao-info">⚠️ Advertências</button>
+      </div>
+      </header>
+
+    <div id="secao-instrucoes" class="secao-fullscreen hidden">
+      <button class="botao-fechar-secao">X</button>
+      <div class="secao-conteudo">
+        </div>
+    </div>
+
+    <div id="secao-advertencias" class="secao-fullscreen hidden">
+      <button class="botao-fechar-secao">X</button>
+      <div class="secao-conteudo">
+        </div>
+    </div>
+	  
 	  <div id="user-menu-container" class="hidden">
   <button id="user-menu-btn">👤</button>
   <div id="user-menu-dropdown" class="hidden">
@@ -172,7 +190,7 @@
     <div id="advantage-game-board"></div>
 
     <div id="vantagem-locked-overlay" class="hidden">
-      <div class="lock-icon">✅️</div>
+      <div class="lock-icon">✔️</div>
       <p id="vantagem-lock-message">Desafio concluído esta semana! Volte na segunda-feira para o próximo.</p>
     </div>
   </div>
@@ -186,7 +204,7 @@
 <div class="folgas-container">
   
   <h2>📅 Quadro de Folgas</h2>
-<p class="folga-explicacao">No dia da sua folga, você pode marcar sua caixa de seleção sem precisar focar ou cuidar da fazenda.</p>
+  <p class="folga-explicacao">No dia da sua folga, você pode marcar sua caixa de seleção sem precisar focar ou cuidar da fazenda.</p>
 <button id="change-folga-btn" class="rectangular-button" title="Alterar minha folga">Trocar Folga</button>
   
   <div class="dias-container">
