@@ -366,6 +366,17 @@
         </div>
       </div>
     </div>
+	
+	<div id="secao-ociosos" class="vantagem-container hidden">
+  <h2>👥 Membros Ociosos da Semana</h2>
+  <p class="vantagem-descricao" id="ociosos-descricao">
+    A lista abaixo mostra os membros que focaram menos de 4 vezes nesta semana (de Segunda a Sábado).
+  </p>
+  <div id="lista-ociosos" class="ociosos-lista-container">
+    <div class="ociosos-placeholder">Nenhum membro ocioso esta semana.</div>
+  </div>
+</div>
+
   </div>
   
   <div id="popup"></div>
@@ -615,6 +626,21 @@
     </div>
 
     <button class="btn-cancelar" style="margin-top: 25px;" onclick="closeModal('placar-vantagem-modal')">Fechar</button>
+  </div>
+</div>
+
+<div id="confirm-expel-modal" class="modal-overlay">
+  <div class="modal-content" style="max-width: 450px;">
+    <h3>⚠️ Confirmar Expulsão</h3>
+    <p class="modal-description">
+      Você tem certeza que deseja <strong>expulsar permanentemente</strong> o membro <strong id="member-to-expel-name" style="color: #e74c3c;"></strong>?
+      <br><br>
+      Toda a sua pontuação, streaks e dados serão apagados. <strong>Esta ação não pode ser desfeita.</strong>
+    </p>
+    <div style="display: flex; justify-content: space-around; gap: 15px;">
+      <button class="btn-cancelar" style="flex: 1;" onclick="closeModal('confirm-expel-modal')">Cancelar</button>
+      <button id="confirm-expel-button" class="auth-btn" style="flex: 1; background-color: #e74c3c;">Sim, Expulsar</button>
+    </div>
   </div>
 </div>
   
