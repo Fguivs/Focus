@@ -125,6 +125,7 @@
         <div class="progresso-container">
           <div id="progresso-barra"></div>
   </div>
+  <button id="btn-ver-resumo-ontem" class="botao-resumo">Resumo de Ontem</button>
   <div id="mensagem-todos-focados" class="hidden" style="margin-top: 15px; font-weight: bold; color: #9b59b6; font-size: 1.1rem;"></div>
 </div>
       </div>
@@ -149,7 +150,7 @@
         </div>
       </div>
       <p style="margin-top: 15px; font-size: 0.9em; color: #7f8c8d;">
-	  <strong>Foque no mínimo 40 minutos, e cuide da fazenda do grupo 2 vezes para marcar seu ponto!</strong><br>
+	  <strong>Foque no mínimo 20 minutos, cuide da fazenda do grupo e marque seu ponto!</strong><br>
         Competição semanal: Segunda a Sábado.<br>
         A equipe com mais pontos ao final da competição ganha +1 ponto no ranking de equipes.<br>
         Em caso de empate, todas as equipes empatadas ganham +1 ponto.<br>
@@ -607,7 +608,7 @@
 </div>
 
 <div id="placar-vantagem-modal" class="modal-overlay">
-  <div class="modal-content" style="max-width: 600px; width: 95%;">
+   <div class="modal-content" style="max-width: 600px; width: 95%; max-height: 90vh; display: flex; flex-direction: column;">
     <h3>🏆 Placar do Jogo da Vantagem</h3>
     <p class="modal-description">
       A ordem mostra quem finalizou o desafio primeiro. Parabéns aos mais rápidos!
@@ -643,7 +644,7 @@
     </div>
   </div>
 </div>
-
+  
     <div id="resumo-ontem-modal" class="modal-overlay hidden">
   <div id="resumo-ontem-content" class="modal-content" style="max-width: 800px; width: 95%; max-height: 90vh; overflow-y: auto;">
     <div id="resumo-ontem-body">
@@ -652,7 +653,7 @@
     <button id="fechar-resumo-btn" class="auth-btn" style="margin-top: 25px;">Entendi, fechar!</button>
   </div>
 </div>
-	
+  
   <script type="module" src="logica.js"></script>
   
 </body>
