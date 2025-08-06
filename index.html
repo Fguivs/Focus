@@ -571,13 +571,13 @@
       </div>
     </div>
 	
-	<div class="painel-section">
-      <h3>🔄 Sincronização Global</h3>
-      <p style="font-size:0.9rem; margin-bottom:15px; color:#555;">
-        Use este botão se um membro foi adicionado/removido ou se a interface de alguém parece desatualizada. Isso forçará a atualização da página para todos os usuários online.
-      </p>
-      <button id="force-refresh-btn" class="painel-btn btn-adicionar" style="width:100%; background-color: #3498db;">Forçar Atualização para Todos</button>
-    </div>
+		<div class="painel-section">
+  <h3>🚀 Forçar Atualização de Versão</h3>
+  <button id="trigger-update-btn" class="painel-btn btn-remover" style="width:100%; background-color: #f39c12;">Ativar Tela de Atualização para Todos</button>
+  <p style="font-size:0.8rem; margin-top:10px; color:#e67e22;">
+    Use isso após fazer uma grande mudança no código. Todos os membros serão forçados a atualizar a página.
+  </p>
+</div>
 	
 	<div class="painel-section">
       <h3>🔄 Sincronização Global</h3>
@@ -685,6 +685,17 @@
       <div class="carregando">Gerando o resumo de ontem, por favor aguarde...</div>
     </div>
     <button id="fechar-resumo-btn" class="auth-btn" style="margin-top: 25px;">Entendi, fechar!</button>
+  </div>
+</div>
+  
+    <div id="update-overlay" class="update-overlay hidden">
+  <div class="update-box">
+    <div class="update-icon">🔄</div>
+    <h2>Atualização Disponível</h2>
+    <p>
+      Foram implemenadas melhorias importantes na página! Para continuar, por favor, clique no botão abaixo para carregar a versão mais recente.
+    </p>
+    <button id="perform-update-btn" class="update-btn">Fazer Atualização Agora</button>
   </div>
 </div>
   
