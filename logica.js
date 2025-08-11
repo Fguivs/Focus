@@ -1490,6 +1490,7 @@ if (acao === 'adicionar') {
   const hoje = getHoje();
   if (hoje.getDay() === 1) {
     await limparFeedSemanal(); 
+	 await limparTodoOMural();
   }
 
     // 1. Reseta o dia: desmarca todos os checkboxes e apaga o registro de presença do dia.
@@ -4112,7 +4113,7 @@ window.toggleReacaoFeed = async function(event, eventoId, emoji) {
 
 // NOVA FUNÇÃO: Apaga todos os documentos do feed semanal
 async function limparFeedSemanal() {
-  console.log("🧹 Limpando o feed da semana anterior...");
+  console.log("🧹 Verificando e limpando o feed da semana anterior...");
   const q = query(collection(db, "resumoSemanalFeed"));
   const querySnapshot = await getDocs(q);
 
@@ -4128,11 +4129,33 @@ async function limparFeedSemanal() {
 
   await batch.commit();
   console.log(`✅ Feed limpo! ${querySnapshot.size} eventos removidos.`);
+  
+  // Adiciona a mensagem de "nova semana" APÓS limpar o feed.
   await adicionarEventoAoFeed(
       'geral', 
       '✨ Uma Nova Semana Começou!', 
       'O resumo da semana foi zerado. Que esta seja uma semana produtiva e cheia de foco para todos nós!'
   );
+}
+
+// 2. ADICIONE esta nova função para limpar todo o mural.
+async function limparTodoOMural() {
+    console.log("🧹 Verificando e limpando o mural de mensagens...");
+    const q = query(collection(db, "mural"));
+    const querySnapshot = await getDocs(q);
+
+    if (querySnapshot.empty) {
+        console.log("Mural de mensagens já estava limpo.");
+        return;
+    }
+
+    const batch = writeBatch(db);
+    querySnapshot.forEach(doc => {
+        batch.delete(doc.ref);
+    });
+
+    await batch.commit();
+    console.log(`✅ Mural limpo! ${querySnapshot.size} mensagens removidas.`);
 }
 
 // Função que o líder chama para forçar a atualização de todos
