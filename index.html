@@ -124,7 +124,7 @@
         <div id="contadorGeral">0 épicos focaram hoje!</div>
         <div class="progresso-container">
           <div id="progresso-barra"></div>
-		   <div id="marcador-arvore" class="marcador-arvore" style="display: none;" title="Meta para a Árvore Épica">
+		  <div id="marcador-arvore" class="marcador-arvore" style="display: none;" title="Meta para a Árvore Épica">
     <div class="linha-vertical"></div>
     <div class="emoji-arvore">🌳</div>
 </div>
@@ -133,7 +133,7 @@
 </div>
       </div>
     
-     <div class="competicao-container">
+    <div class="competicao-container">
       <h2>🏆 Competição de Equipes</h2>
       <div class="equipes-competicao">
         <div class="equipe-competicao" id="podio-abelha">
@@ -201,7 +201,7 @@
   </div>
 </div>
 	
-	<div id="resumo-semana-container" class="mural-container">
+		  <div id="resumo-semana-container" class="mural-container">
       <h2>📰 Resumo da Semana</h2>
       <p class="mural-descricao">
         Acompanhe em tempo real as principais conquistas e eventos da semana! Este feed é zerado toda segunda-feira.
@@ -534,7 +534,7 @@
   </div>
 </div>
   
-  <div id="control-panel-modal" class="modal-overlay">
+ <div id="control-panel-modal" class="modal-overlay">
   <div class="modal-content" style="max-width: 800px; width: 95%; max-height: 90vh; overflow-y: auto;">
     <div class="painel-header">
       <h2>Painel de Controle</h2>
@@ -545,18 +545,15 @@
       <h3>Adicionar Novo Membro</h3>
       <div class="controle-pontos" style="grid-template-columns: 1fr 1fr 1fr auto; gap: 15px;">
         <input type="text" id="new-member-name" class="painel-input" placeholder="Nome do Membro">
-        
         <select id="new-member-team" class="painel-input">
           <option value="abelha">Equipe Abelha</option>
           <option value="joaninha">Equipe Joaninha</option>
           <option value="vagalume">Equipe Vaga-lume</option>
         </select>
-
         <select id="new-member-role" class="painel-input">
           <option value="membro">Membro</option>
           <option value="lider-equipe">Líder de Equipe</option>
         </select>
-
         <button id="add-member-btn" class="painel-btn btn-adicionar">Adicionar</button>
       </div>
       <div id="new-member-result" style="margin-top: 15px; font-weight: bold; color: #27ae60;"></div>
@@ -565,28 +562,41 @@
     <div class="painel-section">
       <h3>Remover Membro</h3>
       <div class="controle-pontos" style="grid-template-columns: 1fr auto; gap: 15px;">
-        <select id="select-member-to-remove" class="painel-input">
-          </select>
+        <select id="select-member-to-remove" class="painel-input"></select>
         <button id="remove-member-btn" class="painel-btn btn-remover">Remover</button>
       </div>
     </div>
-	
-		<div class="painel-section">
-  <h3>🚀 Forçar Atualização de Versão</h3>
-  <button id="trigger-update-btn" class="painel-btn btn-remover" style="width:100%; background-color: #f39c12;">Ativar Tela de Atualização para Todos</button>
-  <p style="font-size:0.8rem; margin-top:10px; color:#e67e22;">
-    Use isso após fazer uma grande mudança no código. Todos os membros serão forçados a atualizar a página.
-  </p>
-</div>
-	
-	<div class="painel-section">
+
+    <div class="painel-section">
+      <h3>🗑️ Limpar Resumo da Semana</h3>
+      <button id="limpar-feed-btn" class="painel-btn btn-remover" style="width:100%">Apagar Todos os Eventos do Feed</button>
+      <p style="font-size:0.8rem; margin-top:10px; color:#c0392b;">
+        <strong>Atenção:</strong> Esta ação apagará permanentemente todos os cards de eventos do "Resumo da Semana". Use caso a limpeza automática de segunda-feira falhe.
+      </p>
+    </div>
+
+    <div class="painel-section">
+      <h3>🗑️ Limpar Mural de Mensagens</h3>
+      <button id="limpar-mural-btn" class="painel-btn btn-remover" style="width:100%">Apagar Todas as Mensagens do Mural</button>
+      <p style="font-size:0.8rem; margin-top:10px; color:#c0392b;">
+        <strong>Atenção:</strong> Esta ação apagará permanentemente todas as mensagens do mural. Use caso a limpeza automática de segunda-feira falhe.
+      </p>
+    </div>
+
+    <div class="painel-section">
+      <h3>🚀 Forçar Atualização de Versão</h3>
+      <button id="trigger-update-btn" class="painel-btn btn-remover" style="width:100%; background-color: #f39c12;">Ativar Tela de Atualização para Todos</button>
+      <p style="font-size:0.8rem; margin-top:10px; color:#e67e22;">
+        Use isso após fazer uma grande mudança no código. Todos os membros serão forçados a atualizar a página.
+      </p>
+    </div>
+    <div class="painel-section">
       <h3>🔄 Sincronização Global</h3>
       <p style="font-size:0.9rem; margin-bottom:15px; color:#555;">
         Use este botão se um membro foi adicionado/removido ou se a interface de alguém parece desatualizada. Isso forçará a atualização da página para todos os usuários online.
       </p>
       <button id="force-refresh-btn" class="painel-btn btn-adicionar" style="width:100%; background-color: #3498db;">Forçar Atualização para Todos</button>
     </div>
-	
   </div>
 </div>
   
@@ -679,16 +689,7 @@
   </div>
 </div>
   
-  <div id="resumo-ontem-modal" class="modal-overlay hidden">
-  <div id="resumo-ontem-content" class="modal-content" style="max-width: 800px; width: 95%; max-height: 90vh; overflow-y: auto;">
-    <div id="resumo-ontem-body">
-      <div class="carregando">Gerando o resumo de ontem, por favor aguarde...</div>
-    </div>
-    <button id="fechar-resumo-btn" class="auth-btn" style="margin-top: 25px;">Entendi, fechar!</button>
-  </div>
-</div>
-  
-    <div id="update-overlay" class="update-overlay hidden">
+  <div id="update-overlay" class="update-overlay hidden">
   <div class="update-box">
     <div class="update-icon">🔄</div>
     <h2>Atualização Disponível</h2>
@@ -699,7 +700,7 @@
   </div>
 </div>
   
-    <div id="custom-card-popup" class="card-popup-overlay">
+  <div id="custom-card-popup" class="card-popup-overlay">
   <div class="card-popup-content">
     <h2 id="card-popup-title" class="card-popup-title"></h2>
     <p id="card-popup-message" class="card-popup-message"></p>
