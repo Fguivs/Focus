@@ -83,6 +83,41 @@
         <button id="btn-advertencias" class="botao-info">⚠️ Advertências</button>
       </div>
       </header>
+	  
+	 <div id="painel-pessoal-container">
+  
+  <div class="perfil-header">
+    <span class="perfil-icone">👤</span>
+    <h2 id="saudacao-pessoal">Olá, <span id="nome-usuario-saudacao">Membro</span>!</h2>
+  </div>
+
+  <div id="indicador-equipe-pessoal" class="info-box hidden">
+    Equipe Desconhecida
+  </div>
+
+  <div class="info-box">
+    <div id="indicador-moedas-pessoal" class="info-box-valor">
+      💰 <span>0</span>
+    </div>
+    <div class="info-box-label">Moedas</div>
+  </div>
+  
+  <button id="botao-painel-usuario" class="botao-info hidden">
+    ⚙️ Painel do Usuário
+  </button>
+
+</div>
+
+    <div class="vantagem-container">
+  <h2>🎁 Código Secreto</h2>
+  <p class="vantagem-descricao">
+    Se você recebeu um código de recompensa do líder, insira-o abaixo para resgatar suas moedas!
+  </p>
+  <div id="redeem-code-section" style="max-width: 400px; margin: 0 auto;">
+    <input type="text" id="secret-code-input" class="painel-input" placeholder="Digite o código aqui" maxlength="6">
+    <button id="redeem-code-btn" class="painel-btn btn-adicionar" style="margin-top: 10px; width: 100%;">Resgatar Moedas</button>
+  </div>
+</div>
 
     <div id="secao-instrucoes" class="secao-fullscreen hidden">
       <button class="botao-fechar-secao">X</button>
@@ -94,18 +129,7 @@
       <button class="botao-fechar-secao">X</button>
       <div class="secao-conteudo">
         </div>
-    </div>
-	  
-	  <div id="user-menu-container" class="hidden">
-  <button id="user-menu-btn">👤</button>
-  <div id="user-menu-dropdown" class="hidden">
-  <div id="user-greeting" class="user-greeting">Olá, Usuário!</div>
-    <button id="menu-option-control-panel" class="menu-option hidden">Painel de Controle</button>
-    <button id="menu-option-change-password" class="menu-option">Trocar senha</button>
-    <button id="menu-option-change-secret" class="menu-option">Trocar pergunta secreta</button>
-    <button id="menu-option-logout" class="menu-option logout">Sair</button>
-  </div>
-</div>
+    </div
 
     </header>
     
@@ -216,6 +240,47 @@
     <div class="grupos-container" id="grupos-container">
       <!-- Conteúdo será gerado dinamicamente pelo JavaScript -->
     </div>
+	
+	<div id="condominio-container" class="arvore-epica-container">
+  <h2>🏡 Condomínio Épicos</h2>
+  <div id="condominio-info-header">
+      <strong id="nome-membro-condominio"></strong>
+      <div id="saldo-moedas-container">
+          <span class="moeda-emoji">💰</span>
+          <span id="saldo-moedas">0</span>
+      </div>
+  </div>
+  <p class="arvore-explicacao">Veja abaixo sua casa no condomínio épicos.</p>
+
+  <div style="text-align: center; margin-bottom: 25px;">
+    <button class="botao-info" onclick="openModal('info-moedas-modal')">
+      ℹ️ Como ganhar moedas?
+    </button>
+  </div>
+
+  <div class="tree-display">
+    <div class="tree-sky day-mode">
+      <div class="stars-container"></div>
+    </div>
+    <div id="sol-condominio" class="sky-object"><img src="https://i.ibb.co/TD9sxMNF/Sol.png" alt="Sol"></div>
+    <div id="lua-condominio" class="sky-object"><img src="https://i.ibb.co/93f7Ptjr/Lua.png" alt="Lua"></div>
+    <img class="nuvem nuvem-1" src="https://i.ibb.co/rfsS1Tp9/nuvem.png" alt="Nuvem">
+    <img class="nuvem nuvem-2" src="https://i.ibb.co/rfsS1Tp9/nuvem.png" alt="Nuvem">
+    <img class="nuvem nuvem-3" src="https://i.ibb.co/rfsS1Tp9/nuvem.png" alt="Nuvem">
+    
+    <div class="ground"></div>
+
+    <div id="lote-pessoal-container">
+        </div>
+  </div>
+
+  <div class="botoes-info-container" style="margin-top: 25px;">
+  <button id="btn-abrir-loja" class="botao-info">🏪 Abrir Loja</button>
+  <button id="btn-abrir-inventario" class="botao-info">🎒 Meu Inventário</button>
+  <button id="btn-ver-condominio" class="botao-info">🏘️ Ver Condomínio</button>
+  <button id="btn-ranking-imobiliario" class="botao-info">🏆 Ranking Imobiliário</button>
+</div>
+</div>
     
 	<!-- Quadro de Folgas -->
 <div class="folgas-container">
@@ -257,7 +322,7 @@
 </div>
     
     <!-- SEÇÃO ATUALIZADA: Árvore Épica com espaço idêntico ao código de referência -->
-    <div class="arvore-epica-container">
+    <div id="secao-arvore-epica" class="arvore-epica-container">
       <h2>🌳 Árvore Épica</h2>
 
       <p class="arvore-explicacao">
@@ -268,8 +333,8 @@
         <div class="tree-sky day-mode">
           <div class="stars-container"></div>
         </div>
-        <div id="sol" class="sky-object"><img src="https://i.ibb.co/yFW4Lq73/sol.png" alt="Sol"></div>
-        <div id="lua" class="sky-object"><img src="https://i.ibb.co/LDdHmbP6/lua.png" alt="Lua"></div>
+        <div id="sol" class="sky-object"><img src="https://i.ibb.co/TD9sxMNF/Sol.png" alt="Sol"></div>
+        <div id="lua" class="sky-object"><img src="https://i.ibb.co/93f7Ptjr/Lua.png" alt="Lua"></div>
         <img class="nuvem nuvem-1" src="https://i.ibb.co/rfsS1Tp9/nuvem.png" alt="Nuvem">
         <img class="nuvem nuvem-2" src="https://i.ibb.co/rfsS1Tp9/nuvem.png" alt="Nuvem">
         <img class="nuvem nuvem-3" src="https://i.ibb.co/rfsS1Tp9/nuvem.png" alt="Nuvem">
@@ -381,6 +446,38 @@
           <div class="medalha-nome">Solar</div>
           <div class="medalha-dias">365 dias</div>
         </div>
+		
+		<div class="medalha-item">
+       <div class="medalha-emoji">🐉</div>
+       <div class="medalha-nome">Mítico</div>
+       <div class="medalha-dias">550 dias</div>
+     </div>
+     <div class="medalha-item">
+       <div class="medalha-emoji">🎃</div>
+       <div class="medalha-nome">Horripilante</div>
+       <div class="medalha-dias">730 dias</div>
+     </div>
+     <div class="medalha-item">
+       <div class="medalha-emoji">💣</div>
+       <div class="medalha-nome">Poder Destrutivo</div>
+       <div class="medalha-dias">900 dias</div>
+     </div>
+     <div class="medalha-item">
+       <div class="medalha-emoji">😇</div>
+       <div class="medalha-nome">Angelical</div>
+       <div class="medalha-dias">1100 dias</div>
+     </div>
+     <div class="medalha-item">
+       <div class="medalha-emoji">💠</div>
+       <div class="medalha-nome">Primordial</div>
+       <div class="medalha-dias">1460 dias</div>
+     </div>
+     <div class="medalha-item">
+       <div class="medalha-emoji">♾️</div>
+       <div class="medalha-nome">Eterno</div>
+       <div class="medalha-dias">1825 dias</div>
+     </div>
+		
       </div>
     </div>
 	
@@ -534,7 +631,7 @@
   </div>
 </div>
   
- <div id="control-panel-modal" class="modal-overlay">
+<div id="control-panel-modal" class="modal-overlay">
   <div class="modal-content" style="max-width: 800px; width: 95%; max-height: 90vh; overflow-y: auto;">
     <div class="painel-header">
       <h2>Painel de Controle</h2>
@@ -567,7 +664,7 @@
       </div>
     </div>
 
-    <div class="painel-section">
+    <div class="painel-section lider-geral-only">
       <h3>🗑️ Limpar Resumo da Semana</h3>
       <button id="limpar-feed-btn" class="painel-btn btn-remover" style="width:100%">Apagar Todos os Eventos do Feed</button>
       <p style="font-size:0.8rem; margin-top:10px; color:#c0392b;">
@@ -575,7 +672,7 @@
       </p>
     </div>
 
-    <div class="painel-section">
+    <div class="painel-section lider-geral-only">
       <h3>🗑️ Limpar Mural de Mensagens</h3>
       <button id="limpar-mural-btn" class="painel-btn btn-remover" style="width:100%">Apagar Todas as Mensagens do Mural</button>
       <p style="font-size:0.8rem; margin-top:10px; color:#c0392b;">
@@ -583,14 +680,14 @@
       </p>
     </div>
 
-    <div class="painel-section">
+    <div class="painel-section lider-geral-only">
       <h3>🚀 Forçar Atualização de Versão</h3>
       <button id="trigger-update-btn" class="painel-btn btn-remover" style="width:100%; background-color: #f39c12;">Ativar Tela de Atualização para Todos</button>
       <p style="font-size:0.8rem; margin-top:10px; color:#e67e22;">
         Use isso após fazer uma grande mudança no código. Todos os membros serão forçados a atualizar a página.
       </p>
     </div>
-    <div class="painel-section">
+    <div class="painel-section lider-geral-only">
       <h3>🔄 Sincronização Global</h3>
       <p style="font-size:0.9rem; margin-bottom:15px; color:#555;">
         Use este botão se um membro foi adicionado/removido ou se a interface de alguém parece desatualizada. Isso forçará a atualização da página para todos os usuários online.
@@ -705,6 +802,263 @@
     <h2 id="card-popup-title" class="card-popup-title"></h2>
     <p id="card-popup-message" class="card-popup-message"></p>
     <button id="card-popup-close-btn" class="card-popup-close-btn">Entendido!</button>
+  </div>
+</div>
+  
+  <div id="loja-modal" class="modal-overlay">
+  <div class="modal-content" style="max-width: 90%; width: 1200px; max-height: 90vh; display: flex; flex-direction: column;">
+    <div class="painel-header">
+      <h2>🏪 Loja do Condomínio</h2>
+      <button class="painel-btn btn-fechar" onclick="closeModal('loja-modal')">Fechar</button>
+    </div>
+    
+    <div id="loja-conteudo" class="ociosos-lista-container">
+        <div class="painel-section">
+          <h3>🏡 Casas Pequenas</h3>
+          <div id="catalogo-pequenas" class="catalogo-grid"></div>
+        </div>
+        <div class="painel-section">
+          <h3>🏠 Casas Médias</h3>
+          <div id="catalogo-medias" class="catalogo-grid"></div>
+        </div>
+        <div class="painel-section">
+          <h3>🏰 Mansões</h3>
+          <div id="catalogo-mansoes" class="catalogo-grid"></div>
+        </div>
+    </div>
+  </div>
+</div>
+
+<div id="condominio-view-overlay" class="secao-fullscreen hidden">
+  <button class="botao-fechar-secao" onclick="document.getElementById('condominio-view-overlay').classList.add('hidden')">X</button>
+  
+  <button id="find-my-house-btn" class="botao-info" onclick="findMyHouse()">
+    🏠 Encontrar minha casa
+  </button>
+  
+  <div id="condominio-map-wrapper">
+    <div id="condominio-map">
+        </div>
+  </div>
+</div>
+  
+  <div id="inventario-modal" class="modal-overlay">
+  <div class="modal-content" style="max-width: 90%; width: 1200px; max-height: 90vh; display: flex; flex-direction: column;">
+    <div class="painel-header">
+      <h2>🎒 Meu Inventário de Casas</h2>
+      <button class="painel-btn btn-fechar" onclick="closeModal('inventario-modal')">Fechar</button>
+    </div>
+
+    <p class="modal-description" style="text-align: center;">Aqui estão todas as casas que você já comprou. Clique em uma para defini-la como sua casa principal no condomínio.</p>
+
+    <div id="inventario-conteudo" class="ociosos-lista-container">
+        <div id="inventario-grid" class="catalogo-grid">
+          </div>
+    </div>
+  </div>
+</div>
+
+<div id="info-moedas-modal" class="modal-overlay">
+  <div class="modal-content" style="max-width: 800px; width: 95%; max-height: 90vh; display: flex; flex-direction: column;">
+    <div class="painel-header">
+      <h2>💰 Como Ganhar Moedas Épicas</h2>
+      <button class="painel-btn btn-fechar" onclick="closeModal('info-moedas-modal')">Fechar</button>
+    </div>
+
+    <div class="ociosos-lista-container" style="padding-right: 10px;">
+      <p class="modal-description" style="text-align: center;">
+        As moedas são usadas para comprar casas e outros itens no Condomínio Épicos. Participe das atividades do grupo para acumular sua fortuna!
+      </p>
+      
+      <div class="painel-section">
+        <h3>✅ Foco Diário</h3>
+        <ul class="reward-list">
+          <li class="reward-item">
+            <div class="reward">
+              <span class="reward-value" id="reward-focoDiario">100</span> Moedas
+              <button class="edit-reward-btn hidden" data-key="focoDiario">✏️</button>
+            </div>
+            <div class="description">Ao marcar seu foco do dia na lista de presença.</div>
+          </li>
+        </ul>
+      </div>
+
+      <div class="painel-section">
+        <h3>🏆 Top 5 do Dia (Foco)</h3>
+        <ul class="reward-list">
+          <li class="reward-item">
+            <div class="reward"><span class="reward-rank">🥇 1º Lugar:</span> <span class="reward-value" id="reward-top5Diario_1">25</span> Moedas <button class="edit-reward-btn hidden" data-key="top5Diario_1">✏️</button></div>
+            <div class="description">Por ficar um dia em 1º lugar.</div>
+          </li>
+          <li class="reward-item">
+            <div class="reward"><span class="reward-rank">🥈 2º Lugar:</span> <span class="reward-value" id="reward-top5Diario_2">20</span> Moedas <button class="edit-reward-btn hidden" data-key="top5Diario_2">✏️</button></div>
+            <div class="description">Por ficar um dia em 2º lugar.</div>
+          </li>
+          <li class="reward-item">
+            <div class="reward"><span class="reward-rank">🥉 3º Lugar:</span> <span class="reward-value" id="reward-top5Diario_3">15</span> Moedas <button class="edit-reward-btn hidden" data-key="top5Diario_3">✏️</button></div>
+            <div class="description">Por ficar um dia em 3º lugar.</div>
+          </li>
+          <li class="reward-item">
+            <div class="reward"><span class="reward-rank">⭐ 4º Lugar:</span> <span class="reward-value" id="reward-top5Diario_4">10</span> Moedas <button class="edit-reward-btn hidden" data-key="top5Diario_4">✏️</button></div>
+            <div class="description">Por ficar um dia em 4º lugar.</div>
+          </li>
+          <li class="reward-item">
+            <div class="reward"><span class="reward-rank">⭐ 5º Lugar:</span> <span class="reward-value" id="reward-top5Diario_5">5</span> Moedas <button class="edit-reward-btn hidden" data-key="top5Diario_5">✏️</button></div>
+            <div class="description">Por ficar um dia em 5º lugar.</div>
+          </li>
+        </ul>
+      </div>
+      
+      <div class="painel-section">
+          <h3>✍️ Interação Social</h3>
+          <ul class="reward-list">
+            <li class="reward-item">
+              <div class="reward"><span class="reward-value" id="reward-postarMural">5</span> Moedas <button class="edit-reward-btn hidden" data-key="postarMural">✏️</button></div>
+              <div class="description">Ao publicar uma nova mensagem no Mural.</div>
+            </li>
+            <li class="reward-item">
+              <div class="reward"><span class="reward-value" id="reward-reagirConteudo">1</span> Moedas <button class="edit-reward-btn hidden" data-key="reagirConteudo">✏️</button></div>
+              <div class="description">Ao reagir a uma mensagem no Mural ou a um evento no Resumo da Semana.</div>
+            </li>
+          </ul>
+      </div>
+
+      <div class="painel-section">
+        <h3>🎮 Jogo da Vantagem</h3>
+         <ul class="reward-list">
+            <li class="reward-item">
+              <div class="reward"><span class="reward-value" id="reward-vitoriaJogoVantagem">50</span> Moedas <button class="edit-reward-btn hidden" data-key="vitoriaJogoVantagem">✏️</button></div>
+              <div class="description">Por completar o desafio da semana.</div>
+            </li>
+        </ul>
+        <p class="reward-list-subtitle">Além disso, os 5 mais rápidos da semana recebem um bônus no domingo:</p>
+        <ul class="reward-list">
+          <li class="reward-item">
+            <div class="reward"><span class="reward-rank">🥇 1º Lugar:</span> <span class="reward-value" id="reward-top5Vantagem_1">50</span> Moedas <button class="edit-reward-btn hidden" data-key="top5Vantagem_1">✏️</button></div>
+          </li>
+          <li class="reward-item">
+            <div class="reward"><span class="reward-rank">🥈 2º Lugar:</span> <span class="reward-value" id="reward-top5Vantagem_2">40</span> Moedas <button class="edit-reward-btn hidden" data-key="top5Vantagem_2">✏️</button></div>
+          </li>
+          <li class="reward-item">
+            <div class="reward"><span class="reward-rank">🥉 3º Lugar:</span> <span class="reward-value" id="reward-top5Vantagem_3">30</span> Moedas <button class="edit-reward-btn hidden" data-key="top5Vantagem_3">✏️</button></div>
+          </li>
+           <li class="reward-item">
+            <div class="reward"><span class="reward-rank">⭐ 4º Lugar:</span> <span class="reward-value" id="reward-top5Vantagem_4">20</span> Moedas <button class="edit-reward-btn hidden" data-key="top5Vantagem_4">✏️</button></div>
+           </li>
+           <li class="reward-item">
+            <div class="reward"><span class="reward-rank">⭐ 5º Lugar:</span> <span class="reward-value" id="reward-top5Vantagem_5">10</span> Moedas <button class="edit-reward-btn hidden" data-key="top5Vantagem_5">✏️</button></div>
+           </li>
+        </ul>
+      </div>
+	  
+	   <div class="painel-section">
+        <h3>🏆 Vitória Semanal da Equipe</h3>
+        <ul class="reward-list">
+          <li class="reward-item">
+            <div class="reward">
+              <span class="reward-value" id="reward-vitoriaSemanal">500</span> Moedas
+              <button class="edit-reward-btn hidden" data-key="vitoriaSemanal">✏️</button>
+            </div>
+            <div class="description">Cada membro da equipe vencedora da semana recebe este prêmio no domingo.</div>
+          </li>
+        </ul>
+      </div>
+
+    </div>
+  </div>
+</div>
+  
+  <div id="confirm-compra-modal" class="modal-overlay">
+  <div class="modal-content" style="max-width: 450px;">
+    <h3>Confirmar Compra</h3>
+    <p id="confirm-compra-texto" class="modal-description" style="margin-bottom: 25px;">
+      Você tem certeza?
+    </p>
+    <div style="display: flex; justify-content: space-around; gap: 15px;">
+      <button class="btn-cancelar" style="flex: 1;" onclick="closeModal('confirm-compra-modal')">Cancelar</button>
+      <button id="confirm-compra-btn" class="auth-btn" style="flex: 1; background-color: #2ecc71;">Sim, Comprar</button>
+    </div>
+  </div>
+</div>
+
+<div id="ranking-imobiliario-modal" class="modal-overlay">
+  <div class="modal-content" style="max-width: 900px; width: 95%; max-height: 90vh; display: flex; flex-direction: column;">
+    <div class="painel-header">
+      <h2>🏆 Ranking Imobiliário</h2>
+      <button class="painel-btn btn-fechar" onclick="closeModal('ranking-imobiliario-modal')">Fechar</button>
+    </div>
+
+    <div class="ranking-imobiliario-wrapper">
+      <div class="ranking-imobiliario-secao">
+        <h4>🥇 Mais Casas</h4>
+        <div id="ranking-mais-casas-lista" class="ranking-imobiliario-lista">
+          <p>Carregando ranking...</p>
+        </div>
+      </div>
+
+      <div class="ranking-imobiliario-secao">
+        <h4>💰 Maior Valor de Mercado</h4>
+        <div id="ranking-maior-valor-lista" class="ranking-imobiliario-lista">
+          <p>Carregando ranking...</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+  
+  <div id="user-panel-modal" class="modal-overlay">
+  <div class="modal-content" style="max-width: 500px;">
+  <div class="painel-header">
+    <h2>Painel do Usuário</h2>
+  </div>
+
+  <p class="modal-description">Gerencie as configurações da sua conta.</p>
+  <button class="painel-btn btn-fechar" onclick="closeModal('user-panel-modal')">Fechar</button>
+
+  <div class="user-panel-actions">
+  <button id="btn-abrir-painel-controle" class="user-panel-btn admin hidden">
+    👑 Painel de Controle
+  </button>
+  
+  <button id="btn-abrir-gerador-codigo" class="user-panel-btn admin hidden" style="border-color: #2ecc71; color: #2ecc71;">
+    💎 Gerador de Códigos
+  </button>
+
+  <button class="user-panel-btn" onclick="openModal('change-password-modal'); closeModal('user-panel-modal');">
+    🔑 Alterar minha Senha
+  </button>
+  <button class="user-panel-btn" onclick="openModal('change-secret-modal'); closeModal('user-panel-modal');">
+    🛡️ Alterar Pergunta Secreta
+  </button>
+  <button id="btn-logout-panel" class="user-panel-btn logout">
+    🚪 Sair
+  </button>
+</div>
+  </div>
+</div>
+  
+  <div id="code-generator-modal" class="modal-overlay">
+  <div class="modal-content" style="max-width: 500px;">
+    <div class="painel-header">
+      <h2>Gerador de Códigos Secretos</h2>
+      <button class="painel-btn btn-fechar" onclick="closeModal('code-generator-modal')">Fechar</button>
+    </div>
+    <p class="modal-description">
+      Defina um valor de moedas e clique em "Gerar" para criar um código único. Compartilhe o código com o membro que você deseja recompensar.
+    </p>
+    <div class="painel-section">
+      <div class="controle-pontos" style="grid-template-columns: 1fr auto; gap: 15px;">
+        <input type="number" id="code-coin-value" class="painel-input" placeholder="Valor em moedas (ex: 500)">
+        <button id="generate-code-btn" class="painel-btn btn-adicionar">Gerar</button>
+      </div>
+    </div>
+    <div id="generated-code-result" class="painel-section hidden">
+      <h3>Código Gerado:</h3>
+      <div class="copy-field">
+        <span id="generated-code-display"></span>
+        <button onclick="copyToClipboard(document.getElementById('generated-code-display').innerText, 'Código')">Copiar</button>
+      </div>
+    </div>
   </div>
 </div>
   
