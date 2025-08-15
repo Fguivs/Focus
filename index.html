@@ -1047,6 +1047,24 @@
       Defina um valor de moedas e clique em "Gerar" para criar um código único. Compartilhe o código com o membro que você deseja recompensar.
     </p>
     <div class="painel-section">
+	<h3>Gerar Códigos em Lote</h3>
+  <p style="font-size:0.9rem; margin-bottom:15px; color:#555;">
+    Gere múltiplos códigos com o mesmo valor. Cada membro só poderá resgatar <strong>um</strong> código de cada lote gerado.
+  </p>
+  <div class="controle-pontos" style="grid-template-columns: 1fr 1fr auto; gap: 15px;">
+    <input type="number" id="batch-code-quantity" class="painel-input" placeholder="Quantidade de códigos">
+    <input type="number" id="batch-code-value" class="painel-input" placeholder="Valor em moedas (cada)">
+    <button id="generate-batch-code-btn" class="painel-btn btn-adicionar">Gerar Lote</button>
+  </div>
+</div>
+
+<div id="generated-batch-result" class="painel-section hidden">
+  <h3>Lote de Códigos Gerado:</h3>
+  <textarea id="batch-codes-result-display" class="painel-input" rows="8" readonly style="margin-bottom: 10px;"></textarea>
+  <button class="painel-btn btn-adicionar" style="width:100%" onclick="copyToClipboard(document.getElementById('batch-codes-result-display').value, 'Códigos')">
+    Copiar Todos os Códigos
+  </button>
+</div>
       <div class="controle-pontos" style="grid-template-columns: 1fr auto; gap: 15px;">
         <input type="number" id="code-coin-value" class="painel-input" placeholder="Valor em moedas (ex: 500)">
         <button id="generate-code-btn" class="painel-btn btn-adicionar">Gerar</button>
