@@ -135,6 +135,9 @@
     
 	<div class="aniversariantes-container">
   <h2 style="text-align: center;">🎂 Aniversariantes do Mês</h2>
+  <div style="text-align: center; margin-bottom: 20px;">
+    <button id="btn-ver-lista-aniversarios" class="botao-info">📋 Ver Lista de Aniversários</button>
+</div>
   <div id="aniversariantes-hoje" class="aniversariantes-hoje">
     <!-- Conteúdo gerado dinamicamente -->
   </div>
@@ -701,6 +704,19 @@
       </p>
       <button id="force-refresh-btn" class="painel-btn btn-adicionar" style="width:100%; background-color: #3498db;">Forçar Atualização para Todos</button>
     </div>
+	
+	<div class="painel-section lider-geral-only">
+  <h3>🎲 Ordem dos Jogos da Vantagem</h3>
+  <p style="font-size:0.9rem; margin-bottom:15px; color:#555;">
+    Arraste os jogos para definir a ordem em que eles aparecerão nas próximas semanas. O primeiro jogo da lista será o desta semana.
+  </p>
+  
+  <ul id="game-order-list" class="game-order-list">
+    </ul>
+
+  <button id="save-game-order-btn" class="painel-btn btn-adicionar" style="width:100%; margin-top: 15px;">Salvar Nova Ordem</button>
+</div>
+	
   </div>
 </div>
   
@@ -1103,6 +1119,32 @@
 
     <div id="resumo-competicao-body" class="ociosos-lista-container" style="padding-right: 15px;">
       </div>
+  </div>
+</div>
+
+<div id="lista-aniversarios-modal" class="modal-overlay">
+  <div class="modal-content" style="max-width: 600px; width: 95%; max-height: 90vh; display: flex; flex-direction: column;">
+    <div class="painel-header">
+      <h2>🎂 Lista de Aniversários</h2>
+      <button class="painel-btn btn-fechar" onclick="closeModal('lista-aniversarios-modal')">Fechar</button>
+    </div>
+    <p class="modal-description" style="text-align: center;">
+      Veja a data de aniversário de todos os membros. Você pode alterar a sua data apenas uma vez.
+    </p>
+    <div id="lista-completa-aniversarios-container" class="ociosos-lista-container">
+      </div>
+  </div>
+</div>
+
+<div id="confirm-aniversario-modal" class="modal-overlay">
+  <div class="modal-content" style="max-width: 450px;">
+    <h3>⚠️ Confirmação Necessária</h3>
+    <p id="confirm-aniversario-texto" class="modal-description" style="margin-bottom: 25px;">
+      </p>
+    <div style="display: flex; justify-content: space-around; gap: 15px;">
+      <button class="btn-cancelar" style="flex: 1;" onclick="closeModal('confirm-aniversario-modal')">Cancelar</button>
+      <button id="confirm-aniversario-btn" class="auth-btn" style="flex: 1; background-color: #2ecc71;">Sim, Confirmar</button>
+    </div>
   </div>
 </div>
   
