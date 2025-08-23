@@ -90,6 +90,11 @@
     <span class="perfil-icone">👤</span>
     <h2 id="saudacao-pessoal">Olá, <span id="nome-usuario-saudacao">Membro</span>!</h2>
   </div>
+  
+  <button id="notificacoes-btn" class="botao-info">
+  📮 Notificações
+  <span id="notificacoes-contador" class="hidden">0</span>
+</button>
 
   <div id="indicador-equipe-pessoal" class="info-box hidden">
     Equipe Desconhecida
@@ -289,7 +294,7 @@
 <div class="folgas-container">
   
   <h2>📅 Quadro de Folgas</h2>
-  <p class="folga-explicacao">No dia da sua folga, você pode marcar sua caixa de seleção sem precisar focar ou cuidar da fazenda.</p>
+  <p class="folga-explicacao">No dia da sua folga, sua caixa de seleção será marcada automaticamente, sem que você precise focar ou cuidar da fazenda.</p>
 <button id="change-folga-btn" class="rectangular-button" title="Alterar minha folga">Trocar Folga</button>
   
   <div class="dias-container">
@@ -403,6 +408,19 @@
   
   <div class="carrossel-indicadores" id="carrossel-indicadores">
     <!-- Indicadores serão gerados aqui -->
+  </div>
+</div>
+
+<div id="secao-desenho" class="vantagem-container">
+  <h2>🎨 Solte sua Imaginação</h2>
+  <p class="vantagem-descricao">
+    Um espaço livre para todos os membros desenharem e se expressarem juntos. 
+    Clique na tela abaixo para abrir o modo de desenho em tela cheia!
+  </p>
+
+  <div id="preview-container">
+    <canvas id="tela-desenho-preview"></canvas>
+    <div class="overlay-texto">Clique para Desenhar</div>
   </div>
 </div>
 
@@ -666,6 +684,24 @@
         <button id="remove-member-btn" class="painel-btn btn-remover">Remover</button>
       </div>
     </div>
+	
+	<div class="painel-section lider-geral-only">
+  <h3>📊 Ajuste Manual de Pontos</h3>
+  <p style="font-size:0.9rem; margin-bottom:15px; color:#555;">
+    Adicione ou remova pontos de uma equipe. A ação será registrada no Resumo da Semana.
+  </p>
+  <div class="controle-pontos" style="grid-template-columns: 2fr 1fr auto auto; gap: 15px;">
+    <select id="select-equipe-ajuste" class="painel-input">
+      <option value="">Selecione uma equipe...</option>
+      <option value="abelha">Equipe Abelha</option>
+      <option value="joaninha">Equipe Joaninha</option>
+      <option value="vagalume">Equipe Vaga-lume</option>
+    </select>
+    <input type="number" id="input-pontos-ajuste" class="painel-input" placeholder="Pontos">
+    <button id="btn-adicionar-pontos" class="painel-btn btn-adicionar">Adicionar</button>
+    <button id="btn-remover-pontos" class="painel-btn btn-remover">Remover</button>
+  </div>
+</div>
 	
 		<div class="painel-section lider-geral-only"> <h3>🎲 Forçar Recriação do Quiz</h3>
   <button class="painel-btn btn-remover" style="width:100%; background-color: #f39c12;" onclick="forcarRegeracaoQuiz()">Recriar Quiz da Semana</button>
@@ -1146,6 +1182,45 @@
       <button id="confirm-aniversario-btn" class="auth-btn" style="flex: 1; background-color: #2ecc71;">Sim, Confirmar</button>
     </div>
   </div>
+</div>
+  
+  <div id="notificacoes-modal" class="modal-overlay">
+  <div class="modal-content" style="max-width: 600px; width: 95%; max-height: 90vh; display: flex; flex-direction: column;">
+    <div class="painel-header">
+      <h2>📮 Suas Notificações</h2>
+      <button class="painel-btn btn-fechar" onclick="fecharEApagarNotificacoes()">Fechar</button>
+    </div>
+
+    <p class="modal-description" style="text-align: center;">
+      Aqui estão as reações mais recentes nas suas postagens e eventos.
+    </p>
+
+    <div id="notificacoes-lista" class="ociosos-lista-container" style="padding-right: 15px;">
+      <div class="ociosos-placeholder">Nenhuma notificação nova.</div>
+    </div>
+  </div>
+</div>
+
+<div id="desenho-modal" class="modal-overlay">
+  <div id="desenho-toolbar" class="desenho-toolbar">
+    <div class="ferramentas-wrapper">
+      <div class="tool-group">
+        <label for="cor-pincel">Cor:</label>
+        <input type="color" id="cor-pincel" value="#000000">
+      </div>
+      <div class="tool-group">
+        <label for="tamanho-pincel">Tamanho:</label>
+        <span id="valor-pincel">5</span>
+        <input type="range" id="tamanho-pincel" min="1" max="50" value="5">
+      </div>
+      <button id="borracha-btn" class="painel-btn">Borracha</button>
+      <button id="limpar-tela-btn" class="painel-btn btn-remover">Limpar Tudo</button>
+      <button class="painel-btn btn-fechar" onclick="closeModal('desenho-modal')">Fechar</button>
+    </div>
+    <button id="toggle-toolbar-btn" class="toggle-toolbar-btn">⬆️</button>
+  </div>
+
+  <canvas id="tela-desenho-fullscreen"></canvas>
 </div>
   
   <script type="module" src="logica.js"></script>
