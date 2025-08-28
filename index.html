@@ -7,6 +7,7 @@
 <link rel="icon" type="image/png" href="https://i.ibb.co/Ps4yK7xy/Picsart-25-02-25-14-28-21-078.jpg">
 <link rel="stylesheet" href="estilos.css">
 <link rel="manifest" href="manifest.json">
+<style id="dynamic-cursor-style"></style>
 
 </head>
 <body>
@@ -414,14 +415,49 @@
 <div id="secao-desenho" class="vantagem-container">
   <h2>🎨 Solte sua Imaginação</h2>
   <p class="vantagem-descricao">
-    Um espaço livre para todos os membros desenharem e se expressarem juntos. 
-    Clique na tela abaixo para abrir o modo de desenho em tela cheia!
+    Um espaço livre para cada equipe desenhar e se expressar. Membros só podem editar a tela da sua própria equipe. O Líder Geral pode editar todas.
   </p>
 
-  <div id="preview-container">
-    <canvas id="tela-desenho-preview"></canvas>
-    <div class="overlay-texto">Clique para Desenhar</div>
+  <div class="carrossel-wrapper">
+    <div class="carrossel-controles">
+      <button class="controle-btn" onclick="mudarSlideDesenho(-1)">❮</button>
+      <button class="controle-btn" id="botao-pausa-desenho" onclick="togglePausaDesenho()">⏸</button>
+      <button class="controle-btn" onclick="mudarSlideDesenho(1)">❯</button>
+    </div>
+
+    <div class="carrossel-container" id="carrossel-container-desenho">
+      
+      <div class="card-desenho" id="card-desenho-abelha">
+        <h3 class="titulo-tela-desenho abelha">🐝 Tela da Equipe Abelha</h3>
+        <div id="preview-container-abelha" class="preview-container">
+          <canvas id="preview-canvas-abelha"></canvas>
+          <div class="overlay-texto">Clique para Desenhar</div>
+        </div>
+      </div>
+
+      <div class="card-desenho" id="card-desenho-joaninha">
+        <h3 class="titulo-tela-desenho joaninha">🐞 Tela da Equipe Joaninha</h3>
+        <div id="preview-container-joaninha" class="preview-container">
+          <canvas id="preview-canvas-joaninha"></canvas>
+          <div class="overlay-texto">Clique para Desenhar</div>
+        </div>
+      </div>
+
+      <div class="card-desenho" id="card-desenho-vagalume">
+        <h3 class="titulo-tela-desenho vagalume">💡 Tela da Equipe Vaga-lume</h3>
+        <div id="preview-container-vagalume" class="preview-container">
+          <canvas id="preview-canvas-vagalume"></canvas>
+          <div class="overlay-texto">Clique para Desenhar</div>
+        </div>
+      </div>
+
+    </div>
   </div>
+
+  <div class="progresso-indicador" style="margin-top: 15px;">
+    <div class="progresso-indicador-barra" id="progresso-indicador-barra-desenho"></div>
+  </div>
+  <div class="carrossel-indicadores" id="carrossel-indicadores-desenho"></div>
 </div>
 
     <div class="medalha-info">
@@ -619,25 +655,23 @@
 
 <div id="message-viewer-modal" class="modal-overlay">
   <div id="viewer-card" class="composer-card">
-    <button id="viewer-close-btn" title="Fechar">✖</button>
-    
     <div class="composer-header">
-      </div>
-    
+  <div class="viewer-info-wrapper">
+    <div id="viewer-author" class="mensagem-autor"></div>
+    <div id="viewer-timestamp" class="mensagem-data"></div>
+  </div>
+  <button id="viewer-close-btn" title="Fechar">✖</button>
+</div>
     <div id="viewer-text" class="mensagem-texto expanded"></div>
-    
+
     <div id="viewer-reacoes-container" class="reacoes-display-container" style="display: none; margin-top: 15px;">
       </div>
-
-    <div class="reacao-seletor-bar" style="margin-top: 15px;">
+    
+    <div class="reacao-seletor-bar hidden" style="margin-top: 15px;">
       </div>
 
     <div class="composer-footer" style="margin-top: 15px;">
-      <div class="composer-author-info">
-        <div id="viewer-author" class="mensagem-autor"></div>
-        <div id="viewer-timestamp" class="mensagem-data"></div>
-      </div>
-    </div>
+       </div>
   </div>
 </div>
 
@@ -841,6 +875,19 @@
     <div style="display: flex; justify-content: space-around; gap: 15px;">
       <button class="btn-cancelar" style="flex: 1;" onclick="closeModal('confirm-expel-modal')">Cancelar</button>
       <button id="confirm-expel-button" class="auth-btn" style="flex: 1; background-color: #e74c3c;">Sim, Expulsar</button>
+    </div>
+  </div>
+</div>
+
+<div id="confirm-clear-canvas-modal" class="modal-overlay">
+  <div class="modal-content" style="max-width: 450px;">
+    <h3>⚠️ Confirmar Limpeza</h3>
+    <p id="confirm-clear-canvas-text" class="modal-description" style="margin-bottom: 25px;">
+      Você tem certeza que deseja apagar permanentemente todo o desenho desta tela?
+    </p>
+    <div style="display: flex; justify-content: space-around; gap: 15px;">
+      <button class="btn-cancelar" style="flex: 1;" onclick="closeModal('confirm-clear-canvas-modal')">Cancelar</button>
+      <button id="confirm-clear-canvas-btn" class="auth-btn" style="flex: 1; background-color: #e74c3c;">Sim, Limpar Tudo</button>
     </div>
   </div>
 </div>
@@ -1204,24 +1251,68 @@
 <div id="desenho-modal" class="modal-overlay">
   <div id="desenho-toolbar" class="desenho-toolbar">
     <div class="ferramentas-wrapper">
-      <div class="tool-group">
-        <label for="cor-pincel">Cor:</label>
-        <input type="color" id="cor-pincel" value="#000000">
-      </div>
-      <div class="tool-group">
-        <label for="tamanho-pincel">Tamanho:</label>
-        <span id="valor-pincel">5</span>
-        <input type="range" id="tamanho-pincel" min="1" max="50" value="5">
-      </div>
-      <button id="borracha-btn" class="painel-btn">Borracha</button>
-      <button id="limpar-tela-btn" class="painel-btn btn-remover">Limpar Tudo</button>
-      <button class="painel-btn btn-fechar" onclick="closeModal('desenho-modal')">Fechar</button>
-    </div>
-    <button id="toggle-toolbar-btn" class="toggle-toolbar-btn">⬆️</button>
+  <div class="tool-group">
+    <label for="cor-pincel">Cor:</label>
+    <input type="color" id="cor-pincel" value="#000000">
+  </div>
+  <div class="tool-group">
+    <label for="tamanho-pincel">Tamanho:</label>
+    <span id="valor-pincel">5</span>
+    <input type="range" id="tamanho-pincel" min="1" max="50" value="5">
+  </div>
+  <button id="pincel-btn" class="painel-btn ativo" title="Pincel">✏️</button> <button id="borracha-btn" class="painel-btn" title="Borracha">Borracha</button> <button id="pan-btn" class="painel-btn" title="Arrastar">🖐️</button> <button id="limpar-tela-btn" class="painel-btn btn-remover">Limpar Tudo</button>
+  <button class="painel-btn btn-fechar" onclick="closeModal('desenho-modal')">Fechar</button>
+</div>
+    <button id="toggle-toolbar-btn" class="toggle-toolbar-btn">⬇️</button>
   </div>
 
   <canvas id="tela-desenho-fullscreen"></canvas>
 </div>
+
+<div id="comments-modal" class="modal-overlay">
+  <div id="comments-card" class="composer-card" style="height: auto; max-height: 85vh; width: 90%; max-width: 550px;">
+    
+    <div class="composer-header" style="justify-content: space-between; width: 100%;">
+      <h3 id="comments-modal-title" style="margin: 0;">Comentários</h3>
+      <button class="close-modal-btn" onclick="closeModal('comments-modal')" title="Fechar">✖</button>
+    </div>
+
+    <div id="comments-list-container" class="comments-container" style="border-top: 1px solid rgba(0,0,0,0.1); margin-top: 15px; flex-grow: 1; overflow-y: auto;">
+      <div id="comments-list" class="comments-list">
+        </div>
+    </div>
+
+    <div class="comment-input-area" style="margin-top: 15px; border-top: 1px solid rgba(0,0,0,0.1); padding-top: 15px;">
+      <textarea id="comment-textarea-modal" placeholder="Adicionar um comentário..."></textarea>
+      <button id="send-comment-btn-modal" title="Enviar Comentário">➤</button>
+    </div>
+
+  </div>
+</div>
+
+<div id="edit-comment-modal" class="modal-overlay">
+  <div class="modal-content" style="max-width: 500px;">
+    <h3>Editar Comentário</h3>
+    <textarea id="edit-comment-textarea" class="painel-input" rows="5" style="margin-bottom: 15px;"></textarea>
+    <div style="display: flex; justify-content: space-around; gap: 15px;">
+      <button class="btn-cancelar" style="flex: 1;" onclick="closeModal('edit-comment-modal')">Cancelar</button>
+      <button id="save-edit-comment-btn" class="auth-btn" style="flex: 1;">Salvar Alterações</button>
+    </div>
+  </div>
+</div>
+
+<div id="confirm-delete-comment-modal" class="modal-overlay">
+  <div class="modal-content" style="max-width: 400px;">
+    <h3>Confirmar Exclusão</h3>
+    <p style="margin-bottom: 25px;">Você tem certeza que deseja excluir este comentário permanentemente?</p>
+    <div style="display: flex; justify-content: space-around; gap: 15px;">
+      <button class="btn-cancelar" style="flex: 1;" onclick="closeModal('confirm-delete-comment-modal')">Cancelar</button>
+      <button id="confirm-delete-comment-btn" class="auth-btn" style="flex: 1; background-color: #e74c3c;">Excluir</button>
+    </div>
+  </div>
+</div>
+  
+  <div id="global-options-menu" class="hidden"></div>
   
   <script type="module" src="logica.js"></script>
   
