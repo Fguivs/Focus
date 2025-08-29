@@ -417,47 +417,62 @@
   <p class="vantagem-descricao">
     Um espaço livre para cada equipe desenhar e se expressar. Membros só podem editar a tela da sua própria equipe. O Líder Geral pode editar todas.
   </p>
-
   <div class="carrossel-wrapper">
     <div class="carrossel-controles">
       <button class="controle-btn" onclick="mudarSlideDesenho(-1)">❮</button>
       <button class="controle-btn" id="botao-pausa-desenho" onclick="togglePausaDesenho()">⏸</button>
       <button class="controle-btn" onclick="mudarSlideDesenho(1)">❯</button>
     </div>
-
     <div class="carrossel-container" id="carrossel-container-desenho">
-      
       <div class="card-desenho" id="card-desenho-abelha">
         <h3 class="titulo-tela-desenho abelha">🐝 Tela da Equipe Abelha</h3>
         <div id="preview-container-abelha" class="preview-container">
           <canvas id="preview-canvas-abelha"></canvas>
-          <div class="overlay-texto">Clique para Desenhar</div>
+          <div class="loading-overlay hidden"></div> <div class="overlay-texto">Clique para Desenhar</div>
         </div>
       </div>
-
       <div class="card-desenho" id="card-desenho-joaninha">
         <h3 class="titulo-tela-desenho joaninha">🐞 Tela da Equipe Joaninha</h3>
         <div id="preview-container-joaninha" class="preview-container">
           <canvas id="preview-canvas-joaninha"></canvas>
-          <div class="overlay-texto">Clique para Desenhar</div>
+          <div class="loading-overlay hidden"></div> <div class="overlay-texto">Clique para Desenhar</div>
         </div>
       </div>
-
       <div class="card-desenho" id="card-desenho-vagalume">
         <h3 class="titulo-tela-desenho vagalume">💡 Tela da Equipe Vaga-lume</h3>
         <div id="preview-container-vagalume" class="preview-container">
           <canvas id="preview-canvas-vagalume"></canvas>
-          <div class="overlay-texto">Clique para Desenhar</div>
+          <div class="loading-overlay hidden"></div> <div class="overlay-texto">Clique para Desenhar</div>
         </div>
       </div>
-
     </div>
   </div>
-
   <div class="progresso-indicador" style="margin-top: 15px;">
     <div class="progresso-indicador-barra" id="progresso-indicador-barra-desenho"></div>
   </div>
   <div class="carrossel-indicadores" id="carrossel-indicadores-desenho"></div>
+</div>
+<div id="desenho-modal" class="modal-overlay">
+  <div id="desenho-toolbar" class="desenho-toolbar">
+    <div class="ferramentas-wrapper">
+      <div class="tool-group">
+        <label for="cor-pincel">Cor:</label>
+        <input type="color" id="cor-pincel" value="#000000">
+      </div>
+      <div class="tool-group">
+        <label for="tamanho-pincel">Tamanho:</label>
+        <span id="valor-pincel">5</span>
+        <input type="range" id="tamanho-pincel" min="1" max="50" value="5">
+      </div>
+      <button id="pincel-btn" class="painel-btn ativo" title="Pincel">✏️</button>
+      <button id="borracha-btn" class="painel-btn" title="Borracha">Borracha</button>
+      <button id="pan-btn" class="painel-btn" title="Arrastar">🖐️</button>
+      <button id="limpar-tela-btn" class="painel-btn btn-remover">Limpar Tudo</button>
+      <button class="painel-btn btn-fechar" onclick="closeModal('desenho-modal')">Fechar</button>
+    </div>
+    <button id="toggle-toolbar-btn" class="toggle-toolbar-btn">⬇️</button>
+  </div>
+  <canvas id="tela-desenho-fullscreen"></canvas>
 </div>
 
     <div class="medalha-info">
