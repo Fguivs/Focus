@@ -453,25 +453,41 @@
   <div class="carrossel-indicadores" id="carrossel-indicadores-desenho"></div>
 </div>
 <div id="desenho-modal" class="modal-overlay">
+
   <div id="desenho-toolbar" class="desenho-toolbar">
     <div class="ferramentas-wrapper">
+
       <div class="tool-group">
         <label for="cor-pincel">Cor:</label>
         <input type="color" id="cor-pincel" value="#000000">
       </div>
+
       <div class="tool-group">
         <label for="tamanho-pincel">Tamanho:</label>
         <span id="valor-pincel">5</span>
         <input type="range" id="tamanho-pincel" min="1" max="50" value="5">
       </div>
-      <button id="pincel-btn" class="painel-btn ativo" title="Pincel">✏️</button>
-      <button id="borracha-btn" class="painel-btn" title="Borracha">Borracha</button>
-      <button id="pan-btn" class="painel-btn" title="Arrastar">🖐️</button>
-      <button id="limpar-tela-btn" class="painel-btn btn-remover">Limpar Tudo</button>
-      <button class="painel-btn btn-fechar" onclick="closeModal('desenho-modal')">Fechar</button>
+
+      <div class="tool-group">
+        <button id="pincel-btn" class="painel-btn ativo" title="Pincel">✏️</button>
+        <button id="borracha-btn" class="painel-btn" title="Borracha">Borracha</button>
+        <button id="pan-btn" class="painel-btn" title="Arrastar">🖐️</button>
+      </div>
+
+      <div class="tool-group">
+        <button id="desfazer-btn" class="painel-btn" title="Desfazer">↩️</button>
+        <button id="refazer-btn" class="painel-btn" title="Refazer">↪️</button>
+      </div>
+
+      <div class="tool-group">
+        <button id="limpar-tela-btn" class="painel-btn btn-remover">Limpar Tudo</button>
+        <button class="painel-btn btn-fechar" onclick="closeModal('desenho-modal')">Fechar</button>
+      </div>
+
     </div>
     <button id="toggle-toolbar-btn" class="toggle-toolbar-btn">⬇️</button>
   </div>
+
   <canvas id="tela-desenho-fullscreen"></canvas>
 </div>
 
@@ -774,6 +790,14 @@
         <strong>Atenção:</strong> Esta ação apagará permanentemente todas as mensagens do mural. Use caso a limpeza automática de segunda-feira falhe.
       </p>
     </div>
+	
+	<div class="painel-section">
+  <h3>⚙️ Migração de Dados (USO ÚNICO)</h3>
+  <button class="painel-btn" style="width:100%; background-color:#3498db;" onclick="migrarDadosParaMembros()">MIGRAR DADOS DE STREAK PARA MEMBROS</button>
+  <p style="font-size:0.8rem; margin-top:10px; color:#3498db">
+    Clique aqui UMA ÚNICA VEZ para copiar o progresso de streak de cada membro para seu documento principal.
+  </p>
+</div>
 
     <div class="painel-section lider-geral-only">
       <h3>🚀 Forçar Atualização de Versão</h3>
@@ -1261,27 +1285,6 @@
       <div class="ociosos-placeholder">Nenhuma notificação nova.</div>
     </div>
   </div>
-</div>
-
-<div id="desenho-modal" class="modal-overlay">
-  <div id="desenho-toolbar" class="desenho-toolbar">
-    <div class="ferramentas-wrapper">
-  <div class="tool-group">
-    <label for="cor-pincel">Cor:</label>
-    <input type="color" id="cor-pincel" value="#000000">
-  </div>
-  <div class="tool-group">
-    <label for="tamanho-pincel">Tamanho:</label>
-    <span id="valor-pincel">5</span>
-    <input type="range" id="tamanho-pincel" min="1" max="50" value="5">
-  </div>
-  <button id="pincel-btn" class="painel-btn ativo" title="Pincel">✏️</button> <button id="borracha-btn" class="painel-btn" title="Borracha">Borracha</button> <button id="pan-btn" class="painel-btn" title="Arrastar">🖐️</button> <button id="limpar-tela-btn" class="painel-btn btn-remover">Limpar Tudo</button>
-  <button class="painel-btn btn-fechar" onclick="closeModal('desenho-modal')">Fechar</button>
-</div>
-    <button id="toggle-toolbar-btn" class="toggle-toolbar-btn">⬇️</button>
-  </div>
-
-  <canvas id="tela-desenho-fullscreen"></canvas>
 </div>
 
 <div id="comments-modal" class="modal-overlay">
