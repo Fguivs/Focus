@@ -12,6 +12,19 @@
 </head>
 <body>
 
+<div id="maintenance-overlay" class="update-overlay hidden">
+  <div class="update-box">
+    <div id="maintenance-icon" class="update-icon" style="cursor: pointer;">⚠️</div>
+    <h2>Página em Manutenção</h2>
+    <p>
+      Algumas melhorias e testes estão sendo realizados para deixar tudo ainda melhor para todos nós. Voltaremos em breve!
+    </p>
+    <div class="password-wrapper hidden" style="max-width: 300px; margin: 20px auto 0;">
+      <input type="password" id="maintenance-password" class="auth-input" placeholder="Acesso Restrito">
+    </div>
+  </div>
+</div>
+
 <!-- Container de autenticação -->
 <div id="auth-container">
   <div class="auth-form">
@@ -686,12 +699,13 @@
 <div id="message-viewer-modal" class="modal-overlay">
   <div id="viewer-card" class="composer-card">
     <div class="composer-header">
-  <div class="viewer-info-wrapper">
-    <div id="viewer-author" class="mensagem-autor"></div>
-    <div id="viewer-timestamp" class="mensagem-data"></div>
-  </div>
-  <button id="viewer-close-btn" title="Fechar">✖</button>
-</div>
+      <div class="viewer-info-wrapper">
+        <div id="viewer-author" class="mensagem-autor"></div>
+        <div id="viewer-timestamp" class="mensagem-data"></div>
+      </div>
+      <button id="viewer-close-btn" title="Fechar">✖</button>
+    </div>
+    
     <div id="viewer-text" class="mensagem-texto expanded"></div>
 
     <div id="viewer-reacoes-container" class="reacoes-display-container" style="display: none; margin-top: 15px;">
@@ -797,6 +811,15 @@
         Use isso após fazer uma grande mudança no código. Todos os membros serão forçados a atualizar a página.
       </p>
     </div>
+	<div class="painel-section lider-geral-only">
+  <h3>🛠️ Modo de Manutenção</h3>
+  <p style="font-size:0.9rem; margin-bottom:15px; color:#555;">
+    Ative este modo para bloquear o acesso de todos os usuários enquanto você realiza testes ou atualizações importantes.
+  </p>
+  <button id="toggle-maintenance-btn" class="painel-btn btn-remover" style="width:100%; background-color: #e67e22;">
+    Ativar Modo de Manutenção
+  </button>
+</div>
     <div class="painel-section lider-geral-only">
       <h3>🔄 Sincronização Global</h3>
       <p style="font-size:0.9rem; margin-bottom:15px; color:#555;">
