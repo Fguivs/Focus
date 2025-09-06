@@ -438,26 +438,41 @@
     </div>
     <div class="carrossel-container" id="carrossel-container-desenho">
       <div class="card-desenho" id="card-desenho-abelha">
-        <h3 class="titulo-tela-desenho abelha">🐝 Tela da Equipe Abelha</h3>
-        <div id="preview-container-abelha" class="preview-container">
-          <canvas id="preview-canvas-abelha"></canvas>
-          <div class="loading-overlay hidden"></div> <div class="overlay-texto">Clique para Desenhar</div>
-        </div>
-      </div>
-      <div class="card-desenho" id="card-desenho-joaninha">
-        <h3 class="titulo-tela-desenho joaninha">🐞 Tela da Equipe Joaninha</h3>
-        <div id="preview-container-joaninha" class="preview-container">
-          <canvas id="preview-canvas-joaninha"></canvas>
-          <div class="loading-overlay hidden"></div> <div class="overlay-texto">Clique para Desenhar</div>
-        </div>
-      </div>
-      <div class="card-desenho" id="card-desenho-vagalume">
-        <h3 class="titulo-tela-desenho vagalume">💡 Tela da Equipe Vaga-lume</h3>
-        <div id="preview-container-vagalume" class="preview-container">
-          <canvas id="preview-canvas-vagalume"></canvas>
-          <div class="loading-overlay hidden"></div> <div class="overlay-texto">Clique para Desenhar</div>
-        </div>
-      </div>
+  <h3 class="titulo-tela-desenho abelha">🐝 Tela da Equipe Abelha</h3>
+  <div id="preview-container-abelha" class="preview-container">
+    <canvas id="preview-canvas-abelha"></canvas>
+    <div class="preview-placeholder">
+      <span class="placeholder-icon">🎨</span>
+      <p class="placeholder-text">Clique para ver (ou criar) a arte da equipe!</p>
+    </div>
+    <div class="loading-overlay hidden"></div> 
+    <div class="overlay-texto">Clique para Desenhar</div>
+  </div>
+</div>
+<div class="card-desenho" id="card-desenho-joaninha">
+  <h3 class="titulo-tela-desenho joaninha">🐞 Tela da Equipe Joaninha</h3>
+  <div id="preview-container-joaninha" class="preview-container">
+    <canvas id="preview-canvas-joaninha"></canvas>
+    <div class="preview-placeholder">
+      <span class="placeholder-icon">🎨</span>
+      <p class="placeholder-text">Clique para ver (ou criar) a arte da equipe!</p>
+    </div>
+    <div class="loading-overlay hidden"></div> 
+    <div class="overlay-texto">Clique para Desenhar</div>
+  </div>
+</div>
+<div class="card-desenho" id="card-desenho-vagalume">
+  <h3 class="titulo-tela-desenho vagalume">💡 Tela da Equipe Vaga-lume</h3>
+  <div id="preview-container-vagalume" class="preview-container">
+    <canvas id="preview-canvas-vagalume"></canvas>
+    <div class="preview-placeholder">
+      <span class="placeholder-icon">🎨</span>
+      <p class="placeholder-text">Clique para ver (ou criar) a arte da equipe!</p>
+    </div>
+    <div class="loading-overlay hidden"></div> 
+    <div class="overlay-texto">Clique para Desenhar</div>
+  </div>
+</div>
     </div>
   </div>
   <div class="progresso-indicador" style="margin-top: 15px;">
@@ -621,8 +636,10 @@
   </div>
 
   <!-- Elementos de áudio -->
-  <audio id="som-check" src="https://cdn.pixabay.com/audio/2025/07/04/audio_9dcd152e4d.mp3"></audio>
-  <audio id="som-conquista" src="https://cdn.pixabay.com/audio/2025/04/23/audio_d131e87049.mp3"></audio>
+  <audio id="som-check" src="https://cdn.pixabay.com/audio/2025/07/04/audio_9dcd152e4d.mp3" preload="auto"></audio>
+  <audio id="som-conquista" src="https://cdn.pixabay.com/audio/2025/04/23/audio_d131e87049.mp3" preload="auto"></audio>
+  <audio id="som-envio" src="https://cdn.pixabay.com/audio/2024/08/20/audio_a95d316f28.mp3" preload="auto"></audio>
+  <audio id="som-reacao" src="https://cdn.pixabay.com/audio/2025/07/09/audio_a9c21b6107.mp3" preload="auto"></audio>
   
   </div>
   
