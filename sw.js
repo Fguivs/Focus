@@ -10,8 +10,10 @@ const urlsToCache = [
   '/manifest.json',
   // Adicione aqui outros arquivos importantes, como imagens que não mudam
   'https://i.ibb.co/Ps4yK7xy/Picsart-25-02-25-14-28-21-078.jpg',
-  'https://assets.mixkit.co/sfx/preview/mixkit-unlock-game-notification-253.mp3',
-  'https://assets.mixkit.co/sfx/preview/mixkit-achievement-bell-600.mp3'
+  'https://cdn.pixabay.com/audio/2025/07/04/audio_9dcd152e4d.mp3',
+  'https://cdn.pixabay.com/audio/2025/04/23/audio_d131e87049.mp3',
+  'https://cdn.pixabay.com/audio/2024/08/20/audio_a95d316f28.mp3',
+  'https://cdn.pixabay.com/audio/2025/07/09/audio_a9c21b6107.mp3'
 ];
 
 // Evento de Instalação: Ocorre quando o Service Worker é registrado pela primeira vez
@@ -65,5 +67,6 @@ self.addEventListener('fetch', event => {
       })
   );
 });
+
 
 
