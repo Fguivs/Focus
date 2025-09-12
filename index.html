@@ -103,9 +103,10 @@
 	 <div id="painel-pessoal-container">
   
   <div class="perfil-header">
-    <span class="perfil-icone">👤</span>
-    <h2 id="saudacao-pessoal">Olá, <span id="nome-usuario-saudacao">Membro</span>!</h2>
+  <h2 id="saudacao-pessoal">Olá, <span id="nome-usuario-saudacao">Membro</span>!</h2>
+  <div id="avatar-display-pessoal" class="avatar-container-pessoal" title="Editar meu avatar">
   </div>
+</div>
   
   <button id="notificacoes-btn" class="botao-info">
   📮 Notificações
@@ -1364,6 +1365,102 @@
 </div>
   
   <div id="global-options-menu" class="hidden"></div>
+  
+<div id="avatar-editor-modal" class="modal-overlay">
+  <div id="avatar-editor-content" class="modal-content">
+    <div class="painel-header">
+      <h2>Meu Avatar</h2>
+      <button class="painel-btn btn-fechar" onclick="window.tentarFecharEditorAvatar()">Fechar</button>
+    </div>
+    
+    <div class="avatar-main-layout">
+      <div class="avatar-preview-coluna">
+        <div id="avatar-preview-editor" class="avatar-preview-container">
+          </div>
+        <div class="avatar-preview-actions">
+          <button id="avatar-save-btn" class="auth-btn">Salvar Alterações</button>
+          <button id="avatar-gallery-btn" class="user-panel-btn btn-chamativo">Ver Avatares dos Épicos</button>
+        </div>
+      </div>
+
+      <div class="avatar-itens-coluna">
+        <div class="avatar-tabs">
+          <button class="avatar-tab-btn ativo" data-tab="inventario">Meu Inventário</button>
+          <button class="avatar-tab-btn" data-tab="loja">Loja de Itens</button>
+        </div>
+
+        <div id="avatar-tab-inventario" class="avatar-tab-content ativo">
+          </div>
+
+        <div id="avatar-tab-loja" class="avatar-tab-content">
+          </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="item-variations-modal" class="modal-overlay">
+  <div class="modal-content" style="max-width: 700px;">
+      <h3 id="variations-item-name">Variações de Cor</h3>
+      <div id="variations-grid" class="variations-grid-container">
+          </div>
+      <button class="btn-cancelar" style="margin-top: 20px;" onclick="closeModal('item-variations-modal')">Voltar</button>
+  </div>
+</div>
+
+<div id="avatar-gallery-modal" class="modal-overlay">
+  <div class="modal-content" style="max-width: 90%; width: 1200px; max-height: 90vh;">
+    <div class="painel-header">
+      <h2>Avatares</h2>
+      <button class="painel-btn btn-fechar" onclick="closeModal('avatar-gallery-modal')">Fechar</button>
+    </div>
+    <div id="gallery-grid-container" class="gallery-grid">
+      </div>
+  </div>
+</div>
+
+<div id="confirm-avatar-purchase-modal" class="modal-overlay">
+  <div class="modal-content" style="max-width: 450px;">
+    <h3>Confirmar Compra</h3>
+    <p id="confirm-purchase-text" class="modal-description"></p>
+    <div style="display: flex; justify-content: space-around; gap: 15px;">
+      <button class="btn-cancelar" style="flex: 1;" onclick="closeModal('confirm-avatar-purchase-modal')">Cancelar</button>
+      <button id="confirm-purchase-btn" class="auth-btn" style="flex: 1; background-color: #2ecc71;">Sim, Comprar</button>
+    </div>
+  </div>
+</div>
+
+<div id="confirm-action-modal" class="modal-overlay">
+  <div class="modal-content" style="max-width: 450px;">
+    <h3 id="confirm-action-title"></h3>
+    <p id="confirm-action-text" class="modal-description" style="margin-bottom: 25px;"></p>
+    <div style="display: flex; justify-content: space-around; gap: 15px;">
+      <button class="btn-cancelar" style="flex: 1;" onclick="closeModal('confirm-action-modal')">Cancelar</button>
+      <button id="confirm-action-btn" class="auth-btn" style="flex: 1; background-color: #e74c3c;">Confirmar</button>
+    </div>
+  </div>
+</div>
+
+<div id="avatar-viewer-modal" class="modal-overlay">
+  <div class="modal-content" style="background-color: transparent; box-shadow: none; padding: 0;">
+    <button class="close-modal-btn" onclick="closeModal('avatar-viewer-modal')" style="z-index: 10001;">✖</button>
+    <div id="avatar-viewer-card">
+      <div id="avatar-viewer-container">
+        </div>
+      <h3 id="avatar-viewer-nome"></h3>
+    </div>
+  </div>
+</div>
+
+<div id="editor-avatar-viewer-modal" class="modal-overlay">
+  <div class="modal-content" style="background-color: transparent; box-shadow: none; padding: 0;">
+    <button class="close-modal-btn" onclick="closeModal('editor-avatar-viewer-modal')">✖</button>
+    <div id="avatar-viewer-card">
+      <div id="editor-avatar-viewer-container" class="avatar-container-pessoal" style="width: 400px; height: 400px; cursor: default; border-width: 6px;">
+        </div>
+    </div>
+  </div>
+</div>
   
   <script type="module">
   // Importa e executa todo o seu código de lógica principal
