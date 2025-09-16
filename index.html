@@ -484,15 +484,15 @@
   <div class="carrossel-indicadores" id="carrossel-indicadores-desenho"></div>
 </div>
 <div id="desenho-modal" class="modal-overlay">
-<button class="close-modal-btn" onclick="closeModal('desenho-modal')">✖</button>
+<button class="close-modal-btn" onclick="fecharModalDesenho()">✖</button>
 
   <div id="desenho-toolbar" class="desenho-toolbar">
     <div class="ferramentas-wrapper">
 
       <div class="tool-group">
-        <label for="cor-pincel">Cor:</label>
-        <input type="color" id="cor-pincel" value="#000000">
-      </div>
+  <label for="cor-pincel">Cor:</label>
+<input type="color" id="cor-pincel" value="#000000">
+</div>
 
       <div class="tool-group">
         <label for="tamanho-pincel">Tamanho:</label>
@@ -503,6 +503,7 @@
       <div class="tool-group">
         <button id="pincel-btn" class="painel-btn ativo" title="Pincel">✏️</button>
         <button id="borracha-btn" class="painel-btn" title="Borracha">Borracha</button>
+		<button id="conta-gotas-btn" class="painel-btn" title="Conta-gotas (Pegar Cor)">💧</button>
       </div>
 
       <div class="tool-group">
@@ -980,6 +981,7 @@
   <div class="card-popup-content">
     <h2 id="card-popup-title" class="card-popup-title"></h2>
     <p id="card-popup-message" class="card-popup-message"></p>
+	<p class="card-popup-signature">— Grupo Épicos</p>
     <button id="card-popup-close-btn" class="card-popup-close-btn">Entendido!</button>
   </div>
 </div>
@@ -1225,30 +1227,19 @@
     <p class="modal-description">
       Defina um valor de moedas e clique em "Gerar" para criar um código único. Compartilhe o código com o membro que você deseja recompensar.
     </p>
-    <div class="painel-section">
-	<h3>Gerar Códigos em Lote</h3>
-  <p style="font-size:0.9rem; margin-bottom:15px; color:#555;">
-    Gere múltiplos códigos com o mesmo valor. Cada membro só poderá resgatar <strong>um</strong> código de cada lote gerado.
-  </p>
-  <div class="controle-pontos" style="grid-template-columns: 1fr 1fr auto; gap: 15px;">
-    <input type="number" id="batch-code-quantity" class="painel-input" placeholder="Quantidade de códigos">
-    <input type="number" id="batch-code-value" class="painel-input" placeholder="Valor em moedas (cada)">
-    <button id="generate-batch-code-btn" class="painel-btn btn-adicionar">Gerar Lote</button>
-  </div>
-</div>
 
-<div id="generated-batch-result" class="painel-section hidden">
-  <h3>Lote de Códigos Gerado:</h3>
-  <textarea id="batch-codes-result-display" class="painel-input" rows="8" readonly style="margin-bottom: 10px;"></textarea>
-  <button class="painel-btn btn-adicionar" style="width:100%" onclick="copyToClipboard(document.getElementById('batch-codes-result-display').value, 'Códigos')">
-    Copiar Todos os Códigos
-  </button>
-</div>
+    <div class="painel-section">
+      <h3>Gerar Código Único</h3>
       <div class="controle-pontos" style="grid-template-columns: 1fr auto; gap: 15px;">
         <input type="number" id="code-coin-value" class="painel-input" placeholder="Valor em moedas (ex: 500)">
         <button id="generate-code-btn" class="painel-btn btn-adicionar">Gerar</button>
       </div>
+      <div style="margin-top: 15px; text-align: left;">
+        <input type="checkbox" id="code-restrict-leaders-single" style="margin-right: 8px;">
+        <label for="code-restrict-leaders-single">Líderes de equipe não podem resgatar este código.</label>
+      </div>
     </div>
+
     <div id="generated-code-result" class="painel-section hidden">
       <h3>Código Gerado:</h3>
       <div class="copy-field">
@@ -1256,7 +1247,32 @@
         <button onclick="copyToClipboard(document.getElementById('generated-code-display').innerText, 'Código')">Copiar</button>
       </div>
     </div>
+
+    <div class="painel-section">
+      <h3>Gerar Códigos em Lote</h3>
+      <p style="font-size:0.9rem; margin-bottom:15px; color:#555;">
+        Gere múltiplos códigos com o mesmo valor. Cada membro só poderá resgatar <strong>um</strong> código de cada lote gerado.
+      </p>
+      <div class="controle-pontos" style="grid-template-columns: 1fr 1fr auto; gap: 15px;">
+        <input type="number" id="batch-code-quantity" class="painel-input" placeholder="Quantidade">
+        <input type="number" id="batch-code-value" class="painel-input" placeholder="Valor (cada)">
+        <button id="generate-batch-code-btn" class="painel-btn btn-adicionar">Gerar Lote</button>
+      </div>
+      <div style="margin-top: 15px; text-align: left;">
+        <input type="checkbox" id="code-restrict-leaders-batch" style="margin-right: 8px;">
+        <label for="code-restrict-leaders-batch">Líderes de equipe não podem resgatar este lote.</label>
+      </div>
+    </div>
+
+    <div id="generated-batch-result" class="painel-section hidden">
+      <h3>Lote de Códigos Gerado:</h3>
+      <textarea id="batch-codes-result-display" class="painel-input" rows="8" readonly style="margin-bottom: 10px;"></textarea>
+      <button class="painel-btn btn-adicionar" style="width:100%" onclick="copyToClipboard(document.getElementById('batch-codes-result-display').value, 'Códigos')">
+        Copiar Todos os Códigos
+      </button>
+    </div>
   </div>
+</div>
 </div>
   
   <div id="resumo-competicao-modal" class="modal-overlay">
@@ -1460,6 +1476,12 @@
         </div>
     </div>
   </div>
+</div>
+
+<div id="lupa-conta-gotas" class="hidden">
+  <div id="lupa-cor-preview"></div>
+  <div class="lupa-reticulo-h"></div>
+  <div class="lupa-reticulo-v"></div>
 </div>
   
   <script type="module">
