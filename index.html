@@ -116,6 +116,10 @@
   <div id="indicador-equipe-pessoal" class="info-box hidden">
     Equipe Desconhecida
   </div>
+  
+  <button id="btn-abrir-envio-moedas" class="botao-info" style="background-color: #27ae60;">
+    🎁 Envio de Moedas Diárias
+  </button>
 
   <div class="info-box">
     <div id="indicador-moedas-pessoal" class="info-box-valor">
@@ -1204,6 +1208,10 @@
   <button id="btn-abrir-gerador-codigo" class="user-panel-btn admin hidden" style="border-color: #2ecc71; color: #2ecc71;">
     💎 Gerador de Códigos
   </button>
+  
+  <button id="btn-abrir-add-avatar-item" class="user-panel-btn admin hidden" style="border-color: #2ecc71; color: #2ecc71;">
+  🖼️ Adicionar Item na Loja de Avatar
+</button>
 
   <button class="user-panel-btn" onclick="openModal('change-password-modal'); closeModal('user-panel-modal');">
     🔑 Alterar minha Senha
@@ -1482,6 +1490,85 @@
   <div id="lupa-cor-preview"></div>
   <div class="lupa-reticulo-h"></div>
   <div class="lupa-reticulo-v"></div>
+</div>
+
+<div id="add-avatar-item-modal" class="modal-overlay">
+  <div class="modal-content" style="max-width: 800px; width: 95%; max-height: 90vh; display: flex; flex-direction: column;">
+    <div class="painel-header">
+      <h2>🖼️ Adicionar Novo Item à Loja</h2>
+      <button class="painel-btn btn-fechar" onclick="closeModal('add-avatar-item-modal')">Fechar</button>
+    </div>
+
+    <div class="ociosos-lista-container" style="padding-right: 15px;">
+      
+      <div class="painel-section">
+        <h3>Informações Gerais do Item</h3>
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; align-items: center;">
+          <input type="text" id="add-item-nome" class="painel-input" placeholder="Nome do Item (Ex: Camiseta Básica)">
+          
+          <select id="add-item-categoria" class="painel-input">
+            <option value="">Selecione a Categoria...</option>
+            <option value="corpo">Tons de Pele</option>
+            <option value="rosto">Expressões</option>
+            <option value="cabelo">Cabelos</option>
+            <option value="roupa">Roupas</option>
+            <option value="acessorio">Acessórios</option>
+            <option value="enfeite_de_parede">Itens Raros e Exclusivos</option>
+            <option value="fundo">Fundos</option>
+          </select>
+          
+          <div style="display: flex; align-items: center; gap: 10px;">
+            <input type="checkbox" id="add-item-raro" style="width: 20px; height: 20px;">
+            <label for="add-item-raro">Este item é raro/exclusivo?</label>
+          </div>
+        </div>
+        
+        <div id="add-item-raro-descricao-container" class="hidden" style="margin-top: 15px;">
+          <textarea id="add-item-raro-descricao" class="painel-input" rows="3" placeholder="Descreva a condição para obter este item (Ex: Apenas para líderes, recompensa de evento, etc.)"></textarea>
+        </div>
+      </div>
+
+      <div class="painel-section">
+        <h3>Variações de Cor e Preço</h3>
+        <p style="font-size:0.9rem; margin-bottom:15px; color:#555;">Adicione pelo menos uma variação para o item. Você pode adicionar quantas cores quiser.</p>
+        
+        <div id="add-item-variations-container" style="display: flex; flex-direction: column; gap: 15px;">
+          </div>
+
+        <button class="painel-btn btn-adicionar" style="width:100%; margin-top: 20px;" onclick="adicionarCampoVariacao()">+ Adicionar Variação de Cor</button>
+      </div>
+
+    </div>
+    
+    <button id="save-new-avatar-item-btn" class="auth-btn" style="margin-top: 25px; background-color: #2ecc71;">Salvar Novo Item na Loja</button>
+  </div>
+</div>
+
+<div id="envio-moedas-modal" class="modal-overlay">
+  <div class="modal-content" style="max-width: 500px;">
+    <div class="painel-header">
+      <h2>🎁 Enviar Moedas</h2>
+      <button class="painel-btn btn-fechar" onclick="closeModal('envio-moedas-modal')">Fechar</button>
+    </div>
+    <p class="modal-description">
+      Envie 500 moedas para seus colegas de equipe como um presente diário! Esta ação é gratuita e não desconta moedas de você. Você pode enviar para cada colega uma vez por dia.
+    </p>
+    <div id="envio-moedas-lista" class="ociosos-lista-container" style="max-height: 250px;">
+      </div>
+    <button id="enviar-moedas-btn" class="auth-btn" style="margin-top: 25px; background-color: #2ecc71;">Enviar Moedas</button>
+  </div>
+</div>
+
+<div id="popup-envio-diario-moedas" class="modal-overlay">
+  <div class="card-popup-content">
+    <h2 class="card-popup-title">🎁 Presente Diário da Equipe!</h2>
+    <p class="card-popup-message">
+      Fortaleça sua equipe! Envie 500 moedas para seus colegas hoje. É rápido, fácil e não custa nada para você.
+    </p>
+    <div id="envio-moedas-lista-popup" class="ociosos-lista-container" style="max-height: 200px; text-align: left; padding: 10px;">
+      </div>
+    <button id="enviar-moedas-popup-btn" class="card-popup-close-btn" style="margin-top: 20px; background-color: #2ecc71;">Enviar Presente</button>
+  </div>
 </div>
   
   <script type="module">
