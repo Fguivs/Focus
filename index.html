@@ -1434,6 +1434,7 @@
 <div id="item-variations-modal" class="modal-overlay">
   <div class="modal-content" style="max-width: 700px;">
       <h3 id="variations-item-name">Variações de Cor</h3>
+      <p id="variations-item-description" class="modal-description hidden"></p> 
       <div id="variations-grid" class="variations-grid-container">
           </div>
       <button class="btn-cancelar" style="margin-top: 20px;" onclick="closeModal('item-variations-modal')">Voltar</button>
@@ -1524,7 +1525,17 @@
             <option value="enfeite_de_parede">Itens Raros e Exclusivos</option>
             <option value="fundo">Fundos</option>
           </select>
-          
+
+          <div id="add-item-subcategoria-container" class="hidden">
+            <select id="add-item-subcategoria" class="painel-input">
+              <option value="">Selecione a Subcategoria...</option>
+              <option value="chapeu">Chapéu</option>
+              <option value="oculos">Óculos</option>
+              <option value="colar">Colar</option>
+              <option value="bolsa">Bolsa</option>
+              <option value="outros">Outros</option>
+            </select>
+          </div>
           <div style="display: flex; align-items: center; gap: 10px;">
             <input type="checkbox" id="add-item-raro" style="width: 20px; height: 20px;">
             <label for="add-item-raro">Este item é raro/exclusivo?</label>
@@ -1534,6 +1545,12 @@
         <div id="add-item-raro-descricao-container" class="hidden" style="margin-top: 15px;">
           <textarea id="add-item-raro-descricao" class="painel-input" rows="3" placeholder="Descreva a condição para obter este item (Ex: Apenas para líderes, recompensa de evento, etc.)"></textarea>
         </div>
+      </div>
+      
+      <div id="add-item-membros-permitidos-container" class="hidden" style="margin-top: 15px;">
+        <h4 style="margin-bottom: 10px; text-align: left;">Membros com Permissão para Comprar:</h4>
+        <div id="add-item-membros-lista" style="max-height: 200px; overflow-y: auto; background: rgba(0,0,0,0.05); border-radius: 8px; padding: 10px; text-align: left;">
+          </div>
       </div>
 
       <div class="painel-section">
