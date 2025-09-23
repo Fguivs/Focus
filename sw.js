@@ -49,6 +49,14 @@ self.addEventListener('activate', event => {
 
 // Evento Fetch: Intercepta todas as requisições de rede da página
 self.addEventListener('fetch', event => {
+  // === INÍCIO DA CORREÇÃO ===
+  // Ignora requisições que não são do tipo GET (como POST para o Firestore)
+  // e requisições de extensões do Chrome.
+  if (event.request.method !== 'GET' || event.request.url.startsWith('chrome-extension://')) {
+    return;
+  }
+  // === FIM DA CORREÇÃO ===
+
   // Estratégia: "Network Falling Back to Cache"
   // 1. Tenta buscar o recurso na rede primeiro.
   // 2. Se a rede falhar (offline), busca no cache.
@@ -67,16 +75,3 @@ self.addEventListener('fetch', event => {
       })
   );
 });
-
-
-
-
-
-
-
-
-
-
-
-
-
