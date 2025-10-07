@@ -1,5 +1,5 @@
 // Define um nome e uma versão para o nosso cache
-const CACHE_NAME = 'grupo-epicos-cache-v3.0'; // IMPORTANTE: Mude a versão (v1.4, v1.5, etc.) a cada nova atualização
+const CACHE_NAME = 'grupo-epicos-cache-v3.1'; // IMPORTANTE: Mude a versão (v1.4, v1.5, etc.) a cada nova atualização
 
 // Lista de arquivos essenciais para o funcionamento offline
 const urlsToCache = [
@@ -75,6 +75,7 @@ self.addEventListener('fetch', event => {
       })
   );
 });
+
 
 
 
