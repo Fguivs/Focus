@@ -444,43 +444,70 @@
       <button class="controle-btn" onclick="mudarSlideDesenho(1)">❯</button>
     </div>
     <div class="carrossel-container" id="carrossel-container-desenho">
-      <div class="card-desenho" id="card-desenho-abelha">
-  <h3 class="titulo-tela-desenho abelha">🐝 Tela da Equipe Abelha</h3>
-  <div id="preview-container-abelha" class="preview-container">
-    <canvas id="preview-canvas-abelha"></canvas>
-    <div class="preview-placeholder">
-      <span class="placeholder-icon">🎨</span>
-      <p class="placeholder-text">Clique para ver (ou criar) a arte da equipe!</p>
+  <div class="card-desenho" id="card-desenho-abelha">
+    <h3 class="titulo-tela-desenho abelha">🐝 Tela da Equipe Abelha</h3>
+    <div id="preview-container-abelha" class="preview-container">
+      <canvas id="preview-canvas-abelha"></canvas>
+      <div class="loading-overlay hidden"></div>
+      <div class="overlay-texto">Clique para Desenhar</div>
     </div>
-    <div class="loading-overlay hidden"></div> 
-    <div class="overlay-texto">Clique para Desenhar</div>
+    <div class="desenho-info-rodape">
+  <button class="botao-autores" onclick="abrirModalAutores('abelha')">Ver Autores</button>
+  <div class="avaliacao-desenho">
+    <div id="like-container-abelha" class="reacao-display" onclick="abrirModalAvaliadores('abelha', 'likes')" title="Ver quem curtiu">
+      <button id="like-btn-abelha" onclick="event.stopPropagation(); avaliarDesenho('abelha', 'like')">👍</button>
+      <span class="like-count">0</span>
+    </div>
+    <div id="dislike-container-abelha" class="reacao-display" onclick="abrirModalAvaliadores('abelha', 'dislikes')" title="Ver quem não curtiu">
+      <button id="dislike-btn-abelha" onclick="event.stopPropagation(); avaliarDesenho('abelha', 'dislike')">👎</button>
+      <span class="dislike-count">0</span>
+    </div>
   </div>
 </div>
-<div class="card-desenho" id="card-desenho-joaninha">
-  <h3 class="titulo-tela-desenho joaninha">🐞 Tela da Equipe Joaninha</h3>
-  <div id="preview-container-joaninha" class="preview-container">
-    <canvas id="preview-canvas-joaninha"></canvas>
-    <div class="preview-placeholder">
-      <span class="placeholder-icon">🎨</span>
-      <p class="placeholder-text">Clique para ver (ou criar) a arte da equipe!</p>
+  </div>
+  <div class="card-desenho" id="card-desenho-joaninha">
+    <h3 class="titulo-tela-desenho joaninha">🐞 Tela da Equipe Joaninha</h3>
+    <div id="preview-container-joaninha" class="preview-container">
+      <canvas id="preview-canvas-joaninha"></canvas>
+      <div class="loading-overlay hidden"></div>
+      <div class="overlay-texto">Clique para Desenhar</div>
     </div>
-    <div class="loading-overlay hidden"></div> 
-    <div class="overlay-texto">Clique para Desenhar</div>
+    <div class="desenho-info-rodape">
+  <button class="botao-autores" onclick="abrirModalAutores('joaninha')">Ver Autores</button>
+  <div class="avaliacao-desenho">
+    <div id="like-container-joaninha" class="reacao-display" onclick="abrirModalAvaliadores('joaninha', 'likes')" title="Ver quem curtiu">
+      <button id="like-btn-joaninha" onclick="event.stopPropagation(); avaliarDesenho('joaninha', 'like')">👍</button>
+      <span class="like-count">0</span>
+    </div>
+    <div id="dislike-container-joaninha" class="reacao-display" onclick="abrirModalAvaliadores('joaninha', 'dislikes')" title="Ver quem não curtiu">
+      <button id="dislike-btn-joaninha" onclick="event.stopPropagation(); avaliarDesenho('joaninha', 'dislike')">👎</button>
+      <span class="dislike-count">0</span>
+    </div>
   </div>
 </div>
-<div class="card-desenho" id="card-desenho-vagalume">
-  <h3 class="titulo-tela-desenho vagalume">💡 Tela da Equipe Vaga-lume</h3>
-  <div id="preview-container-vagalume" class="preview-container">
-    <canvas id="preview-canvas-vagalume"></canvas>
-    <div class="preview-placeholder">
-      <span class="placeholder-icon">🎨</span>
-      <p class="placeholder-text">Clique para ver (ou criar) a arte da equipe!</p>
+  </div>
+  <div class="card-desenho" id="card-desenho-vagalume">
+    <h3 class="titulo-tela-desenho vagalume">💡 Tela da Equipe Vaga-lume</h3>
+    <div id="preview-container-vagalume" class="preview-container">
+      <canvas id="preview-canvas-vagalume"></canvas>
+      <div class="loading-overlay hidden"></div>
+      <div class="overlay-texto">Clique para Desenhar</div>
     </div>
-    <div class="loading-overlay hidden"></div> 
-    <div class="overlay-texto">Clique para Desenhar</div>
+    <div class="desenho-info-rodape">
+  <button class="botao-autores" onclick="abrirModalAutores('vagalume')">Ver Autores</button>
+  <div class="avaliacao-desenho">
+    <div id="like-container-vagalume" class="reacao-display" onclick="abrirModalAvaliadores('vagalume', 'likes')" title="Ver quem curtiu">
+      <button id="like-btn-vagalume" onclick="event.stopPropagation(); avaliarDesenho('vagalume', 'like')">👍</button>
+      <span class="like-count">0</span>
+    </div>
+    <div id="dislike-container-vagalume" class="reacao-display" onclick="abrirModalAvaliadores('vagalume', 'dislikes')" title="Ver quem não curtiu">
+      <button id="dislike-btn-vagalume" onclick="event.stopPropagation(); avaliarDesenho('vagalume', 'dislike')">👎</button>
+      <span class="dislike-count">0</span>
+    </div>
   </div>
 </div>
-    </div>
+  </div>
+</div>
   </div>
   <div class="progresso-indicador" style="margin-top: 15px;">
     <div class="progresso-indicador-barra" id="progresso-indicador-barra-desenho"></div>
@@ -650,6 +677,7 @@
   <audio id="som-reacao" src="https://cdn.pixabay.com/audio/2025/07/09/audio_a9c21b6107.mp3" preload="auto"></audio>
   
   <!-- Elementos de áudio para jogo sequência de cores -->
+  
   <audio id="simon-sound-0" src="https://cdn.pixabay.com/audio/2024/08/02/audio_783fe31424.mp3" preload="auto"></audio>
   <audio id="simon-sound-1" src="https://cdn.pixabay.com/audio/2022/05/10/audio_4c68c4facc.mp3" preload="auto"></audio>
   <audio id="simon-sound-2" src="https://cdn.pixabay.com/audio/2022/03/10/audio_ef129ff863.mp3" preload="auto"></audio>
@@ -1584,6 +1612,21 @@
   </div>
 </div>
 
+<div id="envio-moedas-modal" class="modal-overlay">
+  <div class="modal-content" style="max-width: 500px;">
+    <div class="painel-header">
+      <h2>🎁 Envio de Moedas Diárias</h2>
+      <button class="painel-btn btn-fechar" onclick="closeModal('envio-moedas-modal')">Fechar</button>
+    </div>
+    <p class="modal-description" style="text-align: center;">
+      Envie 500 moedas para seus colegas de equipe como um presente diário! Esta ação é gratuita e não desconta moedas de você. Você pode enviar para cada colega uma vez por dia.
+    </p>
+    <div id="envio-moedas-lista" class="ociosos-lista-container" style="max-height: 250px; text-align: left; padding: 10px;">
+      </div>
+    <button id="enviar-moedas-btn" class="auth-btn" style="margin-top: 25px; background-color: #2ecc71;">Enviar Moedas</button>
+  </div>
+</div>
+
 <div id="popup-envio-diario-moedas" class="modal-overlay">
   <div class="card-popup-content">
     <h2 class="card-popup-title">🎁 Presente Diário da Equipe!</h2>
@@ -1628,6 +1671,28 @@
     <div id="recompensa-lideres-lista" class="ociosos-lista-container" style="max-height: 250px; text-align: left; padding: 10px;">
       </div>
     <button id="enviar-recompensa-lideres-btn" class="card-popup-close-btn" style="margin-top: 20px; background-color: #3498db;">Salvar Avaliação para Domingo</button>
+  </div>
+</div>
+
+<div id="autores-desenho-modal" class="modal-overlay">
+  <div class="modal-content" style="max-width: 500px;">
+    <div class="painel-header">
+      <h2 id="autores-modal-titulo">Autores do Desenho</h2>
+      <button class="painel-btn btn-fechar" onclick="closeModal('autores-desenho-modal')">Fechar</button>
+    </div>
+    <div id="autores-lista-container" class="ociosos-lista-container" style="max-height: 300px; padding: 10px; text-align: left;">
+      </div>
+  </div>
+</div>
+
+<div id="avaliadores-desenho-modal" class="modal-overlay">
+  <div class="modal-content" style="max-width: 500px;">
+    <div class="painel-header">
+      <h2 id="avaliadores-modal-titulo">Membros que Avaliaram</h2>
+      <button class="painel-btn btn-fechar" onclick="closeModal('avaliadores-desenho-modal')">Fechar</button>
+    </div>
+    <div id="avaliadores-lista-container" class="ociosos-lista-container" style="max-height: 300px; padding: 10px; text-align: left;">
+      </div>
   </div>
 </div>
   
