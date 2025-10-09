@@ -396,7 +396,7 @@
 	
 	<!-- Seção do Mural de Mensagens -->
     <div class="mural-container">
-  <h2>✍️ Mural de Mensagens</h2>
+  <h2>✍️ Mural da Escrita</h2>
   <div class="mural-actions">
     <button id="open-composer-btn">Escrever Mensagem</button>
   </div>
@@ -731,14 +731,25 @@
   </div>
 </div>
   
-  <div id="message-composer-modal" class="modal-overlay">
+<div id="message-composer-modal" class="modal-overlay">
   <div id="composer-card" class="composer-card">
     <div class="composer-header">
       <button id="composer-color-btn" title="Mudar cor do card">Escolha a cor</button>
       <div id="composer-color-palette" class="hidden"></div>
       <button id="composer-close-btn" title="Fechar">✖</button>
     </div>
-    <textarea id="composer-textarea" placeholder="O que você está pensando?"></textarea>
+
+    <div class="composer-toolbar">
+        <button class="toolbar-btn" onclick="formatText('bold')" title="Negrito"><b>B</b></button>
+        <button class="toolbar-btn" onclick="formatText('italic')" title="Itálico"><i>I</i></button>
+        <button class="toolbar-btn" onclick="formatText('underline')" title="Sublinhado"><u>U</u></button>
+        <button class="toolbar-btn" onclick="formatText('justifyLeft')" title="Alinhar à Esquerda">☰</button>
+        <button class="toolbar-btn" onclick="formatText('justifyCenter')" title="Centralizar"><b>&#9776;</b></button>
+        <button class="toolbar-btn" onclick="formatText('justifyRight')" title="Alinhar à Direita"><b>&#9780;</b></button>
+    </div>
+
+    <div id="composer-textarea" class="auth-input" contenteditable="true" placeholder="O que você está pensando?"></div>
+
     <div class="composer-footer">
       <div class="composer-author-info">
         <div id="composer-author" class="mensagem-autor"></div>
