@@ -8,6 +8,7 @@
 <link rel="stylesheet" href="estilos.css">
 <link rel="manifest" href="manifest.json">
 <style id="dynamic-cursor-style"></style>
+<script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
 
 </head>
 <body>
@@ -269,6 +270,21 @@
     <div class="grupos-container" id="grupos-container">
       <!-- Conteúdo será gerado dinamicamente pelo JavaScript -->
     </div>
+	
+	<div id="chat-ia-secao" class="mural-container">
+  <h2>🧙‍ Oráculo dos Épicos</h2>
+  <p class="mural-descricao">
+    Converse com o Oráculo, o membro mais sábio e observador do grupo. Ele está por dentro de tudo: regras, placares, mensagens do mural, desenhos das equipes e até seus gostos pessoais. Use este espaço para pedir conselhos, tirar dúvidas, desabafar ou simplesmente ter uma boa conversa.<br>Cada mensagem tem um pequeno custo de 50 💰 moedas.
+  </p>
+  
+  <div id="chat-ia-messages">
+    </div>
+
+  <div class="chat-input-area">
+    <textarea id="chat-ia-input" placeholder="Pergunte algo..."></textarea>
+    <button id="chat-ia-send-btn">➤</button>
+  </div>
+</div>
 	
 	<div id="condominio-container" class="arvore-epica-container">
   <h2>🏡 Condomínio Épicos</h2>
@@ -746,6 +762,8 @@
         <button class="toolbar-btn" onclick="formatText('justifyLeft')" title="Alinhar à Esquerda">☰</button>
         <button class="toolbar-btn" onclick="formatText('justifyCenter')" title="Centralizar"><b>&#9776;</b></button>
         <button class="toolbar-btn" onclick="formatText('justifyRight')" title="Alinhar à Direita"><b>&#9780;</b></button>
+		
+		<button id="open-oracle-assistant-btn" class="toolbar-btn" onclick="abrirAssistenteOraculo()" title="Assistente do Oráculo">🧙‍</button>
     </div>
 
     <div id="composer-textarea" class="auth-input" contenteditable="true" placeholder="O que você está pensando?"></div>
@@ -1716,6 +1734,32 @@
     </div>
     <div id="avaliadores-lista-container" class="ociosos-lista-container" style="max-height: 300px; padding: 10px; text-align: left;">
       </div>
+  </div>
+</div>
+  
+  <div id="oracle-assistant-modal" class="modal-overlay">
+  <div class="modal-content" style="max-width: 450px;">
+    <div class="painel-header">
+      <h2>🧙‍ Assistente do Oráculo</h2>
+      <button class="painel-btn btn-fechar" onclick="closeModal('oracle-assistant-modal')">Fechar</button>
+    </div>
+    <p class="modal-description">
+      Peça ajuda ao Oráculo para aprimorar sua mensagem. A ação será aplicada ao texto que você já escreveu.
+    </p>
+    <div class="user-panel-actions">
+      <button class="user-panel-btn" onclick="executarAcaoAssistenteIA('sugerir')">
+        💡 Sugerir continuação
+      </button>
+      <button class="user-panel-btn" onclick="executarAcaoAssistenteIA('resumir')">
+        📜 Resumir texto
+      </button>
+      <button class="user-panel-btn" onclick="executarAcaoAssistenteIA('corrigir')">
+        ✍️ Corrigir ortografia e gramática
+      </button>
+      <button class="user-panel-btn" onclick="executarAcaoAssistenteIA('tonalizar')">
+        🎭 Mudar o tom para algo mais... Sábio
+      </button>
+    </div>
   </div>
 </div>
   
