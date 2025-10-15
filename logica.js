@@ -15,10 +15,11 @@ import{initializeApp}from"https://www.gstatic.com/firebasejs/10.12.2/firebase-ap
     2.  Escreva uma análise curta (2 a 4 parágrafos) em seu estilo carinhoso e de mentor.
     3.  Parabenize a(s) equipe(s) vencedora(s) de forma calorosa. Comente sobre a disputa, elogiando o esforço de todos, mesmo os que não venceram.
     4.  Elogie os membros do Top 5, não apenas pelo resultado, mas pelo exemplo de dedicação que eles representam para o grupo.
-    5.  Se houver destaques (medalhas, evolução da árvore), comente sobre como esses feitos coletivos ou individuais fortalecem o grupo.
-    6.  Termine com uma mensagem de incentivo e afeto para a próxima semana, reforçando a importância do descanso e da união.
-    7.  Assine com "— Com carinho, Oráculo." ou simplesmente "— Oráculo.".
-    8.  Sua resposta deve ser apenas o texto da análise, sem formatação JSON e sem introduções como "Aqui está a análise:".
+	5.  REGRA DE GÊNERO OBRIGATÓRIA: Use o "Nome Real" para determinar o gênero de uma pessoa. O "Nome de Usuário" (apelido) pode ser enganoso. Por exemplo, se o Nome Real de 'Kaii' for 'Kaiiara', use pronomes femininos ("a Kaii", "querida").
+    6.  Se houver destaques (medalhas, evolução da árvore), comente sobre como esses feitos coletivos ou individuais fortalecem o grupo.
+    7.  Termine com uma mensagem de incentivo e afeto para a próxima semana, reforçando a importância do descanso e da união.
+    8.  Assine com "— Com carinho, Oráculo." ou simplesmente "— Oráculo.".
+    9.  Sua resposta deve ser apenas o texto da análise, sem formatação JSON e sem introduções como "Aqui está a análise:".
   `;try{console.log("\uD83E\uDDD9\u200D Or\xE1culo est\xE1 preparando a an\xE1lise semanal (com a nova personalidade)...");const e=genAI.getGenerativeModel({model:"gemini-2.5-flash-lite"}),a=await e.generateContent(l),o=await a.response,t=o.text();await adicionarEventoAoFeed("geral","\uD83E\uDDD9\u200D A An\xE1lise Semanal do Or\xE1culo",t.replace(/\n/g,"<br>"),{})}catch(e){console.error("Erro ao gerar resumo semanal com a IA:",e);await adicionarEventoAoFeed("geral","\uD83E\uDDD9\u200D A An\xE1lise Semanal do Or\xE1culo","Meus queridos, a semana foi intensa e cheia de aprendizados. Parab\xE9ns a todos pelo esfor\xE7o, em especial \xE0(s) equipe(s) vencedora(s)! Que a pr\xF3xima semana nos traga ainda mais foco e uni\xE3o. Descansem bem. \u2014 Or\xE1culo.",{})}}function getMedalha(e){const a=Object.keys(medalhas).map(Number).sort((e,a)=>a-e);for(const o of a)if(e>=o)return medalhas[o];return null}async function atualizarMedalhas(){for(const e in streaksCache)Object.hasOwnProperty.call(streaksCache,e)&&atualizarStreakVisualMembro(e,streaksCache[e])}async function atualizarPlacarSemanal(){document.getElementById("resumo-abelha")&&(document.getElementById("resumo-abelha").innerHTML=`
         <div>${document.querySelectorAll("#equipe-abelha input:checked").length} focaram hoje!</div>
         <div>${pontosSemanais.abelha} pontos na semana</div>
