@@ -9,6 +9,7 @@
 <link rel="manifest" href="manifest.json">
 <style id="dynamic-cursor-style"></style>
 <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 
 </head>
 <body>
@@ -254,6 +255,99 @@
     </div>
   </div>
 </div>
+
+	<div id="secao-pix" class="vantagem-container">
+    <h2>💰 Pix dos Épicos</h2>
+    <p class="vantagem-descricao">
+        Transfira moedas instantaneamente para seus colegas ou verifique a autenticidade de um comprovante.
+    </p>
+
+    <div id="pix-tela-inicial">
+        <div class="painel-section">
+            <h3>Verificar Comprovante</h3>
+            <div class="controle-pontos" style="grid-template-columns: 1fr auto;">
+                <input type="text" id="pix-codigo-verificacao" class="painel-input" placeholder="Insira o código de transação único">
+                <button id="pix-verificar-btn" class="painel-btn btn-adicionar">Verificar</button>
+            </div>
+        </div>
+        <button id="pix-iniciar-btn" class="auth-btn" style="margin-top: 20px; background-color: #9b59b6;">Nova Transferência</button>
+    </div>
+
+    <div id="pix-etapas-container" class="hidden">
+
+    <div id="pix-step-1" class="pix-step">
+        <h4>1. Selecione um ou mais membros para enviar moedas:</h4>
+        <div id="pix-lista-membros" class="ociosos-lista-container" style="max-height: 250px; text-align: left; padding: 10px;">
+            </div>
+        <button id="pix-step1-next" class="auth-btn" style="margin-top: 15px;">Pronto</button>
+        <div class="pix-botoes-navegacao">
+            <button class="btn-cancelar pix-cancel-btn" onclick="navegarPix(0)">Cancelar</button>
+        </div>
+    </div>
+
+    <div id="pix-step-2" class="pix-step hidden">
+        <h4>2. Digite o valor a ser enviado:</h4>
+        <div id="pix-saldo-atual" style="font-size: 1.1rem; margin-bottom: 15px;">Seu Saldo: 💰 <span>0</span></div>
+        <div id="pix-valor-display" class="painel-input" style="font-size: 2rem; text-align: center; margin-bottom: 20px; font-weight: bold;">0</div>
+        <div id="pix-teclado-numerico">
+            </div>
+        <button id="pix-step2-next" class="auth-btn" style="margin-top: 20px;">Pronto</button>
+        <div class="pix-botoes-navegacao">
+            <button class="pix-voltar-btn" onclick="navegarPix(1)">Voltar</button>
+            <button class="btn-cancelar pix-cancel-btn" onclick="navegarPix(0)">Cancelar</button>
+        </div>
+    </div>
+
+    <div id="pix-step-3" class="pix-step hidden">
+        <h4>3. Adicione um comentário (opcional):</h4>
+        <textarea id="pix-comentario-input" class="painel-input" rows="4" placeholder="Deixe uma mensagem..."></textarea>
+        <button id="pix-step3-next" class="auth-btn" style="margin-top: 15px;">Pronto</button>
+        <div class="pix-botoes-navegacao">
+            <button class="pix-voltar-btn" onclick="navegarPix(2)">Voltar</button>
+            <button class="btn-cancelar pix-cancel-btn" onclick="navegarPix(0)">Cancelar</button>
+        </div>
+    </div>
+
+    <div id="pix-step-4" class="pix-step hidden">
+        <h4>4. Confirme os dados da transferência:</h4>
+        <div id="pix-resumo-confirmacao" class="painel-section">
+            </div>
+        <button id="pix-step4-next" class="auth-btn" style="margin-top: 15px; background-color: #2ecc71;">Está tudo correto</button>
+        <div class="pix-botoes-navegacao">
+            <button class="pix-voltar-btn" onclick="navegarPix(3)">Voltar</button>
+            <button class="btn-cancelar pix-cancel-btn" onclick="navegarPix(0)">Cancelar</button>
+        </div>
+    </div>
+
+    <div id="pix-step-5" class="pix-step hidden">
+        <h4>5. Para sua segurança, digite sua senha:</h4>
+<p style="font-size: 1rem; color: #7f8c8d; display: block; margin-top: -10px; margin-bottom: 15px;">
+  (a mesma senha utilizada para fazer login)
+</p>
+        <input type="password" id="pix-senha-input" class="auth-input" placeholder="Sua senha" autocomplete="current-password">
+        <button id="pix-executar-btn" class="auth-btn" style="margin-top: 15px;">Confirmar Transferência</button>
+        <div class="pix-botoes-navegacao">
+            <button class="pix-voltar-btn" onclick="navegarPix(4)">Voltar</button>
+            <button class="btn-cancelar pix-cancel-btn" onclick="navegarPix(0)">Cancelar</button>
+        </div>
+    </div>
+
+    <div id="pix-step-6" class="pix-step hidden">
+        <h4>✅ Transferência realizada com sucesso!</h4>
+        <div id="pix-comprovante-wrapper">
+            <div id="pix-comprovante">
+                <h3 class="comprovante-titulo">Épicos 亗 🌱</h3>
+                <p class="comprovante-subtitulo">Comprovante de Transferência</p>
+                <div class="comprovante-dados">
+                    </div>
+            </div>
+        </div>
+        <button id="pix-salvar-comprovante-btn" class="auth-btn" style="margin-top: 20px;">Baixar Comprovante</button>
+        <button id="pix-nova-transferencia-btn" class="auth-btn" style="background-color:#3498db; margin-top: 10px;">Fazer Nova Transferência</button>
+    </div>
+
+</div>
+</div>
 	
 		  <div id="resumo-semana-container" class="mural-container">
       <h2>📰 Resumo da Semana</h2>
@@ -270,9 +364,20 @@
     <div class="grupos-container" id="grupos-container">
       <!-- Conteúdo será gerado dinamicamente pelo JavaScript -->
     </div>
+
+<div id="pix-verify-modal" class="modal-overlay">
+    <div class="modal-content" style="max-width: 500px;">
+        <div class="painel-header">
+            <h2>Comprovante Verificado</h2>
+            <button class="painel-btn btn-fechar" onclick="closeModal('pix-verify-modal')">Fechar</button>
+        </div>
+        <div id="pix-verify-details" class="painel-section" style="text-align: left; line-height: 1.8;">
+            </div>
+    </div>
+</div>
 	
 	<div id="chat-ia-secao" class="mural-container">
-  <h2>🧙‍ Oráculo dos Épicos</h2>
+  <h2>🧙‍ Oráculo</h2>
   <p class="mural-descricao">
     Converse com o Oráculo, o membro mais sábio e observador do grupo. Ele está por dentro de tudo: regras, placares, mensagens do mural, desenhos das equipes e até seus gostos pessoais. Use este espaço para pedir conselhos, tirar dúvidas, desabafar ou simplesmente ter uma boa conversa.<br>Cada mensagem tem um pequeno custo de 50 💰 moedas.
   </p>
@@ -1778,7 +1883,7 @@
     <div class="update-icon">🧙‍</div>
     <h2>O Oráculo Quer se Comunicar</h2>
     <p>
-      Aguarde um instante enquanto as mensagens e notificações pessoais são preparadas para os membros. Este processo é essencial para garantir a nossa melhor experiência em grupo.
+      Aguarde um instante enquanto as mensagens e notificações pessoais são preparadas para os membros. Este processo é essencial para garantir a melhor experiência do nosso grupo.
     </p>
     <div id="oracle-status-text" style="font-weight: bold; margin-bottom: 15px;">Iniciando...</div>
     <div class="progresso-container" style="height: 25px;">
