@@ -103,6 +103,10 @@
       </header>
 	  
 	 <div id="painel-pessoal-container">
+	 
+	 <div id="pointing-hand-indicator" style="display: none; position: absolute; font-size: 3rem; z-index: 10002; pointer-events: none; transform: rotate(90deg); text-shadow: 0 4px 8px rgba(0,0,0,0.4);">
+    👉
+  </div>
   
   <div class="perfil-header">
   <h2 id="saudacao-pessoal">Olá, <span id="nome-usuario-saudacao">Membro</span>!</h2>
@@ -1890,6 +1894,22 @@
       <div id="oracle-progress-bar" style="background: #9b59b6; height: 100%; width: 0%; border-radius: 10px; transition: width 0.5s ease;"></div>
     </div>
   </div>
+</div>
+
+<div id="notification-prompt-popup" class="card-popup-overlay">
+  <div class="card-popup-content">
+    <h2 id="notification-prompt-title" class="card-popup-title">Você tem notificações não lidas</h2>
+    <div id="notification-prompt-message" class="card-popup-message">
+      <p><span id="notification-prompt-username"></span>, você tem algumas notificações na sua caixa de entrada que ainda não foram lidas. Há mensagens dos seguintes remetentes:</p>
+      <div id="notification-senders-list" style="margin-top: 15px; text-align: center; font-size: 1.2rem; line-height: 1.8;">
+        </div>
+    </div>
+    <button id="notification-prompt-check-btn" class="card-popup-close-btn">Conferir</button>
+  </div>
+</div>
+
+<div id="pointing-hand-indicator" style="display: none; position: fixed; font-size: 3rem; z-index: 10002; pointer-events: none; transform: rotate(90deg); text-shadow: 0 4px 8px rgba(0,0,0,0.4);">
+  👆
 </div>
   
   <script type="module">
