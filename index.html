@@ -521,7 +521,7 @@
 	
 	<!-- Seção do Mural de Mensagens -->
     <div class="mural-container">
-  <h2>✍️ Mural da Escrita</h2>
+  <h2>✍️ Mural de Mensagens</h2>
   <div class="mural-actions">
     <button id="open-composer-btn">Escrever Mensagem</button>
   </div>
@@ -1061,28 +1061,20 @@
   </div>
 </div>
   
-  <div id="new-member-success-modal" class="modal-overlay">
+<div id="new-member-success-modal" class="modal-overlay">
   <div class="modal-content">
     <h3>✅ Membro Adicionado com Sucesso!</h3>
-    <p class="modal-description">Repasse os dados de login para o novo membro. Use os botões para copiar as informações.</p>
+    <p class="modal-description">
+      A imagem abaixo contém os dados de login para o novo membro. Clique em "Download" para salvá-la e enviá-la.
+    </p>
     
-    <div class="copy-info-container">
-      <strong>Usuário:</strong>
-      <div class="copy-field">
-        <span id="success-username"></span>
-        <button onclick="copyToClipboard(document.getElementById('success-username').innerText, 'Usuário')">Copiar</button>
+    <div id="generated-login-card-container" style="margin: 20px 0; border-radius: 10px; overflow: hidden; box-shadow: 0 5px 15px rgba(0,0,0,0.2);">
       </div>
-    </div>
-    
-    <div class="copy-info-container">
-      <strong>Senha Provisória:</strong>
-      <div class="copy-field">
-        <span id="success-password"></span>
-        <button onclick="copyToClipboard(document.getElementById('success-password').innerText, 'Senha')">Copiar</button>
-      </div>
-    </div>
 
-    <button class="auth-btn" style="margin-top: 25px;" onclick="closeModal('new-member-success-modal')">OK</button>
+    <div style="display: flex; flex-direction: column; gap: 10px;">
+      <button id="download-login-card-btn" class="auth-btn" style="background-color: #2ecc71;">Download da Imagem</button>
+      <button class="btn-cancelar" onclick="closeModal('new-member-success-modal')">Fechar</button>
+    </div>
   </div>
 </div>
 
@@ -1552,7 +1544,7 @@
     </div>
 
     <div class="comment-input-area" style="margin-top: 15px; border-top: 1px solid rgba(0,0,0,0.1); padding-top: 15px;">
-      <textarea id="comment-textarea-modal" placeholder="Adicionar um comentário..."></textarea>
+    <div id="comment-textarea-modal" class="auth-input" contenteditable="true" placeholder="Adicionar um comentário..."></div>
       <button id="send-comment-btn-modal" title="Enviar Comentário">➤</button>
     </div>
 
@@ -1911,6 +1903,9 @@
 <div id="pointing-hand-indicator" style="display: none; position: fixed; font-size: 3rem; z-index: 10002; pointer-events: none; transform: rotate(90deg); text-shadow: 0 4px 8px rgba(0,0,0,0.4);">
   👆
 </div>
+
+<div id="mention-suggestions-popup" class="hidden">
+  </div>
   
   <script type="module">
   // Importa e executa todo o seu código de lógica principal
