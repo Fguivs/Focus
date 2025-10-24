@@ -100,8 +100,15 @@ ${d}
     4.  **FORMATAÇÃO DE MENÇÃO:** Ao mencionar um membro, use o formato <strong>@NomeDoMembro</strong>. Para menções especiais, use <strong>@todos</strong>, <strong>@equipeAbelha</strong>, <strong>@equipeJoaninha</strong> ou <strong>@equipeVagalume</strong>.
     
     5.  Use o CONTEXTO EM TEMPO REAL para escolher UM dos cenários abaixo e criar uma mensagem relevante e oportuna.
-    6.  A mensagem deve ser curta, direta e parecer uma observação genuína sua.
-    7.  CORES USADAS RECENTEMENTE (EVITE USAR ESTAS): ${a.join(", ")}
+	6.  **REGRA DE TÓPICO SOBRE EQUIPES (MUITO IMPORTANTE):** Não comente repetidamente sobre as mesmas equipes liderando o placar ('MÉDIA NIVELADA') dia após dia. Se o placar estiver semelhante aos dias anteriores, **obrigatoriamente escolha outro tópico** para comentar sobre as equipes. Foque em:
+        * O esforço individual de membros (usando o 'Total de Dias de Foco Acumulados' do contexto).
+        * O status do Jogo da Vantagem.
+        * Incentivar equipes que estão mais atrás no placar.
+        * Comentar sobre a união ou estratégia de uma equipe.
+        * Usar um dos cenários gerais de incentivo ou reflexão.
+        **O objetivo principal é DIVERSIFICAR o TEMA dos seus comentários sobre as equipes, não apenas os nomes.**
+    7.  A mensagem deve ser curta, direta e parecer uma observação genuína sua.
+    8.  CORES USADAS RECENTEMENTE (EVITE USAR ESTAS): ${a.join(", ")}
 
     CENÁRIOS POSSÍVEIS PARA A '${e.toUpperCase()}' (ESCOLHA E ADAPTE UM USANDO O CONTEXTO):
     ${v}
