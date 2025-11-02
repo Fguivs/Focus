@@ -327,6 +327,21 @@
         <select id="compra-medalha-select-membro" class="painel-input" style="margin-bottom: 20px;">
             <option value="">Selecione...</option>
         </select>
+		<div id="compra-medalha-fonte-pagamento" class="hidden" style="margin-top: 20px; text-align: left;">
+  <h4 style="margin-bottom: 10px;">Fonte de Pagamento:</h4>
+  <div class="fonte-pagamento-opcoes" style="margin-bottom: 10px;">
+    <input type="radio" id="fonte-pessoal-medalha" name="fonte-pagamento-medalha" value="pessoal" checked>
+    <label for="fonte-pessoal-medalha" style="font-size: 1.1rem;">
+      Meu Saldo (💰<span id="saldo-pessoal-medalha">0</span>)
+    </label>
+  </div>
+  <div class="fonte-pagamento-opcoes">
+    <input type="radio" id="fonte-banco-medalha" name="fonte-pagamento-medalha" value="banco">
+    <label for="fonte-banco-medalha" style="font-size: 1.1rem;">
+      Banco da Equipe (💰<span id="saldo-banco-medalha">0</span>)
+    </label>
+  </div>
+</div>
         <div style="display: flex; justify-content: space-around; gap: 15px;">
             <button class="btn-cancelar" style="flex: 1;" onclick="closeModal('compra-medalha-modal')">Cancelar</button>
             <button id="compra-medalha-confirmar-btn" class="auth-btn" style="flex: 1; background-color: #2ecc71;">Confirmar Compra</button>
@@ -413,7 +428,22 @@
         <h4>2. Digite o valor a ser enviado:</h4>
         <div id="pix-saldo-atual" style="font-size: 1.1rem; margin-bottom: 15px;">Seu Saldo: 💰 <span>0</span></div>
         <div id="pix-valor-display" class="painel-input" style="font-size: 2rem; text-align: center; margin-bottom: 20px; font-weight: bold;">0</div>
-        <div id="pix-teclado-numerico">
+        <div id="pix-fonte-pagamento" class="hidden" style="margin-bottom: 20px; text-align: left;">
+  <h4 style="margin-bottom: 10px;">Fonte de Pagamento:</h4>
+  <div class="fonte-pagamento-opcoes" style="margin-bottom: 10px;">
+    <input type="radio" id="fonte-pessoal-pix" name="fonte-pagamento-pix" value="pessoal" checked>
+    <label for="fonte-pessoal-pix" style="font-size: 1.1rem;">
+      Meu Saldo (💰<span id="saldo-pessoal-pix">0</span>)
+    </label>
+  </div>
+  <div class="fonte-pagamento-opcoes">
+    <input type="radio" id="fonte-banco-pix" name="fonte-pagamento-pix" value="banco">
+    <label for="fonte-banco-pix" style="font-size: 1.1rem;">
+      Banco da Equipe (💰<span id="saldo-banco-pix">0</span>)
+    </label>
+  </div>
+</div>
+		<div id="pix-teclado-numerico">
             </div>
         <button id="pix-step2-next" class="auth-btn" style="margin-top: 20px;">Pronto</button>
         <div class="pix-botoes-navegacao">
@@ -514,6 +544,157 @@
     <button id="chat-ia-send-btn">➤</button>
   </div>
 </div>
+
+<div id="secao-banco-equipes" class="vantagem-container">
+      <h2>💰 Banco das Equipes</h2>
+      <p class="mural-descricao">
+        Aqui ficam guardadas as moedas da equipe. Contribua enviando moedas, acompanhe o extrato e confira os maiores doadores.
+      </p>
+
+      <div class="banco-balances-container">
+        <div id="banco-card-abelha" class="banco-balance-card abelha">
+          <span class="banco-card-simbolo">💰</span>
+          <span id="banco-saldo-abelha" class="banco-card-valor">0</span>
+        </div>
+        <div id="banco-card-joaninha" class="banco-balance-card joaninha">
+          <span class="banco-card-simbolo">💰</span>
+          <span id="banco-saldo-joaninha" class="banco-card-valor">0</span>
+        </div>
+        <div id="banco-card-vagalume" class="banco-balance-card vagalume">
+          <span class="banco-card-simbolo">💰</span>
+          <span id="banco-saldo-vagalume" class="banco-card-valor">0</span>
+        </div>
+      </div>
+
+      <div class="banco-actions">
+        <button id="btn-enviar-banco" class="botao-info" style="background-color: #2ecc71;">💸 Enviar Moedas</button>
+        <button id="btn-extrato-banco" class="botao-info" style="background-color: #3498db;">🧾 Extrato</button>
+        <button id="btn-stats-banco" class="botao-info" style="background-color: #f39c12;">📊 Estatísticas</button>
+      </div>
+    </div>
+	
+	<div id="secao-loja-poderes" class="vantagem-container">
+  <h2>🔮 Lojinha de Magias</h2>
+  <p class="mural-descricao">
+    Use o saldo do banco da sua equipe para comprar poderes e ganhar vantagens estratégicas na competição! Apenas líderes podem comprar, mas membros podem sugerir.
+  </p>
+  <div id="loja-poderes-grid">
+    </div>
+</div>
+
+<div id="modal-poder-detalhes" class="modal-overlay">
+  <div class="modal-content" style="max-width: 500px;">
+    <div class="painel-header">
+      <h2 id="detalhes-poder-titulo">Nome do Poder</h2>
+      <button class="painel-btn btn-fechar" onclick="closeModal('modal-poder-detalhes')">Fechar</button>
+    </div>
+    <div style="text-align: center; margin: 20px 0;">
+      <div id="detalhes-poder-emoji" style="font-size: 4rem; margin-bottom: 10px;"></div>
+      <div id="detalhes-poder-preco" style="font-size: 1.3rem; font-weight: bold; margin-bottom: 15px;"></div>
+    </div>
+    <p id="detalhes-poder-descricao" class="modal-description" style="text-align: center;"></p>
+    <p id="detalhes-poder-limite" style="font-style: italic; color: #7f8c8d; margin-bottom: 25px;"></p>
+    
+    <button id="detalhes-poder-btn-comprar" class="auth-btn" style="background-color: #2ecc71; width: 100%;" onclick="iniciarCompraPoder()">
+      Comprar Poder
+    </button>
+    <button id="detalhes-poder-btn-pedir" class="auth-btn" style="background-color: #3498db; width: 100%;" onclick="pedirPoderAoLider()">
+      Pedir ao Líder
+    </button>
+  </div>
+</div>
+
+<div id="modal-selecionar-equipe-alvo" class="modal-overlay">
+  <div class="modal-content" style="max-width: 500px;">
+    <div class="painel-header">
+      <h2>Selecionar Alvo</h2>
+      <button class="painel-btn btn-fechar" onclick="closeModal('modal-selecionar-equipe-alvo')">Fechar</button>
+    </div>
+    <p class="modal-description">Selecione qual equipe será o alvo deste poder:</p>
+    <div id="lista-equipes-alvo" style="text-align: left; margin: 20px 0;">
+      </div>
+    <div style="display: flex; justify-content: space-around; gap: 15px;">
+      <button class="btn-cancelar" style="flex: 1;" onclick="closeModal('modal-selecionar-equipe-alvo')">Cancelar</button>
+      <button id="confirmar-alvo-btn" class="auth-btn" style="flex: 1;">Confirmar Alvo</button>
+    </div>
+  </div>
+</div>
+
+<div id="modal-confirmar-compra-poder" class="modal-overlay">
+  <div class="modal-content" style="max-width: 450px;">
+    <h3>Confirmar Ação</h3>
+    <div id="resumo-compra-poder" class="painel-section" style="text-align: left; line-height: 1.8;">
+      </div>
+    <p class="modal-description" style="margin-top: 15px;">O valor será debitado do banco da sua equipe. Esta ação não pode ser desfeita.</p>
+    <div style="display: flex; justify-content: space-around; gap: 15px;">
+      <button class="btn-cancelar" style="flex: 1;" onclick="closeModal('modal-confirmar-compra-poder')">Cancelar</button>
+      <button id="confirmar-compra-poder-btn" class="auth-btn" style="flex: 1; background-color: #e74c3c;">Confirmar e Usar</button>
+    </div>
+  </div>
+</div>
+
+<div id="enviar-moedas-banco-modal" class="modal-overlay">
+  <div class="modal-content" style="max-width: 500px;">
+    <div class="painel-header">
+      <h2>💸 Enviar Moedas ao Banco</h2>
+      <button class="painel-btn btn-fechar" onclick="closeModal('enviar-moedas-banco-modal')">Fechar</button>
+    </div>
+    <p class="modal-description" style="text-align: center;">
+      Envie suas moedas pessoais para o banco da sua equipe (<strong id="enviar-moedas-nome-equipe"></strong>). Essas moedas serão gerenciadas pelo seu líder.
+    </p>
+    <div id="enviar-moedas-saldo-pessoal" style="font-size: 1.1rem; margin-bottom: 15px;">Seu Saldo: 💰 <span>0</span></div>
+    <input type="number" id="input-valor-banco" class="painel-input" placeholder="Digite o valor (ex: 1000)">
+    
+    <div style="display: flex; justify-content: space-around; gap: 15px; margin-top: 25px;">
+      <button class="btn-cancelar" style="flex: 1;" onclick="closeModal('enviar-moedas-banco-modal')">Cancelar</button>
+      <button id="enviar-moedas-banco-confirmar-btn" class="auth-btn" style="flex: 1; background-color: #2ecc71;">Confirmar Envio</button>
+    </div>
+  </div>
+</div>
+
+<div id="extrato-banco-modal" class="modal-overlay">
+  <div class="modal-content" style="max-width: 600px; width: 95%; max-height: 90vh; display: flex; flex-direction: column;">
+    <div class="painel-header">
+      <h2 id="extrato-banco-titulo">🧾 Extrato do Banco</h2>
+      <button class="painel-btn btn-fechar" onclick="closeModal('extrato-banco-modal')">Fechar</button>
+    </div>
+    <p class="modal-description" style="text-align: center;">
+      Últimas movimentações do banco da sua equipe. Transações com mais de 30 dias são apagadas.
+    </p>
+    <div id="extrato-banco-lista" class="ociosos-lista-container" style="padding-right: 15px;">
+      <div class="ociosos-placeholder">Carregando extrato...</div>
+    </div>
+  </div>
+</div>
+
+<div id="estatisticas-banco-modal" class="modal-overlay">
+  <div class="modal-content" style="max-width: 600px; width: 95%; max-height: 90vh; display: flex; flex-direction: column;">
+    <div class="painel-header">
+      <h2 id="estatisticas-banco-titulo">📊 Estatísticas do Banco</h2>
+      <button class="painel-btn btn-fechar" onclick="closeModal('estatisticas-banco-modal')">Fechar</button>
+    </div>
+    
+    <div class="avatar-tabs">
+      <button class="avatar-tab-btn ativo" data-tab-stats="contribuidores">Maiores Contribuidores</button>
+      <button class="avatar-tab-btn" data-tab-stats="juros">Rendimentos (Juros)</button>
+    </div>
+
+    <div id="stats-tab-contribuidores" class="avatar-tab-content ativo" style="padding-right: 10px;">
+      <p class="modal-description" style="text-align: center;">Membros que mais enviaram moedas para o banco.</p>
+      <div id="stats-contribuidores-lista" class="ociosos-lista-container" style="max-height: 400px;">
+        <div class="ociosos-placeholder">Calculando...</div>
+      </div>
+    </div>
+
+    <div id="stats-tab-juros" class="avatar-tab-content" style="padding-right: 10px;">
+      <p class="modal-description" style="text-align: center;">Histórico de rendimentos de 0.5% sobre o saldo total.</p>
+      <div id="stats-juros-lista" class="ociosos-lista-container" style="max-height: 400px;">
+        <div class="ociosos-placeholder">Calculando...</div>
+      </div>
+    </div>
+
+  </div>
+</div>
 	
 	<div id="condominio-container" class="arvore-epica-container">
   <h2>🏡 Condomínio Épicos</h2>
@@ -560,7 +741,7 @@
 <div class="folgas-container">
   
   <h2>📅 Quadro de Folgas</h2>
-  <p class="folga-explicacao">No dia da sua folga, sua caixa de seleção será marcada automaticamente, sem que você precise focar ou cuidar da fazenda.</p>
+  <p class="folga-explicacao">No dia da sua folga, sua caixa de seleção será marcada automaticamente. Na sua folga, você não precisa focar ou cuidar da fazenda.</p>
 <button id="change-folga-btn" class="rectangular-button" title="Alterar minha folga">Trocar Folga</button>
   
   <div class="dias-container">
@@ -1177,6 +1358,14 @@
 
   <button id="save-game-order-btn" class="painel-btn btn-adicionar" style="width:100%; margin-top: 15px;">Salvar Nova Ordem</button>
 </div>
+
+<div class="painel-section lider-geral-only">
+      <h3>🧙‍ Regenerar Análise do Oráculo</h3>
+      <button class="painel-btn btn-remover" style="width:100%; background-color: #9b59b6;" onclick="regerarAnaliseOraculoSemanaPassada()">Regerar Análise da Semana Passada</button>
+      <p style="font-size:0.8rem; margin-top:10px; color:#9b59b6">
+        Use isso se a análise do Oráculo falhou ao ser gerada no domingo ou se você precisa que ela apareça novamente (como agora).
+      </p>
+    </div>
 	
   </div>
 </div>
