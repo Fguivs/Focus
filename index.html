@@ -103,10 +103,6 @@
       </header>
 	  
 	 <div id="painel-pessoal-container">
-	 
-	 <div id="pointing-hand-indicator" style="display: none; position: absolute; font-size: 3rem; z-index: 10002; pointer-events: none; transform: rotate(90deg); text-shadow: 0 4px 8px rgba(0,0,0,0.4);">
-    👉
-  </div>
   
   <div class="perfil-header">
   <h2 id="saudacao-pessoal">Olá, <span id="nome-usuario-saudacao">Membro</span>!</h2>
@@ -1838,7 +1834,7 @@
     </div>
 
     <p class="modal-description" style="text-align: center;">
-      Aqui estão as reações mais recentes nas suas postagens e eventos.
+      Aqui estão suas notificações não lidas.
     </p>
 
     <div id="notificacoes-lista" class="ociosos-lista-container" style="padding-right: 15px;">
@@ -2254,9 +2250,15 @@
       <p id="medalha-ganha-origem" class="modal-description" style="margin-top: 20px; font-size: 1.1rem;"></p>
 	  
 	  <p id="medalha-ganha-comentario" class="modal-description hidden" style="font-style: italic; background: rgba(0,0,0,0.05); padding: 10px; border-radius: 8px; margin-top: 15px;"></p>
-	  </div>
-    <button class="card-popup-close-btn" style="background-color: #2ecc71;" onclick="closeModal('medalha-ganha-popup')">Incrível!</button>
-  </div>
+      </div>
+
+    <div id="medalha-ganha-agradecimento-container" class="hidden" style="margin-top: 15px;">
+      <button id="medalha-ganha-agradecer-btn" class="auth-btn" style="width: 100%; background-color: #3498db;">
+        Enviar Agradecimento 💖
+      </button>
+    </div>
+    <button class="card-popup-close-btn" style="background-color: #2ecc71; margin-top: 10px;" onclick="closeModal('medalha-ganha-popup')">Incrível!</button>
+    </div>
 </div>
 
 <div id="desejos-equipe-modal" class="modal-overlay">
@@ -2272,6 +2274,62 @@
       <div class="ociosos-placeholder">Carregando lista de desejos...</div>
     </div>
   </div>
+</div>
+
+<div id="pix-recebido-popup" class="modal-overlay">
+    <canvas id="pix-recebido-confetti" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 1;"></canvas>
+    
+    <div class="modal-content card-popup-content" style="position: relative; z-index: 2;">
+      <div style="text-align: center;">
+        
+        <h2 id="pix-recebido-titulo" class="card-popup-title" style="font-size: 1.8rem; color: #27ae60;">
+          💸 Pix Recebido!
+        </h2>
+        
+        <p id="pix-recebido-mensagem" class="modal-description" style="margin-top: 20px; font-size: 1.1rem; line-height: 1.6;">
+          </p>
+        
+        <p id="pix-recebido-comentario" class="modal-description hidden" style="font-style: italic; background: rgba(0,0,0,0.05); padding: 10px; border-radius: 8px; margin-top: 15px;">
+          </p>
+      </div>
+
+      <div id="pix-recebido-agradecimento-container" class="hidden" style="margin-top: 20px;">
+        <button id="pix-recebido-agradecer-btn" class="auth-btn" style="width: 100%; background-color: #3498db;">
+          Enviar Agradecimento 💖
+        </button>
+      </div>
+
+      <button class="card-popup-close-btn" style="background-color: #2ecc71; margin-top: 15px;" onclick="closeModal('pix-recebido-popup')">
+        Que legal!
+      </button>
+    </div>
+</div>
+
+<div id="recompensa-recebida-popup" class="modal-overlay">
+    <canvas id="recompensa-recebida-confetti" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 1;"></canvas>
+    
+    <div class="modal-content card-popup-content" style="position: relative; z-index: 2;">
+      <div style="text-align: center;">
+        
+        <h2 id="recompensa-recebida-titulo" class="card-popup-title" style="font-size: 1.8rem; color: #27ae60;">
+          🏆 Recompensa Recebida!
+        </h2>
+        
+        <p id="recompensa-recebida-mensagem" class="modal-description" style="margin-top: 20px; font-size: 1.1rem; line-height: 1.6;">
+          </p>
+        
+      </div>
+
+      <div id="recompensa-recebida-agradecimento-container" class="hidden" style="margin-top: 20px;">
+        <button id="recompensa-recebida-agradecer-btn" class="auth-btn" style="width: 100%; background-color: #3498db;">
+          Enviar Agradecimento 💖
+        </button>
+      </div>
+
+      <button class="card-popup-close-btn" style="background-color: #2ecc71; margin-top: 15px;" onclick="closeModal('recompensa-recebida-popup')">
+        Que legal!
+      </button>
+    </div>
 </div>
   
   <script type="module">
