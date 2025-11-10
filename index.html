@@ -189,7 +189,7 @@
       </div>
     
     <div class="competicao-container">
-      <h2>🏆 Competição de Equipes</h2>
+      <h2>🏆 Competição de Equipes <span id="ano-temporada-atual"></span></h2>
       <div class="equipes-competicao">
         <div class="equipe-competicao" id="podio-abelha">
           <h3>🐝 Abelha</h3>
@@ -698,6 +698,40 @@
     </div>
 
   </div>
+</div>
+
+<div id="secao-hall-fama" class="nossas-informacoes">
+  <h2>🏅 Hall da Fama Épico</h2>
+  <p class="mural-descricao">
+    As lendas nunca morrem. Aqui celebramos as equipes campeãs das temporadas passadas que gravaram seus nomes na história dos Épicos.
+  </p>
+
+  <div class="carrossel-wrapper">
+    <div class="carrossel-controles" id="controles-hall-fama" style="display: none;">
+      <button class="controle-btn" onclick="mudarSlideHallDaFama(-1)">❮</button>
+      <button class="controle-btn" id="botao-pausa-hall-fama" onclick="togglePausaHallDaFama()">⏸</button>
+      <button class="controle-btn" onclick="mudarSlideHallDaFama(1)">❯</button>
+    </div>
+
+    <div class="carrossel">
+      <div class="carrossel-container" id="carrossel-container-hall-fama">
+        <div class="card-hall-fama placeholder">
+          <div class="card-hall-ano">...</div>
+          <div class="card-hall-equipe">
+            <span class="card-hall-emoji">🏆</span>
+            <span class="card-hall-nome">Carregando Hall da Fama</span>
+          </div>
+          <div class="card-hall-vitorias">Aguarde...</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="progresso-indicador" style="margin-top: 15px; display: none;" id="progresso-hall-fama">
+    <div class="progresso-indicador-barra" id="progresso-indicador-barra-hall-fama"></div>
+  </div>
+  <div class="carrossel-indicadores" id="carrossel-indicadores-hall-fama" style="display: none;">
+    </div>
 </div>
 	
 	<div id="condominio-container" class="arvore-epica-container">
@@ -2336,6 +2370,18 @@
         Que legal!
       </button>
     </div>
+</div>
+
+<div id="fim-temporada-popup" class="card-popup-overlay">
+  <canvas id="fim-temporada-confetti" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 1;"></canvas>
+  
+  <div class="card-popup-content" style="position: relative; z-index: 2; border: 4px solid #ffd700; box-shadow: 0 0 30px #ffd700;">
+    <h2 id="fim-temporada-titulo" class="card-popup-title" style="color: #f1c40f;"></h2>
+    <p id="fim-temporada-mensagem" class="card-popup-message" style="text-align: center; font-size: 1.2rem; line-height: 1.8;">
+      Um novo ciclo começa agora. Que a nova temporada seja repleta de foco, disciplina e grandes conquistas para todos nós!
+    </p>
+    <button id="fim-temporada-close-btn" class="card-popup-close-btn" style="background-color: #2ecc71;">Vamos lá!</button>
+  </div>
 </div>
   
   <script type="module">
