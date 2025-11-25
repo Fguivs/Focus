@@ -1297,7 +1297,7 @@
 
     <div class="painel-section">
       <h3>Adicionar Novo Membro</h3>
-      <div class="controle-pontos" style="grid-template-columns: 1fr 1fr 1fr auto; gap: 15px;">
+      <div class="controle-pontos" style="grid-template-columns: 1fr 1fr 1fr 1fr auto; gap: 10px;">
         <input type="text" id="new-member-name" class="painel-input" placeholder="Nome do Membro">
         <select id="new-member-team" class="painel-input">
           <option value="abelha">Equipe Abelha</option>
@@ -1307,6 +1307,11 @@
         <select id="new-member-role" class="painel-input">
           <option value="membro">Membro</option>
           <option value="lider-equipe">Líder de Equipe</option>
+        </select>
+        <select id="new-member-gender" class="painel-input">
+          <option value="indefinido">Gênero (Opcional)</option>
+          <option value="masculino">Masculino</option>
+          <option value="feminino">Feminino</option>
         </select>
         <button id="add-member-btn" class="painel-btn btn-adicionar">Adicionar</button>
       </div>
@@ -1340,6 +1345,15 @@
   </p>
   <div id="ferias-lista-membros" class="ociosos-lista-container" style="max-height: 250px;">
   </div>
+</div>
+
+<div class="painel-section lider-geral-only">
+  <h3>Gerenciar Gêneros</h3>
+  <p style="font-size:0.9rem; margin-bottom:15px; color:#555;">
+    Defina o gênero dos membros para que o Oráculo use os pronomes corretos (Ele/Ela) nas mensagens.
+  </p>
+  <div id="generos-lista-membros" class="ociosos-lista-container" style="max-height: 250px;">
+    </div>
 </div>
 	
 	<div class="painel-section lider-geral-only">
