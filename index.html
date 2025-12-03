@@ -2442,17 +2442,38 @@
     <div class="painel-section" style="text-align: left;">
       
       <div style="margin-bottom: 15px;">
-        <label style="font-weight:bold; display:block; margin-bottom:5px;">Estado (UF):</label>
-        <select id="input-loc-estado" class="painel-input" onchange="carregarCidadesPorEstado()">
-          <option value="">Selecione o Estado...</option>
-          </select>
+        <label style="font-weight:bold; display:block; margin-bottom:5px;">País:</label>
+        <select id="input-loc-pais" class="painel-input" onchange="alternarModoLocalizacao()">
+          <option value="BR">🇧🇷 Brasil</option>
+          <option value="OUTRO">🌍 Outro</option>
+        </select>
       </div>
 
-      <div style="margin-bottom: 15px;">
-        <label style="font-weight:bold; display:block; margin-bottom:5px;">Cidade:</label>
-        <input list="lista-cidades-brasil" type="text" id="input-loc-cidade" class="painel-input" placeholder="Primeiro selecione o estado..." disabled>
-        <datalist id="lista-cidades-brasil">
-          </datalist>
+      <div id="container-loc-brasil">
+          <div style="margin-bottom: 15px;">
+            <label style="font-weight:bold; display:block; margin-bottom:5px;">Estado (UF):</label>
+            <select id="input-loc-estado" class="painel-input" onchange="carregarCidadesPorEstado()">
+              <option value="">Selecione o Estado...</option>
+            </select>
+          </div>
+
+          <div style="margin-bottom: 15px;">
+            <label style="font-weight:bold; display:block; margin-bottom:5px;">Cidade:</label>
+            <input list="lista-cidades-brasil" type="text" id="input-loc-cidade" class="painel-input" placeholder="Primeiro selecione o estado..." disabled>
+            <datalist id="lista-cidades-brasil"></datalist>
+          </div>
+      </div>
+
+      <div id="container-loc-gringo" class="hidden">
+          <div style="margin-bottom: 15px;">
+            <label style="font-weight:bold; display:block; margin-bottom:5px;">Estado / Província / Região:</label>
+            <input type="text" id="input-loc-estado-gringo" class="painel-input" placeholder="Ex: Lima, Califórnia, Tokushima...">
+          </div>
+
+          <div style="margin-bottom: 15px;">
+            <label style="font-weight:bold; display:block; margin-bottom:5px;">Cidade:</label>
+            <input type="text" id="input-loc-cidade-gringo" class="painel-input" placeholder="Digite o nome da cidade">
+          </div>
       </div>
       
       <button id="btn-salvar-localizacao" class="auth-btn" style="background-color: #2ecc71;">Salvar Localização</button>
