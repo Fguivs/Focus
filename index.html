@@ -861,6 +861,134 @@
       </div>
     </div>
 	
+	<div id="secao-loteria" class="vantagem-container">
+  <h2>🍀 Loteria Épica 🍀</h2>
+  <p class="mural-descricao">
+    Escolha 4 números da sorte (1 a 30). O sorteio ocorre toda <strong>quarta-feira</strong>.<br>
+    Cada aposta custa <strong>100 moedas</strong>.
+  </p>
+
+  <div class="loteria-premio-container">
+    <div class="titulo-premio">PRÊMIO ESTIMADO</div>
+    <div class="valor-premio">💰 <span id="loteria-valor-acumulado">0</span></div>
+    <div class="edicao-info" id="loteria-edicao-info">Edição 0000/2025</div>
+  </div>
+
+  <div class="loteria-acoes">
+    <div class="info-box-loteria">
+       <span>Suas Moedas:</span>
+       <strong>💰 <span id="loteria-saldo-usuario">0</span></strong>
+    </div>
+    
+    <button id="btn-fazer-aposta" class="botao-info" style="background-color: #27ae60; font-size: 1.2rem;">
+      🎟️ Fazer Aposta
+    </button>
+	
+	<button id="btn-minhas-apostas" class="botao-info" style="background-color: #3498db;">
+      ✅ Minhas Apostas
+    </button>
+    
+    <button id="btn-ver-historico-apostas" class="botao-info" style="background-color: #8e44ad;">
+      📜 Ver Quem Apostou
+    </button>
+	
+    <button id="btn-consultar-id-aposta" class="botao-info" style="background-color: #e67e22;">
+      🔍 Consultar ID
+    </button>
+  </div>
+
+  <div class="loteria-ultimos-resultados">
+    <h4>📊 Últimos 4 Sorteios</h4>
+    <div id="lista-ultimos-resultados" class="resultados-grid">
+      <div class="ociosos-placeholder">Carregando histórico...</div>
+    </div>
+  </div>
+</div>
+
+<div id="modal-fazer-aposta" class="modal-overlay">
+  <div class="modal-content" style="max-width: 600px;">
+    <div class="painel-header">
+      <h2>🎟️ Cartela de Aposta</h2>
+      <button class="painel-btn btn-fechar" onclick="closeModal('modal-fazer-aposta')">Fechar</button>
+    </div>
+    
+    <div class="aposta-info-header">
+      <p>Selecione <strong>4 números</strong>.</p>
+      <p id="aposta-contador-selecionados">Selecionados: 0/4</p>
+      <p id="aposta-limite-aviso" style="font-size: 0.9rem; color: #e67e22;"></p>
+    </div>
+
+    <div class="cartela-numeros-wrapper">
+      <div id="cartela-grid" class="cartela-grid">
+        </div>
+    </div>
+
+    <div class="aposta-footer">
+      <div style="font-weight: bold; margin-bottom: 10px;">Custo: 100 Moedas</div>
+      <button id="btn-confirmar-aposta" class="auth-btn" style="background-color: #27ae60; opacity: 0.6;">Confirmar Aposta</button>
+    </div>
+  </div>
+</div>
+
+<div id="modal-comprovante-loteria" class="modal-overlay">
+  <div class="modal-content" style="max-width: 450px;">
+    <h3>✅ Aposta Realizada!</h3>
+    <div id="comprovante-loteria-wrapper">
+      <div id="comprovante-loteria" class="pix-comprovante-tarde" style="padding: 20px; border-radius: 15px; color: #333; text-align: center; margin-top: 15px;">
+        <h3 style="margin-bottom: 5px;">Loteria Épica 🍀</h3>
+        <p style="border-bottom: 1px solid rgba(0,0,0,0.1); padding-bottom: 10px; margin-bottom: 15px;">Comprovante de Aposta</p>
+        
+        <div class="comprovante-dados" id="conteudo-comprovante-loteria">
+          </div>
+        
+        <div style="margin-top: 20px; font-family: monospace; font-size: 0.9rem; opacity: 0.8;">
+          Boa Sorte! 🤞
+        </div>
+      </div>
+    </div>
+    <button id="btn-baixar-comprovante-loteria" class="auth-btn" style="margin-top: 20px; background-color: #3498db;">Baixar Comprovante</button>
+    <button class="btn-cancelar" onclick="closeModal('modal-comprovante-loteria')" style="margin-top: 10px; width: 100%;">Fechar</button>
+  </div>
+</div>
+
+<div id="modal-consultar-id" class="modal-overlay">
+  <div class="modal-content" style="max-width: 400px;">
+    <div class="painel-header">
+      <h2>🔍 Consultar Aposta</h2>
+      <button class="painel-btn btn-fechar" onclick="closeModal('modal-consultar-id')">Fechar</button>
+    </div>
+    <p class="modal-description">Digite o ID da aposta (8 caracteres) para visualizar o comprovante.</p>
+    
+    <input type="text" id="input-consultar-id-aposta" class="painel-input" placeholder="Ex: ZJVT1234" style="text-transform: uppercase; text-align: center; font-family: monospace; letter-spacing: 2px; font-size: 1.2rem;">
+    
+    <div style="display: flex; gap: 10px; margin-top: 20px;">
+        <button class="btn-cancelar" style="flex: 1; margin-top:0;" onclick="closeModal('modal-consultar-id')">Cancelar</button>
+        <button id="btn-executar-consulta-id" class="auth-btn" style="flex: 1; margin-top:0; background-color: #e67e22;">Buscar</button>
+    </div>
+  </div>
+</div>
+
+<div id="modal-historico-apostas" class="modal-overlay">
+  <div class="modal-content" style="max-width: 500px;">
+    <div class="painel-header">
+      <h2>📜 Apostas desta Edição</h2>
+      <button class="painel-btn btn-fechar" onclick="closeModal('modal-historico-apostas')">Fechar</button>
+    </div>
+    <div id="lista-apostadores-loteria" class="ociosos-lista-container" style="max-height: 300px;">
+      <div class="ociosos-placeholder">Carregando...</div>
+    </div>
+  </div>
+</div>
+
+<div id="popup-resultado-loteria" class="card-popup-overlay">
+    <canvas id="confetti-loteria" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 1;"></canvas>
+    <div class="card-popup-content" style="position: relative; z-index: 2; border: 4px solid #2ecc71;">
+        <h2 id="titulo-resultado-loteria" class="card-popup-title">🍀 Resultado da Loteria!</h2>
+        <div id="corpo-resultado-loteria" class="card-popup-message" style="text-align: center;"></div>
+        <button class="card-popup-close-btn" onclick="closeModal('popup-resultado-loteria')">Fechar</button>
+    </div>
+</div>
+	
 	<!-- Seção do Mural de Mensagens -->
     <div class="mural-container">
   <h2>✍️ Mural de Mensagens</h2>
@@ -2477,6 +2605,21 @@
       </div>
       
       <button id="btn-salvar-localizacao" class="auth-btn" style="background-color: #2ecc71;">Salvar Localização</button>
+    </div>
+  </div>
+</div>
+
+<div id="modal-minhas-apostas" class="modal-overlay">
+  <div class="modal-content" style="max-width: 600px;">
+    <div class="painel-header">
+      <h2>✅ Minhas Apostas</h2>
+      <button class="painel-btn btn-fechar" onclick="closeModal('modal-minhas-apostas')">Fechar</button>
+    </div>
+    <p class="modal-description" style="text-align: center;">
+      Aqui estão suas apostas recentes. Confira os números e o ID para o sorteio.
+    </p>
+    <div id="lista-minhas-apostas" class="ociosos-lista-container" style="max-height: 400px; padding-right: 10px;">
+      <div class="ociosos-placeholder">Carregando...</div>
     </div>
   </div>
 </div>
