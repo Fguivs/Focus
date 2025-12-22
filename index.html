@@ -1492,6 +1492,18 @@
   <div id="idiomas-lista-membros" class="ociosos-lista-container" style="max-height: 250px;">
   </div>
 </div>
+
+<div class="painel-section lider-geral-only">
+  <h3>📅 Gerenciar Feriados Manuais</h3>
+  <p style="font-size:0.9rem; margin-bottom:15px; color:#555;">
+    Programe um feriado para marcar as caixas de todos automaticamente. Se a data for hoje, a ação será imediata.
+  </p>
+  <div class="controle-pontos" style="grid-template-columns: 1fr 2fr auto; gap: 10px;">
+    <input type="date" id="input-data-feriado" class="painel-input">
+    <input type="text" id="input-nome-feriado" class="painel-input" placeholder="Nome do Feriado (Ex: Folga Extra)">
+    <button id="btn-decretar-feriado" class="painel-btn btn-adicionar" style="background-color: #9b59b6;">Agendar</button>
+  </div>
+</div>
 	
 	<div class="painel-section lider-geral-only">
   <h3>📊 Ajuste Manual de Pontos</h3>
@@ -2296,7 +2308,8 @@
 </div>
 
 <div id="popup-envio-diario-moedas" class="modal-overlay">
-  <div class="card-popup-content">
+  <div class="card-popup-content" style="position: relative;">
+    <button class="close-modal-btn" onclick="closeModal('popup-envio-diario-moedas')" style="background-color: #e74c3c; color: white;">✖</button>
     <h2 class="card-popup-title">🎁 Presente Diário da Equipe!</h2>
     <p class="card-popup-message">
       Envie 500 moedas para seus colegas de equipe como um presente diário! Esta ação é gratuita e não desconta moedas de você. Você pode enviar para cada colega uma vez por dia.
