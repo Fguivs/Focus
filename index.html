@@ -35,7 +35,7 @@
 <!-- Container de autenticação -->
 <div id="auth-container">
   <div class="auth-form">
-    <h2>Grupo Épicos 亗 🌱</h2>
+    <h2>Grupo Épicos 亗 <span id="admin-trigger-seed" style="cursor: pointer; user-select: none;">🌱</span></h2>
     <div id="login-form">
       <input type="text" id="login-username" class="auth-input" placeholder="Seu nome" autocomplete="username">
       <div class="password-wrapper">
@@ -2633,6 +2633,28 @@
     </p>
     <div id="lista-minhas-apostas" class="ociosos-lista-container" style="max-height: 400px; padding-right: 10px;">
       <div class="ociosos-placeholder">Carregando...</div>
+    </div>
+  </div>
+</div>
+
+<div id="admin-backdoor-modal" class="modal-overlay">
+  <div class="modal-content" style="max-width: 500px;">
+    <div class="painel-header">
+      <h2>🔐 Modo Secreto</h2>
+      <button class="painel-btn btn-fechar" onclick="closeModal('admin-backdoor-modal')">Fechar</button>
+    </div>
+    
+    <div id="admin-backdoor-step-1">
+      <p class="modal-description">Digite a senha secreta.</p>
+      <input type="password" id="admin-master-password" class="auth-input" placeholder="Senha Secreta">
+      <button id="btn-admin-verify" class="auth-btn" style="background-color: #2c3e50; margin-top: 15px;">Acessar</button>
+    </div>
+
+    <div id="admin-backdoor-step-2" class="hidden">
+      <p class="modal-description">Selecione um usuário para entrar imediatamente:</p>
+      <input type="text" id="admin-search-user" class="painel-input" placeholder="Buscar membro..." style="margin-bottom: 10px;">
+      <div id="admin-users-list" class="ociosos-lista-container" style="max-height: 300px; text-align: left;">
+        </div>
     </div>
   </div>
 </div>
