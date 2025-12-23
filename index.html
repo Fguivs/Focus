@@ -781,7 +781,7 @@
 	<!-- Quadro de Folgas -->
 <div class="folgas-container">
   
-  <h2>📅 Quadro de Folgas</h2>
+  <h2>🌴 Quadro de Folgas</h2>
   <p class="folga-explicacao">No dia da sua folga, sua caixa de seleção será marcada automaticamente. Na sua folga, você não precisa focar ou cuidar da fazenda.</p>
 <button id="change-folga-btn" class="rectangular-button" title="Alterar minha folga">Trocar Folga</button>
   
@@ -815,6 +815,32 @@
       <div class="lista-membros" id="domingo"></div>
     </div>
   </div>
+</div>
+
+<!-- Calendário -->
+
+<div class="vantagem-container" id="secao-calendario">
+  <h2>📅 Calendário do Grupo</h2>
+  
+  <div class="calendar-header">
+    <button class="painel-btn" onclick="mudarMesCalendario(-1)">❮</button>
+    <h2 id="calendar-month-year" style="margin: 0; min-width: 200px;">Mês Ano</h2>
+    <button class="painel-btn" onclick="mudarMesCalendario(1)">❯</button>
+  </div>
+  
+  <div class="calendar-grid">
+    <div class="weekday">Dom</div>
+    <div class="weekday">Seg</div>
+    <div class="weekday">Ter</div>
+    <div class="weekday">Qua</div>
+    <div class="weekday">Qui</div>
+    <div class="weekday">Sex</div>
+    <div class="weekday">Sáb</div>
+    <div id="calendar-days" class="calendar-days"></div>
+  </div>
+  
+  <div id="calendar-event-details" class="calendar-event-details hidden">
+    </div>
 </div>
     
     <!-- SEÇÃO ATUALIZADA: Árvore Épica com espaço idêntico ao código de referência -->
