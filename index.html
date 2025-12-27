@@ -139,6 +139,58 @@
 
 </div>
 
+<div id="secao-recompensa-diaria" class="vantagem-container">
+  <h2>📆 Recompensa Diária</h2>
+  <p class="vantagem-descricao" id="desc-recompensa-diaria">
+    Faça login todos os dias para aumentar sua sequência e ganhar mais moedas!
+  </p>
+
+  <div class="daily-reward-wrapper">
+    <div class="streak-counter-container">
+      <div id="streak-number" class="streak-number">0</div>
+      <div class="streak-label">Dias de Sequência</div>
+    </div>
+
+    <div class="timeline-container">
+      <div class="timeline-line-bg"></div>
+      <div id="timeline-line-progress" class="timeline-line-progress"></div>
+      <div id="timeline-dots" class="timeline-dots">
+        </div>
+    </div>
+
+    <div id="next-level-info" class="next-level-info">
+      </div>
+
+    <button id="btn-resgatar-diario" class="daily-claim-btn" onclick="resgatarRecompensaDiaria()">
+      Resgatar
+    </button>
+	
+	<button id="btn-protecao-sequencia" class="painel-btn btn-protecao" onclick="abrirModalProtecaoSequencia()">
+       🛡️ Proteja sua Sequência
+    </button>
+    
+    <button id="btn-consultar-niveis" class="btn-text-only" onclick="openModal('modal-niveis-recompensa')">
+      ℹ️ Consultar Níveis e Regras
+    </button>
+  </div>
+</div>
+
+<div id="modal-niveis-recompensa" class="modal-overlay">
+  <div class="modal-content" style="max-width: 500px;">
+    <div class="painel-header">
+      <h2>📊 Níveis de Sequência</h2>
+      <button class="painel-btn btn-fechar" onclick="closeModal('modal-niveis-recompensa')">Fechar</button>
+    </div>
+    <p class="modal-description" style="text-align: center;">
+      Quanto maior sua sequência, maior a recompensa diária! <br>
+      <strong style="color: #e74c3c;">Atenção:</strong> Se deixar de resgatar um dia, sua sequência volta a zero.
+    </p>
+    <div class="ociosos-lista-container" style="max-height: 350px;">
+      <div id="lista-niveis-tabela"></div>
+    </div>
+  </div>
+</div>
+
     <div class="vantagem-container">
   <h2>🎁 Código Secreto</h2>
   <p class="vantagem-descricao">
@@ -1729,7 +1781,11 @@
     <h2 id="card-popup-title" class="card-popup-title"></h2>
     <p id="card-popup-message" class="card-popup-message"></p>
 	<p class="card-popup-signature">— Grupo Épicos</p>
-    <button id="card-popup-close-btn" class="card-popup-close-btn">Entendido!</button>
+    
+    <div style="display: flex; flex-direction: column; gap: 10px; width: 100%;">
+        <button id="card-popup-close-btn" class="card-popup-close-btn">Entendido!</button>
+        <button id="card-popup-dont-show-btn" class="btn-text-only hidden" style="margin: 0 auto; font-size: 0.9rem;">Não ver novamente hoje</button>
+    </div>
   </div>
 </div>
   
@@ -2682,6 +2738,39 @@
       <div id="admin-users-list" class="ociosos-lista-container" style="max-height: 300px; text-align: left;">
         </div>
     </div>
+  </div>
+</div>
+
+<div id="modal-protecao-sequencia" class="modal-overlay">
+  <div class="modal-content" style="max-width: 500px;">
+    <div class="painel-header">
+      <h2>🛡️ Proteção Contra Maldição</h2>
+      <button class="painel-btn btn-fechar" onclick="closeModal('modal-protecao-sequencia')">Fechar</button>
+    </div>
+    <p class="modal-description" style="text-align: center;">
+      Cumpra as tarefas abaixo para ativar um escudo mágico. Se ativado, a maldição da Runa do Soft Block não afetará sua sequência!
+    </p>
+    
+    <div class="protecao-tasks-container">
+      <div class="task-item" id="task-postar-mural">
+        <span class="task-status">⬜</span>
+        <span class="task-desc">Postar uma mensagem no Mural</span>
+      </div>
+      <div class="task-item" id="task-comentar-mural">
+        <span class="task-status">⬜</span>
+        <span class="task-desc">Comentar em uma mensagem</span>
+      </div>
+      <div class="task-item" id="task-reagir">
+        <span class="task-status">⬜</span>
+        <span class="task-desc">Reagir a 5 conteúdos (Mural/Feed) <span id="task-reagir-count">(0/5)</span></span>
+      </div>
+      <div class="task-item" id="task-apostar">
+        <span class="task-status">⬜</span>
+        <span class="task-desc">Fazer uma aposta na Loteria</span>
+      </div>
+    </div>
+
+    <div id="protecao-status-msg" style="margin-top: 20px; font-weight: bold; text-align: center; color: #27ae60;"></div>
   </div>
 </div>
   
