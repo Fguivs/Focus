@@ -1106,9 +1106,10 @@
 </div>
 
 <div id="secao-desenho" class="vantagem-container">
-  <h2>🎨 Solte sua Imaginação</h2>
+  <h2>🎨 Batalha de Desenhos</h2>
+  
   <p class="vantagem-descricao">
-    Um espaço livre para cada equipe desenhar e se expressar. Membros só podem editar a tela da sua própria equipe.
+    Competição semanal! Um novo tema é lançado toda <strong>Quinta-feira</strong>. As equipes desenham até <strong>Segunda-feira</strong> (23:59) da próxima semana. Na Terça, o Oráculo julga e premia a equipe que tiver a melhor arte com <strong>5.000 moedas</strong>!
   </p>
   <div class="carrossel-wrapper">
     <div class="carrossel-controles">
@@ -1116,6 +1117,12 @@
       <button class="controle-btn" id="botao-pausa-desenho" onclick="togglePausaDesenho()">⏸</button>
       <button class="controle-btn" onclick="mudarSlideDesenho(1)">❯</button>
     </div>
+
+    <div id="tema-desenho-container" class="tema-desenho-display hidden">
+      <span class="tema-label">Tema da Semana:</span>
+      <span id="tema-atual-texto" class="tema-texto">Carregando...</span>
+    </div>
+
     <div class="carrossel-container" id="carrossel-container-desenho">
   <div class="card-desenho" id="card-desenho-abelha">
     <h3 class="titulo-tela-desenho abelha">🐝 Tela da Equipe Abelha</h3>
@@ -1125,17 +1132,20 @@
       <div class="overlay-texto">Clique para Desenhar</div>
     </div>
     <div class="desenho-info-rodape">
-  <button class="botao-autores" onclick="abrirModalAutores('abelha')">Ver Autores</button>
-  <div class="avaliacao-desenho">
-    <div id="like-container-abelha" class="reacao-display" onclick="abrirModalAvaliadores('abelha', 'likes')" title="Ver quem curtiu">
-      <button id="like-btn-abelha" onclick="event.stopPropagation(); avaliarDesenho('abelha', 'like')">👍</button>
-      <span class="like-count">0</span>
-    </div>
-    <div id="dislike-container-abelha" class="reacao-display" onclick="abrirModalAvaliadores('abelha', 'dislikes')" title="Ver quem não curtiu">
-      <button id="dislike-btn-abelha" onclick="event.stopPropagation(); avaliarDesenho('abelha', 'dislike')">👎</button>
-      <span class="dislike-count">0</span>
-    </div>
+  <div class="botoes-topo-rodape">
+      <button class="botao-autores" onclick="abrirModalAutores('abelha')">Ver Autores</button>
+      <div class="avaliacao-desenho">
+        <div id="like-container-abelha" class="reacao-display" onclick="abrirModalAvaliadores('abelha', 'likes')" title="Ver quem curtiu">
+          <button id="like-btn-abelha" onclick="event.stopPropagation(); avaliarDesenho('abelha', 'like')">👍</button>
+          <span class="like-count">0</span>
+        </div>
+        <div id="dislike-container-abelha" class="reacao-display" onclick="abrirModalAvaliadores('abelha', 'dislikes')" title="Ver quem não curtiu">
+          <button id="dislike-btn-abelha" onclick="event.stopPropagation(); avaliarDesenho('abelha', 'dislike')">👎</button>
+          <span class="dislike-count">0</span>
+        </div>
+      </div>
   </div>
+  <div id="avaliacao-oraculo-abelha" class="avaliacao-oraculo-box hidden"></div>
 </div>
   </div>
   <div class="card-desenho" id="card-desenho-joaninha">
@@ -1146,17 +1156,20 @@
       <div class="overlay-texto">Clique para Desenhar</div>
     </div>
     <div class="desenho-info-rodape">
-  <button class="botao-autores" onclick="abrirModalAutores('joaninha')">Ver Autores</button>
-  <div class="avaliacao-desenho">
-    <div id="like-container-joaninha" class="reacao-display" onclick="abrirModalAvaliadores('joaninha', 'likes')" title="Ver quem curtiu">
-      <button id="like-btn-joaninha" onclick="event.stopPropagation(); avaliarDesenho('joaninha', 'like')">👍</button>
-      <span class="like-count">0</span>
-    </div>
-    <div id="dislike-container-joaninha" class="reacao-display" onclick="abrirModalAvaliadores('joaninha', 'dislikes')" title="Ver quem não curtiu">
-      <button id="dislike-btn-joaninha" onclick="event.stopPropagation(); avaliarDesenho('joaninha', 'dislike')">👎</button>
-      <span class="dislike-count">0</span>
-    </div>
+  <div class="botoes-topo-rodape">
+      <button class="botao-autores" onclick="abrirModalAutores('joaninha')">Ver Autores</button>
+      <div class="avaliacao-desenho">
+        <div id="like-container-joaninha" class="reacao-display" onclick="abrirModalAvaliadores('joaninha', 'likes')" title="Ver quem curtiu">
+          <button id="like-btn-joaninha" onclick="event.stopPropagation(); avaliarDesenho('joaninha', 'like')">👍</button>
+          <span class="like-count">0</span>
+        </div>
+        <div id="dislike-container-joaninha" class="reacao-display" onclick="abrirModalAvaliadores('joaninha', 'dislikes')" title="Ver quem não curtiu">
+          <button id="dislike-btn-joaninha" onclick="event.stopPropagation(); avaliarDesenho('joaninha', 'dislike')">👎</button>
+          <span class="dislike-count">0</span>
+        </div>
+      </div>
   </div>
+  <div id="avaliacao-oraculo-joaninha" class="avaliacao-oraculo-box hidden"></div>
 </div>
   </div>
   <div class="card-desenho" id="card-desenho-vagalume">
@@ -1167,17 +1180,20 @@
       <div class="overlay-texto">Clique para Desenhar</div>
     </div>
     <div class="desenho-info-rodape">
-  <button class="botao-autores" onclick="abrirModalAutores('vagalume')">Ver Autores</button>
-  <div class="avaliacao-desenho">
-    <div id="like-container-vagalume" class="reacao-display" onclick="abrirModalAvaliadores('vagalume', 'likes')" title="Ver quem curtiu">
-      <button id="like-btn-vagalume" onclick="event.stopPropagation(); avaliarDesenho('vagalume', 'like')">👍</button>
-      <span class="like-count">0</span>
-    </div>
-    <div id="dislike-container-vagalume" class="reacao-display" onclick="abrirModalAvaliadores('vagalume', 'dislikes')" title="Ver quem não curtiu">
-      <button id="dislike-btn-vagalume" onclick="event.stopPropagation(); avaliarDesenho('vagalume', 'dislike')">👎</button>
-      <span class="dislike-count">0</span>
-    </div>
+  <div class="botoes-topo-rodape">
+      <button class="botao-autores" onclick="abrirModalAutores('vagalume')">Ver Autores</button>
+      <div class="avaliacao-desenho">
+        <div id="like-container-vagalume" class="reacao-display" onclick="abrirModalAvaliadores('vagalume', 'likes')" title="Ver quem curtiu">
+          <button id="like-btn-vagalume" onclick="event.stopPropagation(); avaliarDesenho('vagalume', 'like')">👍</button>
+          <span class="like-count">0</span>
+        </div>
+        <div id="dislike-container-vagalume" class="reacao-display" onclick="abrirModalAvaliadores('vagalume', 'dislikes')" title="Ver quem não curtiu">
+          <button id="dislike-btn-vagalume" onclick="event.stopPropagation(); avaliarDesenho('vagalume', 'dislike')">👎</button>
+          <span class="dislike-count">0</span>
+        </div>
+      </div>
   </div>
+  <div id="avaliacao-oraculo-vagalume" class="avaliacao-oraculo-box hidden"></div>
 </div>
   </div>
 </div>
@@ -1665,6 +1681,24 @@
       <button class="painel-btn btn-remover" style="width:100%; background-color: #9b59b6;" onclick="regerarAnaliseOraculoSemanaPassada()">Regerar Análise da Semana Passada</button>
       <p style="font-size:0.8rem; margin-top:10px; color:#9b59b6">
         Use isso se a análise do Oráculo falhou ao ser gerada no domingo ou se você precisa que ela apareça novamente (como agora).
+      </p>
+    </div>
+	
+	<div class="painel-section lider-geral-only">
+      <h3>🎨 Controle da Batalha de Desenhos</h3>
+      <div style="display: flex; flex-direction: column; gap: 10px;">
+          
+          <button class="painel-btn btn-adicionar" style="width:100%; background-color: #3498db;" onclick="forcarNovoTemaManual()">
+            🧙‍ Gerar Novo Tema (Início)
+          </button>
+          
+          <button class="painel-btn btn-remover" style="width:100%; background-color: #e67e22;" onclick="forcarJulgamentoManual()">
+            ⚖️ Realizar Julgamento (Fim)
+          </button>
+
+      </div>
+      <p style="font-size:0.8rem; margin-top:10px; color:#555;">
+        <strong>Atenção:</strong> "Gerar Tema" inicia uma rodada (limpa as telas). "Realizar Julgamento" encerra a rodada, avalia os desenhos atuais e premia os vencedores.
       </p>
     </div>
 	
