@@ -169,9 +169,14 @@
        🛡️ Proteja sua Sequência
     </button>
     
-    <button id="btn-consultar-niveis" class="btn-text-only" onclick="openModal('modal-niveis-recompensa')">
-      ℹ️ Consultar Níveis e Regras
-    </button>
+    <div style="display: flex; gap: 10px; justify-content: center; width: 100%; margin-top: 15px;">
+        <button id="btn-ranking-sequencia" class="btn-text-only" onclick="abrirRankingSequencias()">
+          🥇🥈🥉 Ranking
+        </button>
+        <button id="btn-consultar-niveis" class="btn-text-only" onclick="openModal('modal-niveis-recompensa')" style="margin-top: 0;">
+          ℹ️ Regras
+        </button>
+    </div>
   </div>
 </div>
 
@@ -1108,8 +1113,16 @@
 <div id="secao-desenho" class="vantagem-container">
   <h2>🎨 Batalha de Desenhos</h2>
   
+  <div id="mini-ranking-desenho">
+      <div class="mini-rank-item abelha" title="Vitórias Abelha">🐝 <span id="vitorias-desenho-abelha">0</span></div>
+      <div class="mini-rank-divider"></div>
+      <div class="mini-rank-item joaninha" title="Vitórias Joaninha">🐞 <span id="vitorias-desenho-joaninha">0</span></div>
+      <div class="mini-rank-divider"></div>
+      <div class="mini-rank-item vagalume" title="Vitórias Vaga-lume">💡 <span id="vitorias-desenho-vagalume">0</span></div>
+  </div>
+  
   <p class="vantagem-descricao">
-    Competição semanal! Um novo tema é lançado toda <strong>Quinta-feira</strong>. As equipes desenham até <strong>Segunda-feira</strong> (23:59) da próxima semana. Na Terça, o Oráculo julga e premia a equipe que tiver a melhor arte com <strong>5.000 moedas</strong>!
+    Competição semanal! Um novo tema é escolhido toda <strong>Quinta-feira</strong>. As equipes desenham até <strong>Segunda-feira</strong> (23:59) da próxima semana. Na Terça, o Oráculo julga e premia a equipe que tiver a melhor arte com <strong>5.000 moedas</strong>!
   </p>
   <div class="carrossel-wrapper">
     <div class="carrossel-controles">
@@ -1690,6 +1703,10 @@
           
           <button class="painel-btn btn-adicionar" style="width:100%; background-color: #3498db;" onclick="forcarNovoTemaManual()">
             🧙‍ Gerar Novo Tema (Início)
+          </button>
+		  
+		  <button class="painel-btn" style="width:100%; background-color: #2ecc71; color: white; font-weight: bold;" onclick="reanunciarTemaAtual()">
+            📢 Re-anunciar Tema Atual (Popup)
           </button>
           
           <button class="painel-btn btn-remover" style="width:100%; background-color: #e67e22;" onclick="forcarJulgamentoManual()">
@@ -2805,6 +2822,20 @@
     </div>
 
     <div id="protecao-status-msg" style="margin-top: 20px; font-weight: bold; text-align: center; color: #27ae60;"></div>
+  </div>
+</div>
+
+<div id="modal-ranking-sequencia" class="modal-overlay">
+  <div class="modal-content" style="max-width: 500px;">
+    <div class="painel-header">
+      <h2>🔥 Maiores Sequências</h2>
+      <button class="painel-btn btn-fechar" onclick="closeModal('modal-ranking-sequencia')">Fechar</button>
+    </div>
+    <p class="modal-description" style="text-align: center;">
+      Membros com a maior dedicação na Recompensa Diária (dias resgatados sem perder um).
+    </p>
+    <div id="lista-ranking-sequencia" class="ociosos-lista-container" style="max-height: 350px;">
+      </div>
   </div>
 </div>
   
