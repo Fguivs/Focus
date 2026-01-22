@@ -1223,9 +1223,14 @@
     <div class="ferramentas-wrapper">
 
       <div class="tool-group">
-  <label for="cor-pincel">Cor:</label>
-<input type="color" id="cor-pincel" value="#000000">
-</div>
+        <div class="container-seletor-cor">
+           <div style="display: flex; align-items: center; gap: 5px;">
+              <label for="cor-pincel">Cor:</label>
+              <input type="color" id="cor-pincel" value="#000000" style="width: 40px; height: 40px; cursor: pointer;">
+           </div>
+           <div id="barra-cores-rapidas"></div>
+        </div>
+      </div>
 
       <div class="tool-group">
         <label for="tamanho-pincel">Tamanho:</label>
@@ -1234,10 +1239,10 @@
       </div>
 
       <div class="tool-group">
-        <button id="pincel-btn" class="painel-btn ativo" title="Pincel">✏️</button>
-        <button id="borracha-btn" class="painel-btn" title="Borracha">Borracha</button>
-		<button id="conta-gotas-btn" class="painel-btn" title="Conta-gotas (Pegar Cor)">💧</button>
-      </div>
+  <button id="pincel-btn" class="painel-btn ativo" title="Pincel">✏️</button>
+  <button id="balde-btn" class="painel-btn" title="Balde de Tinta">Pintar</button> <button id="borracha-btn" class="painel-btn" title="Borracha">Borracha</button>
+  <button id="conta-gotas-btn" class="painel-btn" title="Conta-gotas (Pegar Cor)">💧</button>
+</div>
 
       <div class="tool-group">
         <button id="desfazer-btn" class="painel-btn" title="Desfazer">↩️</button>
