@@ -2048,12 +2048,23 @@
 </div>
   
   <div id="user-panel-modal" class="modal-overlay">
-  <div class="modal-content" style="max-width: 500px;">
+  <div class="modal-content" style="max-width: 500px; max-height: 90vh; overflow-y: auto;">
   <div class="painel-header">
     <h2>Painel do Usuário</h2>
   </div>
 
   <p class="modal-description">Gerencie as configurações da sua conta.</p>
+  
+  <div style="background: rgba(0,0,0,0.05); padding: 15px; border-radius: 10px; margin-bottom: 20px; text-align: left;">
+      <h4 style="margin-bottom: 10px; color: #555;">🔔 Preferências de Popups</h4>
+      <select id="user-pref-popups" class="painel-input" onchange="salvarPreferenciaPopups(this.value)">
+          <option value="ativado">✅ Ativados (Padrão)</option>
+          <option value="desativado">🔕 Desativados (Silencioso)</option>
+      </select>
+      <p style="font-size: 0.8rem; color: #7f8c8d; margin-top: 5px;">
+        Se desativado, você não verá resultados de loteria, competição ou mensagens do Oráculo ao entrar.
+      </p>
+  </div>
   <button class="painel-btn btn-fechar" onclick="closeModal('user-panel-modal')">Fechar</button>
 
   <div class="user-panel-actions">
