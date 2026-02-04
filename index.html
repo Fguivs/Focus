@@ -7,6 +7,9 @@
 <link rel="icon" type="image/png" href="https://i.ibb.co/Ps4yK7xy/Picsart-25-02-25-14-28-21-078.jpg">
 <link rel="stylesheet" href="estilos.css">
 <link rel="manifest" href="manifest.json">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@900&display=swap" rel="stylesheet">
 <style id="dynamic-cursor-style"></style>
 <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
@@ -35,7 +38,7 @@
 <!-- Container de autenticação -->
 <div id="auth-container">
   <div class="auth-form">
-    <h2>Grupo Épicos 亗 <span id="admin-trigger-seed" style="cursor: pointer; user-select: none;">🌱</span></h2>
+    <h2>Grupo Épicos <span class="simbolo-destaque" lang="zh-CN">亗</span> <span id="admin-trigger-seed" style="cursor: pointer; user-select: none;">🌱</span></h2>
     <div id="login-form">
       <input type="text" id="login-username" class="auth-input" placeholder="Seu nome" autocomplete="username">
       <div class="password-wrapper">
@@ -94,7 +97,7 @@
 
   <div class="container">
     <header>
-      <h1>Épicos 亗 🌱</h1>
+      <h1>Épicos <span class="simbolo-destaque" lang="zh-CN">亗</span> 🌱</h1>
       <div id="dataHoje"></div>
 	  <div id="relogio"></div>
       <div id="info-semana"></div>
@@ -554,7 +557,7 @@
         <h4>✅ Transferência realizada com sucesso!</h4>
         <div id="pix-comprovante-wrapper">
             <div id="pix-comprovante">
-                <h3 class="comprovante-titulo">Épicos 亗 🌱</h3>
+                <h3 class="comprovante-titulo">Épicos <span class="simbolo-destaque" lang="zh-CN">亗</span> 🌱</h3>
                 <p class="comprovante-subtitulo">Comprovante de Transferência</p>
                 <div class="comprovante-dados">
                     </div>
@@ -1068,7 +1071,11 @@
     <div class="card-popup-content" style="position: relative; z-index: 2; border: 4px solid #2ecc71;">
         <h2 id="titulo-resultado-loteria" class="card-popup-title">🍀 Resultado da Loteria!</h2>
         <div id="corpo-resultado-loteria" class="card-popup-message" style="text-align: center;"></div>
-        <button class="card-popup-close-btn" onclick="closeModal('popup-resultado-loteria')">Fechar</button>
+        
+        <div style="display: flex; flex-direction: column; gap: 10px; width: 100%; margin-top: 15px;">
+            <button class="card-popup-close-btn" onclick="closeModal('popup-resultado-loteria')">Fechar</button>
+            <button id="btn-dont-show-loteria" class="btn-text-only" style="margin: 0 auto; font-size: 0.9rem;">Não ver novamente este resultado</button>
+        </div>
     </div>
 </div>
 	
@@ -2189,6 +2196,10 @@
       <div id="resumo-membros-lista-container">
         </div>
 
+    </div>
+    
+    <div style="text-align: center; padding-top: 10px; border-top: 1px solid rgba(0,0,0,0.1);">
+        <button id="btn-dont-show-competicao" class="btn-text-only" style="font-size: 0.9rem;">Não ver novamente este resultado</button>
     </div>
     
   </div>
