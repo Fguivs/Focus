@@ -257,17 +257,17 @@
         <div class="equipe-competicao" id="podio-abelha">
           <h3>🐝 Abelha</h3>
           <div class="score" id="ranking-abelha">0</div>
-          <div>Vitórias</div>
+          <div id="label-vitorias-abelha">Vitórias</div> 
         </div>
         <div class="equipe-competicao" id="podio-joaninha">
           <h3>🐞 Joaninha</h3>
           <div class="score" id="ranking-joaninha">0</div>
-          <div>Vitórias</div>
+          <div id="label-vitorias-joaninha">Vitórias</div>
         </div>
         <div class="equipe-competicao" id="podio-vagalume">
           <h3>💡 Vaga-lume</h3>
           <div class="score" id="ranking-vagalume">0</div>
-          <div>Vitórias</div>
+          <div id="label-vitorias-vagalume">Vitórias</div>
         </div>
       </div>
       <p style="margin-top: 15px; font-size: 0.9em; color: #7f8c8d;">
@@ -2884,6 +2884,27 @@
     <div id="lista-ranking-sequencia" class="ociosos-lista-container" style="max-height: 350px;">
       </div>
   </div>
+</div>
+
+<div id="modal-nudge-combinado" class="modal-overlay">
+  <div class="modal-content" style="max-width: 800px; width: 95%; max-height: 90vh; display: flex; flex-direction: column;">
+    <div class="painel-header">
+      <h2>📢 Fique Atento!</h2>
+      <button class="painel-btn btn-fechar" onclick="closeModal('modal-nudge-combinado')">Fechar</button>
+    </div>
+    
+    <p class="modal-description" style="text-align: center;">
+      Você tem ações pendentes importantes para hoje.
+    </p>
+
+    <div id="nudge-conteudo-dinamico" class="nudge-split-container">
+    </div>
+  </div>
+</div>
+
+<div id="nudge-floating-btn" class="hidden" onclick="abrirNudgeModalSeNaoArrastou()">
+  📢
+  <span class="nudge-badge">!</span>
 </div>
   
   <script type="module">
