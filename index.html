@@ -642,6 +642,12 @@
 	
 	<div id="secao-loja-poderes" class="vantagem-container">
   <h2>🔮 Lojinha de Magias</h2>
+  
+  <div style="text-align: center; margin-bottom: 20px;">
+      <button onclick="abrirHistoricoMagias()" class="botao-info" style="background-color: #8e44ad; box-shadow: 0 4px 15px rgba(142, 68, 173, 0.4);">
+        📜 Grimório: Histórico de Feitiços
+      </button>
+  </div>
   <p class="mural-descricao">
     Use o saldo do banco da sua equipe para comprar poderes e ganhar vantagens estratégicas na competição! Apenas líderes podem comprar, mas membros podem sugerir.
   </p>
@@ -2909,6 +2915,23 @@
 <div id="nudge-floating-btn" class="hidden" onclick="abrirNudgeModalSeNaoArrastou()">
   📢
   <span class="nudge-badge">!</span>
+</div>
+
+<div id="modal-historico-magias" class="modal-overlay">
+  <div class="modal-content" style="max-width: 600px; width: 95%; max-height: 90vh; display: flex; flex-direction: column;">
+    <div class="painel-header">
+      <h2>📜 Grimório da Semana</h2>
+      <button class="painel-btn btn-fechar" onclick="closeModal('modal-historico-magias')">Fechar</button>
+    </div>
+    
+    <p class="modal-description" style="text-align: center; font-style: italic; color: #7f8c8d; margin-bottom: 20px;">
+      Registros místicos das magias lançadas pelas equipes nesta semana.
+    </p>
+
+    <div id="lista-historico-magias" class="ociosos-lista-container" style="padding-right: 10px; flex-grow: 1;">
+      <div class="ociosos-placeholder">Consultando os astros...</div>
+    </div>
+  </div>
 </div>
   
   <script type="module">
