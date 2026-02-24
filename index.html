@@ -220,7 +220,7 @@
       <button class="botao-fechar-secao">X</button>
       <div class="secao-conteudo">
         </div>
-    </div
+    </div>
 
     </header>
     
@@ -1017,7 +1017,10 @@
 
     <div class="aposta-footer">
       <div style="font-weight: bold; margin-bottom: 10px;">Custo: 100 Moedas</div>
-      <button id="btn-confirmar-aposta" class="auth-btn" style="background-color: #27ae60; opacity: 0.6;">Confirmar Aposta</button>
+      <div style="display: flex; gap: 10px; width: 100%;">
+        <button id="btn-aposta-aleatoria" class="auth-btn" style="background-color: #8e44ad;" onclick="escolherNumerosAleatoriosLoteria()">🎲 Aleatório</button>
+        <button id="btn-confirmar-aposta" class="auth-btn" style="background-color: #27ae60; opacity: 0.6;">Confirmar</button>
+      </div>
     </div>
   </div>
 </div>
@@ -1039,6 +1042,7 @@
       </div>
     </div>
     <button id="btn-baixar-comprovante-loteria" class="auth-btn" style="margin-top: 20px; background-color: #3498db;">Baixar Comprovante</button>
+    <button id="btn-apostar-novamente" class="auth-btn hidden" style="margin-top: 10px; background-color: #f39c12;" onclick="apostarNovamenteLoteria()">🎟️ Apostar Novamente</button>
     <button class="btn-cancelar" onclick="closeModal('modal-comprovante-loteria')" style="margin-top: 10px; width: 100%;">Fechar</button>
   </div>
 </div>
