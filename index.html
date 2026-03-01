@@ -843,6 +843,33 @@
   <button id="btn-ranking-imobiliario" class="botao-info">🏆 Ranking Imobiliário</button>
 </div>
 </div>
+
+<div id="secao-leilao" class="leilao-container hidden">
+  <div class="leilao-faixa-topo">🔥 LEILÃO DA SEMANA</div>
+  
+  <div class="leilao-grid-layout">
+    <div class="leilao-imovel-card">
+      <div class="moldura-dourada">
+        <img id="leilao-img-casa" src="" alt="Casa em Leilão">
+        <div class="selo-desconto">-50% OFF</div>
+      </div>
+      <h3 id="leilao-nome-casa">Mansão Épica</h3>
+      <div class="leilao-precos">
+        <span class="preco-original">De: <span id="leilao-valor-original">0</span></span>
+        <span class="preco-minimo">Lance Mínimo: <span id="leilao-valor-minimo">0</span></span>
+      </div>
+      
+      <div class="leilao-timer-container">
+        <div class="timer-label">A oferta encerra em:</div>
+        <div id="leilao-contador" class="timer-display">00:00:00</div>
+      </div>
+      
+      <button class="auth-btn" style="background-color: #3498db; margin-top: 20px; width: 100%;" onclick="openModal('modal-sala-lances')">
+        🔨 Entrar na Sala de Lances
+      </button>
+    </div>
+  </div>
+</div>
     
 	<!-- Quadro de Folgas -->
 <div class="folgas-container">
@@ -1090,16 +1117,40 @@
 </div>
 	
 	<!-- Seção do Mural de Mensagens -->
-    <div class="mural-container">
-  <h2>✍️ Mural de Mensagens</h2>
-  <div class="mural-actions">
-    <button id="open-composer-btn">Escrever Mensagem</button>
-  </div>
-  <div class="mural-scroll-wrapper"> 
-    <div id="mural-mensagens">
+    <div class="mural-container" id="secao-batalha-textos">
+      <h2>✍️ Batalha de Textos</h2>
+      <p class="mural-descricao">
+        Toda semana o Oráculo lança um desafio literário. Escreva seu texto respeitando o <strong>Tema</strong> e a <strong>Palavra Obrigatória</strong>. A batalha ocorre de Segunda a Quinta-feira. Na Sexta-feira, o Oráculo julga as obras!
+      </p>
+
+      <div style="text-align: center; margin-bottom: 20px;">
+        <button class="botao-info" onclick="openModal('info-batalha-textos-modal')">
+          ℹ️ Regras e Recompensas
+        </button>
+      </div>
+
+      <div id="batalha-textos-tema-container" class="tema-desenho-display hidden" style="display: flex; flex-direction: column; gap: 10px;">
+        <div><span class="tema-label">Tema:</span> <span id="batalha-texto-tema" class="tema-texto" style="color: #e67e22;">...</span></div>
+        <div><span class="tema-label">Palavra Obrigatória:</span> <span id="batalha-texto-palavra" class="tema-texto" style="color: #9b59b6;">...</span></div>
+      </div>
+
+      <div id="mural-campeoes-container" class="hidden" style="margin-bottom: 30px;">
+        <h3 style="text-align: center; color: #f1c40f; margin-bottom: 15px;">🏆 Hall da Escrita de Elite 🏆</h3>
+        <div id="mural-campeoes-grid" class="banco-balances-container" style="padding: 0;">
+          </div>
+      </div>
+
+      <div class="mural-actions" id="batalha-textos-acoes">
+        <button id="open-composer-btn">Escrever meu Texto</button>
+        <p id="batalha-textos-status" style="margin-top: 10px; font-weight: bold; color: #7f8c8d;"></p>
+      </div>
+
+      <div class="mural-scroll-wrapper"> 
+        <div id="mural-mensagens">
+          <div class="carregando">Carregando textos...</div>
+        </div>
+      </div>
     </div>
-  </div>
-  </div>
     
    <div class="nossas-informacoes">
   <h2>💖 Nossas Informações</h2>
@@ -1480,7 +1531,7 @@
 </div>
   
 <div id="message-composer-modal" class="modal-overlay">
-  <div id="composer-card" class="composer-card">
+  <div id="composer-card" class="composer-card" style="height: auto; max-height: 80vh;">
     <div class="composer-header">
       <button id="composer-color-btn" title="Mudar cor do card">Escolha a cor</button>
       <div id="composer-color-palette" class="hidden"></div>
@@ -1491,14 +1542,18 @@
         <button class="toolbar-btn" onclick="formatText('bold')" title="Negrito"><b>B</b></button>
         <button class="toolbar-btn" onclick="formatText('italic')" title="Itálico"><i>I</i></button>
         <button class="toolbar-btn" onclick="formatText('underline')" title="Sublinhado"><u>U</u></button>
-        <button class="toolbar-btn" onclick="formatText('justifyLeft')" title="Alinhar à Esquerda">☰</button>
-        <button class="toolbar-btn" onclick="formatText('justifyCenter')" title="Centralizar"><b>&#9776;</b></button>
-        <button class="toolbar-btn" onclick="formatText('justifyRight')" title="Alinhar à Direita"><b>&#9780;</b></button>
-		
-		<button id="open-oracle-assistant-btn" class="toolbar-btn" onclick="abrirAssistenteOraculo()" title="Assistente do Oráculo">🧙‍</button>
     </div>
 
-    <div id="composer-textarea" class="auth-input" contenteditable="true" placeholder="O que você está pensando?"></div>
+    <div id="composer-regras-batalha" style="background: rgba(0,0,0,0.05); padding: 10px; border-radius: 8px; margin-bottom: 10px; font-size: 0.9rem;">
+      <div style="margin-bottom: 5px;"><strong>Tema:</strong> <span id="composer-tema-display" style="color: #e67e22;">...</span></div>
+      <div><strong>Palavra Obrigatória:</strong> <span id="composer-palavra-display" style="color: #9b59b6;">...</span></div>
+    </div>
+
+    <div id="composer-textarea" class="auth-input" contenteditable="true" placeholder="Escreva sua obra aqui..." style="min-height: 200px;"></div>
+    
+    <div style="text-align: right; font-size: 0.85rem; margin-top: 5px;">
+        <span id="char-counter">0</span>/600
+    </div>
 
     <div class="composer-footer">
       <div class="composer-author-info">
@@ -1506,11 +1561,7 @@
         <div id="composer-timestamp" class="mensagem-data"></div>
       </div>
       <div class="composer-actions">
-        <div class="anonymous-option">
-          <input type="checkbox" id="composer-anonymous-check">
-          <label for="composer-anonymous-check">Postar como Anônimo</label>
-        </div>
-        <button id="composer-send-btn">Enviar</button>
+        <button id="composer-send-btn" disabled style="opacity: 0.5; cursor: not-allowed;">Enviar Texto</button>
       </div>
     </div>
   </div>
@@ -1536,6 +1587,59 @@
 
     <div class="composer-footer" style="margin-top: 15px;">
        </div>
+  </div>
+</div>
+
+<div id="info-batalha-textos-modal" class="modal-overlay">
+  <div class="modal-content" style="max-width: 650px; text-align: left;">
+    <div class="painel-header">
+      <h2>📖 Batalha de Textos</h2>
+      <button class="painel-btn btn-fechar" onclick="closeModal('info-batalha-textos-modal')">Fechar</button>
+    </div>
+    
+    <div class="ociosos-lista-container" style="padding-right: 10px;">
+      <p class="modal-description" style="text-align: center;">Um desafio literário semanal julgado rigorosamente pelo Oráculo!</p>
+      
+      <div class="painel-section">
+        <h3 style="color: #3498db;">🗓️ Cronograma</h3>
+        <p><strong>Segunda-feira:</strong> O Oráculo lança o Tema e a Palavra Obrigatória.<br>
+           <strong>Até Quinta-feira (23:59):</strong> Prazo limite para você escrever e enviar sua obra.<br>
+           <strong>Sexta-feira:</strong> O Oráculo faz o julgamento e anuncia o vencedor.</p>
+      </div>
+
+      <div class="painel-section">
+        <h3 style="color: #e74c3c;">⚠️ Regras de Envio</h3>
+        <p>Você só pode enviar <strong>UM único texto</strong> por semana. Ele deve ter no máximo <strong>600 caracteres</strong> e obrigatoriamente deve conter a palavra-chave sorteada.<br>
+        <em>Dica: Se você fechar o modal enquanto digita, seu rascunho fica salvo no seu dispositivo.</em></p>
+      </div>
+
+      <div class="painel-section">
+        <h3 style="color: #9b59b6;">⚖️ Critérios do Oráculo</h3>
+        <ul style="margin-left: 20px; line-height: 1.6;">
+            <li><strong>Gramática e Ortografia:</strong> Erros perdem pontos.</li>
+            <li><strong>Uso da Palavra:</strong> Ela foi inserida de forma natural ou forçada?</li>
+            <li><strong>Fidelidade:</strong> O texto respeita o tema proposto?</li>
+            <li><strong>Criatividade:</strong> Qualidade literária da obra.</li>
+        </ul>
+      </div>
+
+      <div class="painel-section" style="background-color: rgba(241, 196, 15, 0.1); border-left: 4px solid #f1c40f;">
+        <h3 style="color: #d35400;">🏆 Recompensa</h3>
+        <p>O texto com a maior nota ganha <strong>3.000 moedas épicas</strong> e ganha merecido destaque no Hall da Escrita de Elite desta semana!</p>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<div id="julgamento-texto-modal" class="modal-overlay">
+  <div class="modal-content" style="max-width: 600px; text-align: left;">
+    <div class="painel-header">
+      <h2 style="color: #9b59b6;">⚖️ Julgamento do Oráculo</h2>
+      <button class="painel-btn btn-fechar" onclick="closeModal('julgamento-texto-modal')">Fechar</button>
+    </div>
+    <div id="julgamento-conteudo" class="ociosos-lista-container" style="padding-right: 10px;">
+        </div>
   </div>
 </div>
 
@@ -1696,13 +1800,26 @@
     Ativar Modo de Manutenção
   </button>
 </div>
+
     <div class="painel-section lider-geral-only">
       <h3>🔄 Sincronização Global</h3>
       <p style="font-size:0.9rem; margin-bottom:15px; color:#555;">
         Use este botão se um membro foi adicionado/removido ou se a interface de alguém parece desatualizada. Isso forçará a atualização da página para todos os usuários online.
       </p>
-      <button id="force-refresh-btn" class="painel-btn btn-adicionar" style="width:100%; background-color: #3498db;">Forçar Atualização para Todos</button>
+      <button id="force-refresh-btn" class="painel-btn btn-adicionar" style="width:100%; background-color: #3498db; margin-bottom: 10px;">Forçar Atualização para Todos</button>
     </div>
+	
+	<div class="painel-section">
+  <h3>🔨 Controle do Leilão Imobiliário</h3>
+  <div style="display: flex; flex-direction: column; gap: 10px;">
+    <button class="painel-btn btn-adicionar" style="width:100%; background-color: #f39c12;" onclick="forcarLeilaoTeste()">Criar Leilão de Teste Agora</button>
+    <button class="painel-btn btn-remover" style="width:100%; background-color: #e74c3c;" onclick="encerrarLeilaoManualmente()">Cancelar/Ocultar Leilão Atual</button>
+  </div>
+  <p style="font-size:0.8rem; margin-top:10px; color:#e67e22">
+    <strong>Criar:</strong> Ativa o leilão imediatamente com uma casa aleatória (duração de 2h).<br>
+    <strong>Cancelar:</strong> Oculta o leilão da tela de todos sem cobrar moedas de ninguém (excelente para encerrar testes).
+  </p>
+</div>
 	
 	<div class="painel-section lider-geral-only">
   <h3>🎲 Ordem dos Jogos da Vantagem</h3>
@@ -1726,6 +1843,7 @@
 	
 	<div class="painel-section lider-geral-only">
       <h3>🎨 Controle da Batalha de Desenhos</h3>
+	  
       
       <div style="margin-bottom: 20px; padding-bottom: 15px; border-bottom: 1px dashed #ccc;">
           <h4 style="margin-bottom: 10px; color: #2c3e50;">📋 Fila de Temas Manuais (Prioridade)</h4>
@@ -1763,6 +1881,22 @@
       <p style="font-size:0.8rem; margin-top:10px; color:#555;">
         <strong>Atenção:</strong> "Gerar Tema" inicia uma rodada (limpa as telas). "Realizar Julgamento" encerra a rodada.
       </p>
+    </div>
+	
+	<div class="painel-section lider-geral-only">
+      <h3>✍️ Controle da Batalha de Textos</h3>
+      <p style="font-size: 0.85rem; color: #7f8c8d; margin-bottom: 15px;">
+         Use estes controles para forçar o início ou fim de uma rodada de textos, caso a automação falhe ou precise testar.
+      </p>
+      <div style="display: flex; flex-direction: column; gap: 10px;">
+          <button class="painel-btn btn-adicionar" style="width:100%; background-color: #3498db;" onclick="forcarNovoTemaTextosManual()">
+            🧙‍ Gerar Novo Tema (Início da Rodada)
+          </button>
+          
+          <button class="painel-btn btn-remover" style="width:100%; background-color: #e67e22;" onclick="forcarJulgamentoTextosManual()">
+            ⚖️ Realizar Julgamento (Fim da Rodada)
+          </button>
+      </div>
     </div>
 	
   </div>
@@ -1991,7 +2125,7 @@
       </div>
       
       <div class="painel-section">
-          <h3>✍️ Interação Social</h3>
+          <h3>✍️ Batalha de Textos e Interação</h3>
           <ul class="reward-list">
             <li class="reward-item">
               <div class="reward"><span class="reward-value" id="reward-postarMural">5</span> Moedas <button class="edit-reward-btn hidden" data-key="postarMural">✏️</button></div>
@@ -2570,32 +2704,6 @@
       </div>
   </div>
 </div>
-  
-  <div id="oracle-assistant-modal" class="modal-overlay">
-  <div class="modal-content" style="max-width: 450px;">
-    <div class="painel-header">
-      <h2>🧙‍ Assistente do Oráculo</h2>
-      <button class="painel-btn btn-fechar" onclick="closeModal('oracle-assistant-modal')">Fechar</button>
-    </div>
-    <p class="modal-description">
-      Peça ajuda ao Oráculo para aprimorar sua mensagem. A ação será aplicada ao texto que você já escreveu.
-    </p>
-    <div class="user-panel-actions">
-      <button class="user-panel-btn" onclick="executarAcaoAssistenteIA('sugerir')">
-        💡 Sugerir continuação
-      </button>
-      <button class="user-panel-btn" onclick="executarAcaoAssistenteIA('resumir')">
-        📜 Resumir texto
-      </button>
-      <button class="user-panel-btn" onclick="executarAcaoAssistenteIA('corrigir')">
-        ✍️ Corrigir ortografia e gramática
-      </button>
-      <button class="user-panel-btn" onclick="executarAcaoAssistenteIA('tonalizar')">
-        🎭 Mudar o tom para algo mais... Sábio
-      </button>
-    </div>
-  </div>
-</div>
 
 <div id="loading-overlay" class="loading-overlay hidden">
   <div class="loading-content">
@@ -2866,7 +2974,7 @@
     <div class="protecao-tasks-container">
       <div class="task-item" id="task-postar-mural">
         <span class="task-status">⬜</span>
-        <span class="task-desc">Postar uma mensagem no Mural</span>
+        <span class="task-desc">Publicar um texto na Batalha</span>
       </div>
       <div class="task-item" id="task-comentar-mural">
         <span class="task-status">⬜</span>
@@ -2934,6 +3042,52 @@
 
     <div id="lista-historico-magias" class="ociosos-lista-container" style="padding-right: 10px; flex-grow: 1;">
       <div class="ociosos-placeholder">Consultando os astros...</div>
+    </div>
+  </div>
+</div>
+
+<div id="modal-sala-lances" class="modal-overlay">
+  <div class="modal-content" style="max-width: 600px; width: 95%; max-height: 90vh; display: flex; flex-direction: column;">
+    <div class="painel-header">
+      <h2>🔨 Sala de Lances</h2>
+      <button class="painel-btn btn-fechar" onclick="closeModal('modal-sala-lances')">Fechar</button>
+    </div>
+    
+    <div class="leilao-scroll-wrapper" style="flex-grow: 1; overflow-y: auto; padding-right: 5px; display: flex; flex-direction: column; margin-bottom: 15px;">
+      
+      <div class="leilao-modal-info-box" style="margin-top: 5px; flex-shrink: 0;">
+        <div class="leilao-modal-img-container">
+          <img id="modal-leilao-img" src="" alt="Imóvel em Leilão">
+        </div>
+        <div class="leilao-modal-detalhes">
+          <h3 id="modal-leilao-nome">Carregando...</h3>
+          <div class="leilao-modal-linha">
+            <span class="leilao-modal-label">Lance Mínimo:</span>
+            <span class="leilao-modal-valor">💰 <span id="modal-leilao-minimo">0</span></span>
+          </div>
+          <div class="leilao-modal-linha destaque-tempo">
+            <span class="leilao-modal-label">Encerra em:</span>
+            <span class="leilao-modal-tempo">⏳ <span id="modal-leilao-contador">00:00:00</span></span>
+          </div>
+        </div>
+      </div>
+
+      <div class="leilao-lances-area" style="flex-grow: 1; display: flex; flex-direction: column; padding-top: 10px;">
+        <div id="leilao-lista-lances" class="lista-lances" style="flex-grow: 1; margin-bottom: 0; max-height: none; overflow-y: visible; border: none; padding: 0; background: transparent;">
+          <div class="lance-vazio">Seja o primeiro a dar um lance!</div>
+        </div>
+      </div>
+
+    </div>
+    <div class="leilao-controle-usuario" style="flex-shrink: 0;">
+      <div class="lance-atual-box">
+        Maior Lance: <strong id="leilao-maior-lance-display" style="color: #27ae60;">0</strong>
+      </div>
+      <div class="input-lance-wrapper" style="display: flex; gap: 10px;">
+        <input type="number" id="input-valor-lance" class="painel-input" placeholder="Seu lance..." style="flex-grow: 1;">
+        <button id="btn-dar-lance" class="btn-lance" onclick="fazerLanceLeilao()" style="padding: 10px 15px;">DAR LANCE 💰</button>
+      </div>
+      <small style="display: block; color: #7f8c8d; font-size: 0.85rem; margin-top: 10px;">Seu saldo: 💰 <span id="leilao-saldo-usuario">0</span></small>
     </div>
   </div>
 </div>
