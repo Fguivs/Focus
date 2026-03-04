@@ -116,10 +116,15 @@
   </div>
 </div>
   
-  <button id="notificacoes-btn" class="botao-info">
-  📮 Notificações
-  <span id="notificacoes-contador" class="hidden">0</span>
-</button>
+  <div style="display: flex; gap: 10px; justify-content: center; width: 100%; max-width: 500px;">
+    <button id="notificacoes-btn" class="botao-info" style="flex: 1; position: relative;">
+      📮 Notificações
+      <span id="notificacoes-contador" class="hidden">0</span>
+    </button>
+    <button id="btn-perfis-membros" class="botao-info" style="flex: 1; background-color: #9b59b6;">
+      👥 Perfis
+    </button>
+  </div>
 
   <div id="indicador-equipe-pessoal" class="info-box hidden">
     Equipe Desconhecida
@@ -3090,6 +3095,32 @@
       <small style="display: block; color: #7f8c8d; font-size: 0.85rem; margin-top: 10px;">Seu saldo: 💰 <span id="leilao-saldo-usuario">0</span></small>
     </div>
   </div>
+</div>
+
+<div id="modal-lista-perfis" class="modal-overlay">
+  <div class="modal-content" style="max-width: 500px; width: 95%; max-height: 90vh; display: flex; flex-direction: column;">
+    <div class="painel-header">
+      <h2>👥 Perfis dos Épicos</h2>
+      <button class="painel-btn btn-fechar" onclick="closeModal('modal-lista-perfis')">Fechar</button>
+    </div>
+    <p class="modal-description" style="text-align: center; margin-bottom: 15px;">
+      Clique no nome ou no avatar para ver o perfil completo do membro.
+    </p>
+    <div id="lista-perfis-container" class="ociosos-lista-container" style="flex-grow: 1; padding-right: 10px;">
+      </div>
+  </div>
+</div>
+
+<div id="perfil-exclusivo-overlay" class="perfil-fullscreen-overlay hidden">
+  <div class="perfil-fullscreen-header">
+    <button class="btn-voltar-perfil" onclick="fecharPerfilExclusivo()">
+      ⬅ Voltar
+    </button>
+    <span style="font-weight: bold; opacity: 0.8;">Perfil Épico</span>
+  </div>
+  
+  <div id="perfil-exclusivo-content" class="perfil-fullscreen-content">
+    </div>
 </div>
   
   <script type="module">
