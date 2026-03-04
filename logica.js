@@ -1451,35 +1451,44 @@ Instruções Adicionais para Você, Oráculo:
                     <div style="margin-top:5px; color:#e67e22; font-weight:bold;">${d}</div>
                 </div>
             </div>
-        `}const l=medalhasInventarioCache[a.nome]||[],m=medalhasOrdemCache[a.nome]||[],c=m.filter(e=>l.includes(e));l.forEach(e=>{c.includes(e)||c.push(e)});let u="";0<c.length?(c.slice(0,6).forEach((e,a)=>{const o=todasMedalhasHonra.find(a=>a.id===e);if(o){const e=o.categoria.normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLowerCase();u+=`
-                    <div class="medalha-honra-display medalha-slot-${a+1} ${e}" style="position:absolute; width:30%;">
-                        <img src="${o.link}" alt="${o.nome}">
+        `}const l=medalhasInventarioCache[a.nome]||[],m=medalhasOrdemCache[a.nome]||[],c=m.filter(e=>l.includes(e));if(l.forEach(e=>{c.includes(e)||c.push(e)}),0<c.length){const e=6,o=Math.ceil(c.length/6);window.carrosselPerfilState=0;let t="",r="";for(let a=0;a<o;a++){const o=a*e,n=c.slice(o,o+e);let i="";n.forEach((e,a)=>{const o=todasMedalhasHonra.find(a=>a.id===e);if(o){const t=o.categoria.normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLowerCase();i+=`
+                        <div class="medalha-honra-display medalha-slot-${a+1} ${t}" onclick="abrirModalInfoMedalha('${e}')">
+                            <img src="${o.link}" alt="${o.nome}" title="${o.nome} (${o.categoria})">
+                        </div>
+                    `}}),t+=`<div class="card-medalhas-pagina">${i}</div>`,r+=`<div class="indicador-interno ${0==a?"ativo":""}" data-page="${a}"></div>`}let d="";1<o&&(d=`
+                <div class="card-medalhas-controles-internos">
+                    <button class="btn-pagina-interna prev" onclick="window.mudarPaginaMedalhasPerfil('${a.nome}', -1)" disabled>❮</button>
+                    <div class="indicadores-pagina-interna" id="indicadores-internos-perfil-${a.nome}">
+                        ${r}
                     </div>
-                `}}),n+=`
-            <div class="nossas-informacoes" style="padding-bottom: 40px;">
+                    <button class="btn-pagina-interna next" onclick="window.mudarPaginaMedalhasPerfil('${a.nome}', 1)">❯</button>
+                </div>
+            `),n+=`
+            <div class="nossas-informacoes" style="padding-bottom: 55px; position: relative;">
                 <h2>🏅 Medalhas de Honra</h2>
                 <div class="card-medalhas-paginacao-wrapper" style="margin-top:30px;">
-                    <div class="card-medalhas-pagina" style="width:100%; display:block;">
-                        ${u}
+                    <div class="card-medalhas-paginacao-container" id="paginacao-container-perfil-${a.nome}">
+                        ${t}
                     </div>
                 </div>
+                ${d}
             </div>
-        `):n+=`
+        `}else n+=`
             <div class="nossas-informacoes">
                 <h2>🏅 Medalhas de Honra</h2>
                 <p class="ociosos-placeholder">Ainda não conquistou medalhas de honra.</p>
             </div>
-        `;const p=a.casaExibida;let g=`
+        `;const u=a.casaExibida;let p=`
         <div class="placa-terreno" style="transform: scale(0.8); margin: 0 auto;">
             <div class="placa-madeira">Ainda não comprou uma casa.</div>
             <div class="haste-madeira"></div>
         </div>
-    `;if(p){window.cacheCasasImagens||(window.cacheCasasImagens={});if(window.cacheCasasImagens[p])g=`<img src="${window.cacheCasasImagens[p]}" style="${"max-width:100%; max-height:160px; object-fit:contain; object-position:bottom; filter: drop-shadow(0 5px 15px rgba(0,0,0,0.3));"}">`;else try{const e=await getDoc(doc(db,"loja_casas",p));e.exists()&&(window.cacheCasasImagens[p]=e.data().imagemURL,g=`<img src="${e.data().imagemURL}" style="${`max-width:100%; max-height:160px; object-fit:contain; object-position:bottom; filter: drop-shadow(0 5px 15px rgba(0,0,0,0.3));`}">`)}catch(a){console.error("Erro ao buscar casa do perfil:",a)}}if(n+=`
+    `;if(u){window.cacheCasasImagens||(window.cacheCasasImagens={});if(window.cacheCasasImagens[u])p=`<img src="${window.cacheCasasImagens[u]}" style="${"max-width:100%; max-height:160px; object-fit:contain; object-position:bottom; filter: drop-shadow(0 5px 15px rgba(0,0,0,0.3));"}">`;else try{const e=await getDoc(doc(db,"loja_casas",u));e.exists()&&(window.cacheCasasImagens[u]=e.data().imagemURL,p=`<img src="${e.data().imagemURL}" style="${`max-width:100%; max-height:160px; object-fit:contain; object-position:bottom; filter: drop-shadow(0 5px 15px rgba(0,0,0,0.3));`}">`)}catch(a){console.error("Erro ao buscar casa do perfil:",a)}}if(n+=`
         <div class="arvore-epica-container">
             <h2>🏡 Condomínio Épicos</h2>
             <div style="height: 250px; position:relative; display:flex; justify-content:center; align-items:flex-end; background: linear-gradient(to bottom, #87CEEB, #e0f6ff); border-radius: 15px; overflow: hidden; margin-top:20px;">
                 <div class="ground" style="position:absolute; bottom:0; left:0; width:100%; height:60px; z-index:1;"></div>
-                <div style="z-index: 10; position: relative; margin-bottom: 20px; width: 100%; display: flex; justify-content: center;">${g}</div>
+                <div style="z-index: 10; position: relative; margin-bottom: 20px; width: 100%; display: flex; justify-content: center;">${p}</div>
             </div>
         </div>
     `,a.folga){const e=a.folga.charAt(0).toUpperCase()+a.folga.slice(1);n+=`
@@ -1489,10 +1498,10 @@ Instruções Adicionais para Você, Oráculo:
                     <div class="membro-folga membro-folga-hoje" style="margin:0 auto; width: fit-content;">${a.nome}</div>
                 </div>
             </div>
-        `}const f=a.corCard||"#FFFFFF",h=isColorDark(f)?"text-light":"";n+=`
+        `}const g=a.corCard||"#FFFFFF",f=isColorDark(g)?"text-light":"";n+=`
         <div class="nossas-informacoes">
             <h2>💖 Informações</h2>
-            <div class="card-membro ${h}" style="background-color: ${f}; max-width: 500px; margin: 0 auto; box-shadow: 0 4px 15px rgba(0,0,0,0.1);">
+            <div class="card-membro ${f}" style="background-color: ${g}; max-width: 500px; margin: 0 auto; box-shadow: 0 4px 15px rgba(0,0,0,0.1);">
                 <h3>${a.nome}</h3>
                 <div class="subtitulo">coisas sobre mim</div>
                 <div class="info-item" style="display: block; text-align: left;">
@@ -1529,11 +1538,11 @@ Instruções Adicionais para Você, Oráculo:
                 </div>
                 <div id="mapa-perfil-${a.nome}" style="height: 250px; width: 100%; border-radius: 10px; margin-top: 15px; border: 2px solid rgba(0,0,0,0.1); z-index: 1;"></div>
             </div>
-        `),t.innerHTML=n;const v=document.getElementById(`avatar-perfil-${a.nome}`);v&&renderizarAvatar(a.nome,v),a.localizacao&&a.localizacao.latitude&&setTimeout(()=>{const e=`mapa-perfil-${a.nome}`,o=document.getElementById(e);if(o){const o=L.map(e).setView([a.localizacao.latitude,a.localizacao.longitude],12);L.tileLayer("https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png",{attribution:"&copy; OpenStreetMap"}).addTo(o);let t="vagalume",n="\uD83D\uDCA1",i="Equipe Vaga-lume";"lider"===a.papel?(t="lider-geral",n="\uD83D\uDC51",i="L\xEDder Geral"):"abelha"===a.equipe?(t="abelha",n="\uD83D\uDC1D",i="Equipe Abelha"):"joaninha"===a.equipe&&(t="joaninha",n="\uD83D\uDC1E",i="Equipe Joaninha");const r=L.divIcon({className:"custom-div-icon",html:`<div class='marker-pin ${t}'></div>`,iconSize:[30,42],iconAnchor:[15,42]}),d=L.marker([a.localizacao.latitude,a.localizacao.longitude],{icon:r}).addTo(o),s=`
+        `),t.innerHTML=n;const h=document.getElementById(`avatar-perfil-${a.nome}`);h&&renderizarAvatar(a.nome,h),a.localizacao&&a.localizacao.latitude&&setTimeout(()=>{const e=`mapa-perfil-${a.nome}`,o=document.getElementById(e);if(o){const o=L.map(e).setView([a.localizacao.latitude,a.localizacao.longitude],12);L.tileLayer("https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png",{attribution:"&copy; OpenStreetMap"}).addTo(o);let t="vagalume",n="\uD83D\uDCA1",i="Equipe Vaga-lume";"lider"===a.papel?(t="lider-geral",n="\uD83D\uDC51",i="L\xEDder Geral"):"abelha"===a.equipe?(t="abelha",n="\uD83D\uDC1D",i="Equipe Abelha"):"joaninha"===a.equipe&&(t="joaninha",n="\uD83D\uDC1E",i="Equipe Joaninha");const r=L.divIcon({className:"custom-div-icon",html:`<div class='marker-pin ${t}'></div>`,iconSize:[30,42],iconAnchor:[15,42]}),d=L.marker([a.localizacao.latitude,a.localizacao.longitude],{icon:r}).addTo(o),s=`
                     <div style="text-align:center;">
                         <strong style="font-size:1.1rem;">${n} ${a.nome}</strong><br>
                         <span style="color:#7f8c8d;">${i}</span><br>
                         <hr style="margin:5px 0; border:0; border-top:1px solid #eee;">
                         📍 ${a.localizacao.cidade}, ${a.localizacao.estado}
                     </div>
-                `;d.bindPopup(s)}},350)}window.fecharPerfilExclusivo=function(){const e=document.getElementById("perfil-exclusivo-overlay");e.classList.remove("ativo"),setTimeout(()=>{e.classList.add("hidden"),document.getElementById("perfil-exclusivo-content").innerHTML=""},400)},window.onload=async()=>{atualizarRelogio(),setInterval(atualizarRelogio,1e3),initAuth(),setupMaintenanceListenerAndCheck(),setupAdminBackdoor(),console.log("Iniciando Or\xE1culo e carregando dados..."),await inicializarGemini(),carregarBaseDeConhecimento(),configurarEventosChat();const e=await verificarEstadoManutencaoInicial();if(e)return console.log("Modo de Manuten\xE7\xE3o ATIVO. Bloqueado."),document.getElementById("maintenance-overlay").classList.remove("hidden"),void(document.body.style.overflow="hidden");const a=localStorage.getItem("loggedInUser");if(a)await performSuccessfulLogin(a);else{authContainer.classList.remove("hidden"),dataAtual=getHojeISO();const e=new Date().getHours(),a=document.body;a.classList.remove("tema-manha","tema-tarde","tema-noite"),5<=e&&12>e?a.classList.add("tema-manha"):12<=e&&18>e?a.classList.add("tema-tarde"):a.classList.add("tema-noite")}setInterval(verificarMudancaData,6e4),window.addEventListener("focus",verificarMudancaData),document.addEventListener("visibilitychange",async()=>{if("visible"===document.visibilityState){console.log("\uD83D\uDC40 Aba ativa. Re-sincronizando hor\xE1rio...");const e=document.getElementById("relogio");e&&(e.style.color="#f39c12");try{await sincronizarHorarioBrasilia()}catch(a){console.log("Sem rede.")}e&&(e.style.color=""),await verificarMudancaData()}}),window.abrirDetalhesMedalha=abrirDetalhesMedalha,window.handleQueroEssa=handleQueroEssa,window.abrirModalCompraMedalha=abrirModalCompraMedalha,window.abrirModalOrdenarMedalhas=abrirModalOrdenarMedalhas,window.mudarPaginaMedalhas=mudarPaginaMedalhas,window.processarJurosEAutolimpezaBancos=processarJurosEAutolimpezaBancos,"function"==typeof iniciarArrastoNudge&&iniciarArrastoNudge(),setTimeout(()=>{verificarNudgesDiarios(!1)},500),iniciarSistemaDeEconomia()};
+                `;d.bindPopup(s)}},350)}window.mudarPaginaMedalhasPerfil=function(e,a){const o=document.getElementById(`paginacao-container-perfil-${e}`),t=document.getElementById(`indicadores-internos-perfil-${e}`);if(!o||!t)return;const n=o.children.length;let r=window.carrosselPerfilState||0;r=(r+a+n)%n,window.carrosselPerfilState=r,o.style.transform=`translateX(-${100*r}%)`;const d=t.querySelectorAll(".indicador-interno");d.forEach((e,a)=>{e.classList.toggle("ativo",a===r)});const s=o.closest(".nossas-informacoes"),l=s.querySelector(".btn-pagina-interna.prev"),m=s.querySelector(".btn-pagina-interna.next");l&&(l.disabled=0===r),m&&(m.disabled=r===n-1)},window.fecharPerfilExclusivo=function(){const e=document.getElementById("perfil-exclusivo-overlay");e.classList.remove("ativo"),setTimeout(()=>{e.classList.add("hidden"),document.getElementById("perfil-exclusivo-content").innerHTML=""},400)},window.onload=async()=>{atualizarRelogio(),setInterval(atualizarRelogio,1e3),initAuth(),setupMaintenanceListenerAndCheck(),setupAdminBackdoor(),console.log("Iniciando Or\xE1culo e carregando dados..."),await inicializarGemini(),carregarBaseDeConhecimento(),configurarEventosChat();const e=await verificarEstadoManutencaoInicial();if(e)return console.log("Modo de Manuten\xE7\xE3o ATIVO. Bloqueado."),document.getElementById("maintenance-overlay").classList.remove("hidden"),void(document.body.style.overflow="hidden");const a=localStorage.getItem("loggedInUser");if(a)await performSuccessfulLogin(a);else{authContainer.classList.remove("hidden"),dataAtual=getHojeISO();const e=new Date().getHours(),a=document.body;a.classList.remove("tema-manha","tema-tarde","tema-noite"),5<=e&&12>e?a.classList.add("tema-manha"):12<=e&&18>e?a.classList.add("tema-tarde"):a.classList.add("tema-noite")}setInterval(verificarMudancaData,6e4),window.addEventListener("focus",verificarMudancaData),document.addEventListener("visibilitychange",async()=>{if("visible"===document.visibilityState){console.log("\uD83D\uDC40 Aba ativa. Re-sincronizando hor\xE1rio...");const e=document.getElementById("relogio");e&&(e.style.color="#f39c12");try{await sincronizarHorarioBrasilia()}catch(a){console.log("Sem rede.")}e&&(e.style.color=""),await verificarMudancaData()}}),window.abrirDetalhesMedalha=abrirDetalhesMedalha,window.handleQueroEssa=handleQueroEssa,window.abrirModalCompraMedalha=abrirModalCompraMedalha,window.abrirModalOrdenarMedalhas=abrirModalOrdenarMedalhas,window.mudarPaginaMedalhas=mudarPaginaMedalhas,window.processarJurosEAutolimpezaBancos=processarJurosEAutolimpezaBancos,"function"==typeof iniciarArrastoNudge&&iniciarArrastoNudge(),setTimeout(()=>{verificarNudgesDiarios(!1)},500),iniciarSistemaDeEconomia()};
