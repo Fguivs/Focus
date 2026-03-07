@@ -1197,6 +1197,13 @@
   <p class="vantagem-descricao">
     Competição semanal! Um novo tema é escolhido toda <strong>Quinta-feira</strong>. As equipes desenham até <strong>Segunda-feira</strong> (23:59) da próxima semana. Na Terça, o Oráculo julga e premia a equipe que tiver a melhor arte com <strong>5.000 moedas</strong>!
   </p>
+
+  <div style="text-align: center; margin-bottom: 20px;">
+      <button class="botao-info" onclick="abrirModalFilaTemas()" style="background-color: #3498db;">
+        📋 Fila de Temas Sugeridos
+      </button>
+  </div>
+
   <div class="carrossel-wrapper">
     <div class="carrossel-controles">
       <button class="controle-btn" onclick="mudarSlideDesenho(-1)">❮</button>
@@ -1843,48 +1850,6 @@
       <button class="painel-btn btn-remover" style="width:100%; background-color: #9b59b6;" onclick="regerarAnaliseOraculoSemanaPassada()">Regerar Análise da Semana Passada</button>
       <p style="font-size:0.8rem; margin-top:10px; color:#9b59b6">
         Use isso se a análise do Oráculo falhou ao ser gerada no domingo ou se você precisa que ela apareça novamente (como agora).
-      </p>
-    </div>
-	
-	<div class="painel-section lider-geral-only">
-      <h3>🎨 Controle da Batalha de Desenhos</h3>
-	  
-      
-      <div style="margin-bottom: 20px; padding-bottom: 15px; border-bottom: 1px dashed #ccc;">
-          <h4 style="margin-bottom: 10px; color: #2c3e50;">📋 Fila de Temas Manuais (Prioridade)</h4>
-          <p style="font-size: 0.85rem; color: #7f8c8d; margin-bottom: 10px;">
-             Se houver temas nesta lista, o Oráculo usará o primeiro dela em vez de inventar um novo.
-          </p>
-          
-          <div class="controle-pontos" style="grid-template-columns: 1fr auto; gap: 10px; margin-bottom: 10px;">
-              <input type="text" id="input-novo-tema-manual" class="painel-input" placeholder="Digite um tema (ex: Dragão)">
-              <button class="painel-btn btn-adicionar" onclick="adicionarTemaManualUI()">+</button>
-          </div>
-
-          <ul id="lista-temas-manuais" class="game-order-list" style="min-height: 50px; margin-bottom: 10px;">
-             </ul>
-          
-          <button class="painel-btn" style="width:100%; background-color: #27ae60; color: white;" onclick="salvarTemasManuais()">
-             💾 Salvar Ordem dos Temas
-          </button>
-      </div>
-      <div style="display: flex; flex-direction: column; gap: 10px;">
-          
-          <button class="painel-btn btn-adicionar" style="width:100%; background-color: #3498db;" onclick="forcarNovoTemaManual()">
-            🧙‍ Gerar/Ativar Novo Tema (Início)
-          </button>
-		  
-		  <button class="painel-btn" style="width:100%; background-color: #2ecc71; color: white; font-weight: bold;" onclick="reanunciarTemaAtual()">
-            📢 Re-anunciar Tema Atual (Popup)
-          </button>
-          
-          <button class="painel-btn btn-remover" style="width:100%; background-color: #e67e22;" onclick="forcarJulgamentoManual()">
-            ⚖️ Realizar Julgamento (Fim)
-          </button>
-
-      </div>
-      <p style="font-size:0.8rem; margin-top:10px; color:#555;">
-        <strong>Atenção:</strong> "Gerar Tema" inicia uma rodada (limpa as telas). "Realizar Julgamento" encerra a rodada.
       </p>
     </div>
 	
@@ -3121,6 +3086,24 @@
   
   <div id="perfil-exclusivo-content" class="perfil-fullscreen-content">
     </div>
+</div>
+
+<div id="modal-fila-temas" class="modal-overlay">
+  <div class="modal-content" style="max-width: 600px; width: 95%; max-height: 90vh; display: flex; flex-direction: column;">
+    <div class="painel-header">
+      <h2>📋 Temas Sugeridos</h2>
+      <button class="painel-btn btn-fechar" onclick="closeModal('modal-fila-temas')">Fechar</button>
+    </div>
+    
+    <p class="modal-description" style="text-align: center; margin-bottom: 20px;">
+      Estes são os temas sugeridos pelos membros. O Oráculo escolherá o primeiro da lista toda Quinta-feira.<br><br>
+      <strong>COMO SUGERIR UM TEMA:</strong> Peça ao Oráculo no chat (limite de 1 sugestão por semana)!
+    </p>
+
+    <div id="lista-fila-temas" class="ociosos-lista-container" style="padding-right: 10px; flex-grow: 1;">
+      <div class="ociosos-placeholder">Carregando temas...</div>
+    </div>
+  </div>
 </div>
   
   <script type="module">
