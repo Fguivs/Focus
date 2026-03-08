@@ -130,9 +130,14 @@
     Equipe Desconhecida
   </div>
   
-  <button id="btn-abrir-envio-moedas" class="botao-info" style="background-color: #27ae60;">
-    🎁 Envio de Moedas Diárias
-  </button>
+  <div id="container-etiquetas-pessoal" style="width: 100%; max-width: 500px; display: flex; flex-direction: column; align-items: center;">
+      <button id="btn-toggle-etiquetas" class="botao-info" style="background-color: #00bcd4; width: auto; min-width: 250px; padding: 10px 30px;" onclick="toggleEtiquetasPessoais()">
+        🏷️ Minhas Etiquetas
+      </button>
+      <div id="area-etiquetas-expandida" class="etiquetas-dropdown hidden">
+          <div id="lista-etiquetas-pessoal" class="etiquetas-lista"></div>
+      </div>
+  </div>
 
   <div class="info-box">
     <div id="indicador-moedas-pessoal" class="info-box-valor">
@@ -141,9 +146,14 @@
     <div class="info-box-label">Moedas</div>
   </div>
   
-  <button id="botao-painel-usuario" class="botao-info hidden">
-    ⚙️ Painel do Usuário
-  </button>
+  <div style="display: flex; gap: 10px; width: 100%; max-width: 500px;">
+      <button id="btn-abrir-envio-moedas" class="botao-info" style="flex: 1; background-color: #27ae60;">
+        🎁 Moedas
+      </button>
+      <button id="botao-painel-usuario" class="botao-info hidden" style="flex: 1;">
+        ⚙️ Painel
+      </button>
+  </div>
 
 </div>
 
@@ -1795,6 +1805,30 @@
         <strong>Atenção:</strong> Esta ação apagará permanentemente todas as mensagens do mural. Use caso a limpeza automática de segunda-feira falhe.
       </p>
     </div>
+	
+	<div class="painel-section lider-geral-only">
+      <h3>🏷️ Conceder Etiqueta Exclusiva</h3>
+      <p style="font-size:0.9rem; margin-bottom:15px; color:#555;">
+        Dê uma etiqueta rara a um membro. Escolha a cor do brilho!
+      </p>
+      <div class="controle-pontos" style="grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 10px;">
+        <select id="select-membro-etiqueta-lider" class="painel-input"></select>
+        <input type="text" id="input-emoji-etiqueta-lider" class="painel-input" placeholder="Emoji (Ex: 🏆)">
+      </div>
+      <input type="text" id="input-nome-etiqueta-lider" class="painel-input" placeholder="Nome da Etiqueta" style="margin-bottom: 10px;">
+      <textarea id="input-desc-etiqueta-lider" class="painel-input" rows="2" placeholder="Descrição curta..." style="margin-bottom: 10px;"></textarea>
+      
+      <select id="input-estilo-etiqueta-lider" class="painel-input" style="margin-bottom: 10px; font-weight: bold;">
+          <option value="lider-exclusiva">🌟 Lendária (Dourado/Multicolor)</option>
+          <option value="lider-fogo">🔥 Chamas (Vermelho/Laranja)</option>
+          <option value="lider-gelo">❄️ Glacial (Ciano/Azul)</option>
+          <option value="lider-trevas">🌑 Sombria (Roxo Escuro/Preto)</option>
+          <option value="lider-natureza">🌿 Gaia (Verde Brilhante)</option>
+          <option value="lider-rosa">🌸 Encanto (Rosa/Magenta)</option>
+      </select>
+
+      <button class="painel-btn btn-adicionar" style="width:100%; margin-top: 10px; background-color: #f39c12;" onclick="concederEtiquetaLider()">Conceder Etiqueta Exclusiva</button>
+    </div>
 
     <div class="painel-section lider-geral-only">
       <h3>🚀 Forçar Atualização de Versão</h3>
@@ -3082,6 +3116,7 @@
       ⬅ Voltar
     </button>
     <span style="font-weight: bold; opacity: 0.8;">Perfil Épico</span>
+    <div id="container-btn-tema-perfil"></div>
   </div>
   
   <div id="perfil-exclusivo-content" class="perfil-fullscreen-content">
@@ -3103,6 +3138,23 @@
     <div id="lista-fila-temas" class="ociosos-lista-container" style="padding-right: 10px; flex-grow: 1;">
       <div class="ociosos-placeholder">Carregando temas...</div>
     </div>
+  </div>
+</div>
+
+<div id="modal-tema-perfil" class="modal-overlay">
+  <div class="modal-content" style="max-width: 450px;">
+    <div class="painel-header">
+      <h2>🎨 Fundo do Perfil</h2>
+      <button class="painel-btn btn-fechar" onclick="closeModal('modal-tema-perfil')">Fechar</button>
+    </div>
+    <p class="modal-description" style="text-align: center; margin-bottom: 20px;">
+      Escolha uma cor ou gradiente para personalizar o fundo do seu Perfil Exclusivo!
+    </p>
+    
+    <div id="opcoes-temas-perfil" style="display: flex; flex-wrap: wrap; gap: 10px; justify-content: center;">
+      </div>
+    
+    <button class="btn-cancelar" style="width: 100%; margin-top: 25px;" onclick="salvarTemaPerfil('')">🔄 Restaurar Padrão (Automático)</button>
   </div>
 </div>
   
