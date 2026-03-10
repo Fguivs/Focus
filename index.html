@@ -2227,47 +2227,58 @@
   
   <div id="user-panel-modal" class="modal-overlay">
   <div class="modal-content" style="max-width: 500px; max-height: 90vh; overflow-y: auto;">
-  <div class="painel-header">
-    <h2>Painel do Usuário</h2>
-  </div>
+    <div class="painel-header">
+      <h2>Painel do Usuário</h2>
+      <button class="painel-btn btn-fechar" onclick="closeModal('user-panel-modal')">Fechar</button>
+    </div>
 
-  <p class="modal-description">Gerencie as configurações da sua conta.</p>
-  
-  <div style="background: rgba(0,0,0,0.05); padding: 15px; border-radius: 10px; margin-bottom: 20px; text-align: left;">
-      <h4 style="margin-bottom: 10px; color: #555;">🔔 Preferências de Popups</h4>
-      <select id="user-pref-popups" class="painel-input" onchange="salvarPreferenciaPopups(this.value)">
-          <option value="ativado">✅ Ativados (Padrão)</option>
-          <option value="desativado">🔕 Desativados (Silencioso)</option>
-      </select>
-      <p style="font-size: 0.8rem; color: #7f8c8d; margin-top: 5px;">
-        Se desativado, você não verá resultados de loteria, competição ou mensagens do Oráculo ao entrar.
-      </p>
-  </div>
-  <button class="painel-btn btn-fechar" onclick="closeModal('user-panel-modal')">Fechar</button>
+    <p class="modal-description">Gerencie as configurações da sua conta.</p>
+    
+    <div style="background: rgba(0,0,0,0.05); padding: 15px; border-radius: 10px; margin-bottom: 20px; text-align: left;">
+        <h4 style="margin-bottom: 10px; color: #555;">🔔 Preferências de Popups</h4>
+        <select id="user-pref-popups" class="painel-input" onchange="salvarPreferenciaPopups(this.value)">
+            <option value="ativado">✅ Ativados (Padrão)</option>
+            <option value="desativado">🔕 Desativados (Silencioso)</option>
+        </select>
+        <p style="font-size: 0.8rem; color: #7f8c8d; margin-top: 5px;">
+          Se desativado, você não verá resultados de loteria, competição ou mensagens do Oráculo ao entrar.
+        </p>
+    </div>
 
-  <div class="user-panel-actions">
-  <button id="btn-abrir-painel-controle" class="user-panel-btn admin hidden">
-    👑 Painel de Controle
-  </button>
-  
-  <button id="btn-abrir-gerador-codigo" class="user-panel-btn admin hidden" style="border-color: #2ecc71; color: #2ecc71;">
-    💎 Gerador de Códigos
-  </button>
-  
-  <button id="btn-abrir-add-avatar-item" class="user-panel-btn admin hidden" style="border-color: #2ecc71; color: #2ecc71;">
-  🖼️ Adicionar Item na Loja de Avatar
-</button>
+    <div style="background: rgba(0,0,0,0.05); padding: 15px; border-radius: 10px; margin-bottom: 20px; text-align: left;">
+        <h4 style="margin-bottom: 10px; color: #555;">🤖 Apoio Automático</h4>
+        <select id="user-pref-autolike" class="painel-input" onchange="salvarPreferenciaAutoInteract(this.value)">
+            <option value="ativado">✅ Ativado (Padrão)</option>
+            <option value="desativado">⏸️ Desativado</option>
+        </select>
+        <p style="font-size: 0.8rem; color: #7f8c8d; margin-top: 5px;">
+          Se ativado, você deixará reações positivas nos textos e likes nos desenhos dos seus colegas automaticamente ao fazer login, ajudando a incentivar o grupo e ganhando moedas!
+        </p>
+    </div>
 
-  <button class="user-panel-btn" onclick="openModal('change-password-modal'); closeModal('user-panel-modal');">
-    🔑 Alterar minha Senha
-  </button>
-  <button class="user-panel-btn" onclick="openModal('change-secret-modal'); closeModal('user-panel-modal');">
-    🛡️ Alterar Pergunta Secreta
-  </button>
-  <button id="btn-logout-panel" class="user-panel-btn logout">
-    🚪 Sair
-  </button>
-</div>
+    <div class="user-panel-actions">
+      <button id="btn-abrir-painel-controle" class="user-panel-btn admin hidden">
+        👑 Painel de Controle
+      </button>
+      
+      <button id="btn-abrir-gerador-codigo" class="user-panel-btn admin hidden" style="border-color: #2ecc71; color: #2ecc71;">
+        💎 Gerador de Códigos
+      </button>
+      
+      <button id="btn-abrir-add-avatar-item" class="user-panel-btn admin hidden" style="border-color: #2ecc71; color: #2ecc71;">
+        🖼️ Adicionar Item na Loja de Avatar
+      </button>
+
+      <button class="user-panel-btn" onclick="openModal('change-password-modal'); closeModal('user-panel-modal');">
+        🔑 Alterar minha Senha
+      </button>
+      <button class="user-panel-btn" onclick="openModal('change-secret-modal'); closeModal('user-panel-modal');">
+        🛡️ Alterar Pergunta Secreta
+      </button>
+      <button id="btn-logout-panel" class="user-panel-btn logout">
+        🚪 Sair
+      </button>
+    </div>
   </div>
 </div>
   
