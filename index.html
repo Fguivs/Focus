@@ -131,8 +131,9 @@
   </div>
   
   <div id="container-etiquetas-pessoal" style="width: 100%; max-width: 500px; display: flex; flex-direction: column; align-items: center;">
-      <button id="btn-toggle-etiquetas" class="botao-info" style="background-color: #00bcd4; width: auto; min-width: 250px; padding: 10px 30px;" onclick="toggleEtiquetasPessoais()">
+      <button id="btn-toggle-etiquetas" class="botao-info" style="background-color: #00bcd4; width: auto; min-width: 250px; padding: 10px 30px; position: relative;" onclick="toggleEtiquetasPessoais()">
         🏷️ Minhas Etiquetas
+        <span id="badge-etiquetas-aviso" class="etiqueta-badge-aviso hidden">!</span>
       </button>
       <div id="area-etiquetas-expandida" class="etiquetas-dropdown hidden">
           <div id="lista-etiquetas-pessoal" class="etiquetas-lista"></div>
