@@ -121,8 +121,9 @@
       📮 Notificações
       <span id="notificacoes-contador" class="hidden">0</span>
     </button>
-    <button id="btn-perfis-membros" class="botao-info" style="flex: 1; background-color: #9b59b6;">
+    <button id="btn-perfis-membros" class="botao-info" style="flex: 1; background-color: #9b59b6; position: relative;">
       👥 Perfis
+      <span id="badge-tema-perfil-btn" class="etiqueta-badge-aviso hidden">!</span>
     </button>
   </div>
 
@@ -957,7 +958,7 @@
       <h2>🌳 Árvore Épica</h2>
 
       <p class="arvore-explicacao">
-        A árvore cresce com o esforço coletivo! Se <strong>10 ou mais épicos</strong> focarem no mesmo dia, a árvore avança um dia em sua jornada de crescimento. Caso contrário, a sequência é quebrada. Vamos cultivar nosso foco juntos!
+        A árvore cresce com o esforço coletivo! Se batermos a meta de focos diários (<strong>que é sempre 5 membros a menos que o total do grupo</strong>), a árvore avança um dia em sua jornada. Caso contrário, a sequência é quebrada. Vamos cultivar nosso foco juntos!
       </p>
       
       <div class="tree-display">
@@ -3044,6 +3045,8 @@
   📢
   <span class="nudge-badge">!</span>
 </div>
+
+<div id="nudge-dropzone">✖</div>
 
 <div id="modal-historico-magias" class="modal-overlay">
   <div class="modal-content" style="max-width: 600px; width: 95%; max-height: 90vh; display: flex; flex-direction: column;">
