@@ -141,7 +141,7 @@
       </div>
   </div>
 
-  <div class="info-box">
+  <div class="info-box" style="cursor: pointer; transition: transform 0.2s;" onclick="openModal('info-moedas-modal')" onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'" title="Como ganhar moedas?">
     <div id="indicador-moedas-pessoal" class="info-box-valor">
       💰 <span>0</span>
     </div>
@@ -830,12 +830,6 @@
       </div>
   </div>
   <p class="arvore-explicacao">Veja abaixo sua casa no condomínio épicos.</p>
-
-  <div style="text-align: center; margin-bottom: 25px;">
-    <button class="botao-info" onclick="openModal('info-moedas-modal')">
-      ℹ️ Como ganhar moedas?
-    </button>
-  </div>
 
   <div class="tree-display">
     <div class="tree-sky day-mode">
@@ -2135,11 +2129,11 @@
           <ul class="reward-list">
             <li class="reward-item">
               <div class="reward"><span class="reward-value" id="reward-postarMural">5</span> Moedas <button class="edit-reward-btn hidden" data-key="postarMural">✏️</button></div>
-              <div class="description">Ao publicar uma nova mensagem no Mural.</div>
+              <div class="description">Ao submeter seu texto para competir na Batalha de Textos.</div>
             </li>
             <li class="reward-item">
               <div class="reward"><span class="reward-value" id="reward-reagirConteudo">1</span> Moedas <button class="edit-reward-btn hidden" data-key="reagirConteudo">✏️</button></div>
-              <div class="description">Ao reagir a uma mensagem no Mural ou a um evento no Resumo da Semana.</div>
+              <div class="description">Ao reagir aos Textos da Batalha ou a um evento no Resumo da Semana.</div>
             </li>
           </ul>
       </div>
@@ -2181,6 +2175,58 @@
               <button class="edit-reward-btn hidden" data-key="vitoriaSemanal">✏️</button>
             </div>
             <div class="description">Cada membro da equipe vencedora da semana recebe este prêmio no domingo.</div>
+          </li>
+        </ul>
+      </div>
+      
+      <div class="painel-section">
+        <h3>🎨 Batalha de Desenhos</h3>
+        <ul class="reward-list">
+          <li class="reward-item">
+            <div class="reward"><span class="reward-value">5.000</span> Moedas</div>
+            <div class="description">Prêmio para cada membro da equipe que fizer o melhor desenho da semana, eleito pelo Oráculo.</div>
+          </li>
+        </ul>
+      </div>
+
+      <div class="painel-section">
+        <h3>🏷️ Etiquetas Pessoais</h3>
+        <ul class="reward-list">
+          <li class="reward-item">
+            <div class="reward"><span class="reward-value">1.000</span> Moedas</div>
+            <div class="description">Você ganha esse valor <strong>por cada etiqueta inédita</strong> adicionada ao seu perfil, até o limite de 10 etiquetas (Máximo de 10.000 moedas).</div>
+          </li>
+        </ul>
+      </div>
+
+      <div class="painel-section">
+        <h3>🎁 Presentes, Pix e Loteria</h3>
+        <ul class="reward-list">
+          <li class="reward-item">
+            <div class="reward">💰 <span class="reward-rank">Presente Diário:</span> 500 Moedas</div>
+            <div class="description">Valor que você pode receber de um colega de equipe todos os dias. (Enviar não desconta do seu saldo).</div>
+          </li>
+          <li class="reward-item">
+            <div class="reward">💸 <span class="reward-rank">Pix dos Épicos:</span> Variável</div>
+            <div class="description">Transferências diretas que você recebe de outros membros ou do banco da equipe.</div>
+          </li>
+          <li class="reward-item">
+            <div class="reward">🍀 <span class="reward-rank">Loteria Épica:</span> Prêmio Acumulado</div>
+            <div class="description">Acertando os 4 números na quarta-feira, você leva ou divide o grande prêmio em moedas.</div>
+          </li>
+        </ul>
+      </div>
+
+      <div class="painel-section">
+        <h3>👑 Recompensas de Liderança</h3>
+        <ul class="reward-list">
+          <li class="reward-item">
+            <div class="reward"><span class="reward-value">100.000</span> Moedas</div>
+            <div class="description"><strong>Para Líderes:</strong> Remuneração semanal baseada na avaliação de desempenho e cumprimento de deveres.</div>
+          </li>
+          <li class="reward-item">
+            <div class="reward"><span class="reward-value">5.000</span> Moedas</div>
+            <div class="description"><strong>Para Membros:</strong> Bônus especial que o Líder da sua Equipe pode decidir te dar aos domingos como reconhecimento de esforço.</div>
           </li>
         </ul>
       </div>
