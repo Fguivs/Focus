@@ -1710,19 +1710,19 @@
       </div>
     </div>
 	
-	<div class="painel-section">
-  <h3>Ações Semanais</h3>
-  <div class="user-panel-actions">
-    <button id="btn-abrir-avaliacao-lideres" class="user-panel-btn hidden" style="border-color: #f1c40f; color: #f1c40f;">
-      👑 Avaliação Semanal de Líderes
-    </button>
-    <button id="btn-abrir-recompensa-equipe" class="user-panel-btn hidden" style="border-color: #2ecc71; color: #2ecc71;">
-      🏆 Recompensa da Equipe
-    </button>
-  </div>
-</div>
-	
-	<div class="painel-section lider-geral-only">
+	<div class="user-panel-actions">
+      <button id="btn-abrir-avaliacao-lideres" class="user-panel-btn hidden" style="border-color: #f1c40f; color: #f1c40f;">
+        👑 Avaliação Semanal de Líderes
+      </button>
+      <button id="btn-abrir-recompensa-equipe" class="user-panel-btn hidden" style="border-color: #2ecc71; color: #2ecc71;">
+        🏆 Recompensa da Equipe
+      </button>
+      <button id="btn-ver-resultados-lideranca" class="user-panel-btn hidden" style="border-color: #9b59b6; color: #9b59b6;" onclick="abrirResultadosAvaliacao()">
+        📊 Avaliação da Líderança feita pela Equipe 
+      </button>
+    </div>
+    
+    <div class="painel-section lider-geral-only">
   <h3>📅 Gerenciar Ausências</h3>
   <p style="font-size:0.9rem; margin-bottom:15px; color:#555;">
     Defina o status dos membros. "Férias" ou "Saúde" pausam a obrigatoriedade do foco e removem o membro do cálculo da média da equipe.
@@ -3216,6 +3216,83 @@
       </div>
     
     <button class="btn-cancelar" style="width: 100%; margin-top: 25px;" onclick="salvarTemaPerfil('')">🔄 Restaurar Padrão (Automático)</button>
+  </div>
+</div>
+
+<div id="modal-avaliacao-lider" class="modal-overlay">
+  <div class="modal-content" style="max-width: 500px; min-height: 350px; max-height: 90vh; overflow-y: auto; display: flex; flex-direction: column;">
+    <div class="painel-header">
+      <h2 id="aval-lider-titulo">Avaliação da Liderança</h2>
+      </div>
+    
+    <p class="modal-description" style="text-align: center; color: #7f8c8d; font-size: 0.9rem; margin-bottom: 10px;">
+      Sua avaliação é <strong style="color:#2ecc71;">100% anônima</strong> para o seu líder de equipe. Responda com sinceridade.
+    </p>
+
+    <div id="aval-passo-indicador" style="text-align: center; color: #3498db; font-weight: bold; font-size: 1.1rem; margin-bottom: 20px;">
+        Etapa 1 de 3
+    </div>
+
+    <div id="aval-step-1" class="aval-step">
+      <h4 id="aval-pergunta-1" style="font-size: 1.2rem; margin-bottom: 20px; color: #2c3e50;">Como você avalia a liderança...</h4>
+      <div id="aval-estrelas-container" style="display: flex; justify-content: center; gap: 10px; margin-bottom: 30px;">
+        <span class="aval-star" onclick="setAvalEstrelas(1)">★</span>
+        <span class="aval-star" onclick="setAvalEstrelas(2)">★</span>
+        <span class="aval-star" onclick="setAvalEstrelas(3)">★</span>
+        <span class="aval-star" onclick="setAvalEstrelas(4)">★</span>
+        <span class="aval-star" onclick="setAvalEstrelas(5)">★</span>
+      </div>
+      <button id="aval-btn-next-1" class="auth-btn" style="opacity: 0.5; cursor: not-allowed;" disabled onclick="window.navegarAvaliacao(2)">Próxima Etapa</button>
+      </div>
+
+    <div id="aval-step-2" class="aval-step hidden">
+      <h4 id="aval-pergunta-2" style="font-size: 1.2rem; margin-bottom: 20px; color: #2c3e50;">O líder deve ser...</h4>
+      <div style="display: flex; gap: 15px; margin-bottom: 30px;">
+        <button id="aval-btn-manter" class="user-panel-btn" style="flex: 1; text-align: center;" onclick="setAvalDecisao('manter')">Manter</button>
+        <button id="aval-btn-substituir" class="user-panel-btn" style="flex: 1; text-align: center;" onclick="setAvalDecisao('substituir')">Substituir</button>
+      </div>
+      
+      <div id="aval-container-novo-lider" class="hidden" style="margin-bottom: 20px; text-align: left;">
+        <label for="aval-select-novo-lider" style="font-size: 0.95rem; color: #7f8c8d; margin-bottom: 5px; display: block; font-weight: bold;">Quem você indicaria para assumir a liderança?</label>
+        <select id="aval-select-novo-lider" class="painel-input" onchange="verificarSelecaoNovoLider()">
+          <option value="">Selecione um membro...</option>
+        </select>
+      </div>
+      <div style="display: flex; gap: 10px;">
+        <button class="btn-cancelar" style="flex: 1; margin-top: 0;" onclick="navegarAvaliacao(1)">Voltar</button>
+        <button id="aval-btn-next-2" class="auth-btn" style="flex: 1; margin-top: 0; opacity: 0.5; cursor: not-allowed;" disabled onclick="navegarAvaliacao(3)">Próxima Etapa</button>
+      </div>
+    </div>
+
+    <div id="aval-step-3" class="aval-step hidden">
+      <h4 style="font-size: 1.2rem; margin-bottom: 10px; color: #2c3e50;">(Opicional) Envie um elogio, sugestão ou crítica</h4>
+      <p style="font-size: 0.85rem; color: #7f8c8d; margin-bottom: 15px;">(Máx 500 caracteres. Seu líder não verá seu nome.)</p>
+      <textarea id="aval-feedback-input" class="painel-input" rows="4" maxlength="500" placeholder="Escreva aqui seu feedback..." style="margin-bottom: 20px;"></textarea>
+      
+      <div style="display: flex; gap: 10px;">
+        <button class="btn-cancelar" style="flex: 1; margin-top: 0;" onclick="navegarAvaliacao(2)">Voltar</button>
+        <button id="aval-btn-finalizar" class="auth-btn" style="flex: 1; margin-top: 0; background-color: #2ecc71;" onclick="executarAvaliacaoLider()">Finalizar Avaliação</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="modal-resultados-lideranca" class="modal-overlay">
+  <div class="modal-content" style="max-width: 700px; width: 95%; max-height: 90vh; display: flex; flex-direction: column;">
+    <div class="painel-header">
+      <h2>📊 Resultados da Liderança</h2>
+      <button class="painel-btn btn-fechar" onclick="closeModal('modal-resultados-lideranca')">Fechar</button>
+    </div>
+    
+    <div style="margin-bottom: 15px; display: flex; justify-content: center; align-items: center; gap: 10px;">
+      <label style="font-weight: bold;">Selecione a Semana:</label>
+      <select id="select-semana-aval" class="painel-input" style="width: auto; padding: 5px;" onchange="carregarResultadosAvaliacao()">
+        </select>
+    </div>
+
+    <div id="resultados-lideranca-container" class="ociosos-lista-container" style="flex-grow: 1; padding-right: 10px; text-align: left;">
+      <div class="ociosos-placeholder">Carregando resultados...</div>
+    </div>
   </div>
 </div>
   
