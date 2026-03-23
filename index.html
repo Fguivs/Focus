@@ -152,8 +152,9 @@
       <button id="btn-abrir-envio-moedas" class="botao-info" style="flex: 1; background-color: #27ae60;">
         🎁 Moedas
       </button>
-      <button id="botao-painel-usuario" class="botao-info hidden" style="flex: 1;">
+      <button id="botao-painel-usuario" class="botao-info hidden" style="flex: 1; position: relative;">
         ⚙️ Painel
+        <span id="badge-painel-usuario" class="etiqueta-badge-aviso hidden">!</span>
       </button>
   </div>
 
@@ -1717,8 +1718,9 @@
       <button id="btn-abrir-recompensa-equipe" class="user-panel-btn hidden" style="border-color: #2ecc71; color: #2ecc71;">
         🏆 Recompensa da Equipe
       </button>
-      <button id="btn-ver-resultados-lideranca" class="user-panel-btn hidden" style="border-color: #9b59b6; color: #9b59b6;" onclick="abrirResultadosAvaliacao()">
-        📊 Avaliação da Líderança feita pela Equipe 
+      <button id="btn-ver-resultados-lideranca" class="user-panel-btn hidden" style="border-color: #9b59b6; color: #9b59b6; position: relative;" onclick="abrirResultadosAvaliacao()">
+        📊 Avaliação da Liderança feita pela Equipe 
+        <span id="badge-resultados-lideranca" class="etiqueta-badge-aviso hidden" style="top: 15px; right: 15px;">!</span>
       </button>
     </div>
     
@@ -2305,8 +2307,9 @@
     </div>
 
     <div class="user-panel-actions">
-      <button id="btn-abrir-painel-controle" class="user-panel-btn admin hidden">
+      <button id="btn-abrir-painel-controle" class="user-panel-btn admin hidden" style="position: relative;">
         👑 Painel de Controle
+        <span id="badge-painel-controle" class="etiqueta-badge-aviso hidden" style="top: 15px; right: 15px;">!</span>
       </button>
       
       <button id="btn-abrir-gerador-codigo" class="user-panel-btn admin hidden" style="border-color: #2ecc71; color: #2ecc71;">
