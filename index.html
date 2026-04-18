@@ -1,3 +1,25 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Épicos 亗 🌱</title>
+<link rel="icon" type="image/png" href="https://i.ibb.co/Ps4yK7xy/Picsart-25-02-25-14-28-21-078.jpg">
+<link rel="stylesheet" href="estilos.css">
+<link rel="manifest" href="manifest.json">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@900&display=swap" rel="stylesheet">
+<style id="dynamic-cursor-style"></style>
+<script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<!-- Leaflet CSS & JS (Mapas) -->
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+</head>
+<body>
+
 <div id="maintenance-overlay" class="update-overlay hidden">
   <div class="update-box">
     <div id="maintenance-icon" class="update-icon" style="cursor: pointer;">⚠️</div>
@@ -3298,3 +3320,41 @@
     </div>
   </div>
 </div>
+  
+  <script type="module">
+  // Importa e executa todo o seu código de lógica principal
+  import "./logica.js";
+
+  // Lógica aprimorada para registrar e atualizar o Service Worker
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+      navigator.serviceWorker.register('/sw.js')
+        .then(registration => {
+          console.log('Service Worker registrado com sucesso:', registration);
+          // Verifica se há um novo Service Worker esperando para ser ativado
+          registration.addEventListener('updatefound', () => {
+            const newWorker = registration.installing;
+            newWorker.addEventListener('statechange', () => {
+              if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                // Se um novo SW foi instalado, mostra um popup para o usuário recarregar
+                if (confirm('Uma nova versão está disponível! Deseja recarregar a página agora?')) {
+                  window.location.reload();
+                }
+              }
+            });
+          });
+        })
+        .catch(error => {
+          console.log('Falha ao registrar Service Worker:', error);
+        });
+    });
+
+    // Força a verificação de uma nova versão do SW toda vez que a página for carregada
+    navigator.serviceWorker.ready.then(registration => {
+      registration.update();
+    });
+  }
+</script>
+  
+</body>
+</html>
