@@ -1684,6 +1684,25 @@
       <h2>Painel de Controle</h2>
       <button class="painel-btn btn-fechar" onclick="closeModal('control-panel-modal')">Fechar</button>
     </div>
+	
+	<div class="painel-section lider-geral-only">
+      <h3>🔄 Agendar Troca de Liderança</h3>
+      <p style="font-size:0.9rem; margin-bottom:15px; color:#555;">
+        Agende a substituição de um líder de equipe. A troca oficial, bem como as permissões, só ocorrerão na virada de Domingo para Segunda-feira, garantindo que o líder antigo seja avaliado e remunerado pela semana que passou.
+      </p>
+      <div class="controle-pontos" style="grid-template-columns: 1fr 1fr auto; gap: 10px;">
+        <select id="select-equipe-troca" class="painel-input" onchange="popularMembrosTrocaLideranca()">
+          <option value="">Selecione a Equipe...</option>
+          <option value="abelha">Equipe Abelha</option>
+          <option value="joaninha">Equipe Joaninha</option>
+          <option value="vagalume">Equipe Vaga-lume</option>
+        </select>
+        <select id="select-novo-lider" class="painel-input">
+          <option value="">Aguardando equipe...</option>
+        </select>
+        <button class="painel-btn btn-adicionar" style="background-color: #3498db;" onclick="agendarTrocaLideranca()">Agendar Troca</button>
+      </div>
+    </div>
 
     <div class="painel-section">
       <h3>Adicionar Novo Membro</h3>
