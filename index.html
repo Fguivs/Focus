@@ -289,8 +289,12 @@
         </div>
       </div>
 	  
-	  <div style="text-align: center; margin-top: 25px;">
+	  <div style="text-align: center; margin-top: 25px; display: flex; flex-wrap: wrap; justify-content: center; gap: 10px;">
         <button id="btn-historico-competicao" class="botao-info" style="background-color: #3498db;" onclick="abrirModalHistoricoCompeticao()">📊 Ver Resultados Anteriores</button>
+        <button id="btn-ver-resultados-lideranca" class="botao-info" style="background-color: #9b59b6; position: relative;" onclick="abrirResultadosAvaliacao()">
+          📊 Avaliação da Liderança
+          <span id="badge-resultados-lideranca" class="etiqueta-badge-aviso hidden" style="top: -8px; right: -8px;">!</span>
+        </button>
       </div>
 	  
       <p style="margin-top: 15px; font-size: 0.9em; color: #7f8c8d;">
@@ -872,8 +876,8 @@
       </div>
       <h3 id="leilao-nome-casa">Mansão Épica</h3>
       <div class="leilao-precos">
-        <span class="preco-original">De: <span id="leilao-valor-original">0</span></span>
-        <span class="preco-minimo">Lance Mínimo: <span id="leilao-valor-minimo">0</span></span>
+        <span class="preco-original">De: 💰<span id="leilao-valor-original">0</span></span>
+        <span class="preco-minimo">Lance Mínimo: 💰<span id="leilao-valor-minimo">0</span></span>
       </div>
       
       <div class="leilao-timer-container">
@@ -1739,10 +1743,6 @@
       <button id="btn-abrir-recompensa-equipe" class="user-panel-btn hidden" style="border-color: #2ecc71; color: #2ecc71;">
         🏆 Recompensa da Equipe
       </button>
-      <button id="btn-ver-resultados-lideranca" class="user-panel-btn hidden" style="border-color: #9b59b6; color: #9b59b6; position: relative;" onclick="abrirResultadosAvaliacao()">
-        📊 Avaliação da Liderança feita pela Equipe 
-        <span id="badge-resultados-lideranca" class="etiqueta-badge-aviso hidden" style="top: 15px; right: 15px;">!</span>
-      </button>
     </div>
     
     <div class="painel-section lider-geral-only">
@@ -2544,6 +2544,19 @@
       <div class="avatar-preview-coluna">
         <div id="avatar-preview-editor" class="avatar-preview-container">
           </div>
+          
+        <div id="avatar-adjust-controls" class="hidden" style="background: rgba(0,0,0,0.05); padding: 10px; border-radius: 10px; text-align: center; border: 1px solid rgba(0,0,0,0.1);">
+           <p style="font-size: 0.85rem; font-weight: bold; margin-bottom: 8px; color: #555;">Ajustar Item Selecionado</p>
+           <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 5px;">
+              <button class="painel-btn" style="background: #fff; border: 1px solid #ccc; color: #333;" onclick="ajustarAvatar('s', -0.05)" title="Diminuir">🔍-</button>
+              <button class="painel-btn" style="background: #fff; border: 1px solid #ccc; color: #333;" onclick="ajustarAvatar('y', -5)" title="Mover para Cima">⬆️</button>
+              <button class="painel-btn" style="background: #fff; border: 1px solid #ccc; color: #333;" onclick="ajustarAvatar('s', 0.05)" title="Aumentar">🔍+</button>
+              
+              <button class="painel-btn" style="background: #fff; border: 1px solid #ccc; color: #333;" onclick="ajustarAvatar('x', -5)" title="Esquerda">⬅️</button>
+              <button class="painel-btn" style="background: #fff; border: 1px solid #ccc; color: #333;" onclick="ajustarAvatar('y', 5)" title="Baixo">⬇️</button>
+              <button class="painel-btn" style="background: #fff; border: 1px solid #ccc; color: #333;" onclick="ajustarAvatar('x', 5)" title="Direita">➡️</button>
+           </div>
+        </div>
         <div class="avatar-preview-actions">
           <button id="avatar-save-btn" class="auth-btn">Salvar Alterações</button>
           <button id="avatar-gallery-btn" class="user-panel-btn btn-chamativo">Ver Avatares dos Épicos</button>
@@ -2585,7 +2598,7 @@
 </div>
 
 <div id="avatar-gallery-modal" class="modal-overlay">
-  <div class="modal-content" style="max-width: 90%; width: 1200px; max-height: 90vh;">
+  <div class="modal-content" style="max-width: 90%; width: 1200px; max-height: 90vh; display: flex; flex-direction: column;">
     <div class="painel-header">
       <h2>Avatares</h2>
       <button class="painel-btn btn-fechar" onclick="closeModal('avatar-gallery-modal')">Fechar</button>
@@ -3163,7 +3176,7 @@
     </div>
     <div class="leilao-controle-usuario" style="flex-shrink: 0;">
       <div class="lance-atual-box">
-        Maior Lance: <strong id="leilao-maior-lance-display" style="color: #27ae60;">0</strong>
+        Maior Lance: 💰<strong id="leilao-maior-lance-display" style="color: #27ae60;">0</strong>
       </div>
       <div class="input-lance-wrapper" style="display: flex; gap: 10px;">
         <input type="number" id="input-valor-lance" class="painel-input" placeholder="Seu lance..." style="flex-grow: 1;">
@@ -3336,6 +3349,40 @@
         <div id="historico-membros-lista-container">
             <div class="ociosos-placeholder">Selecione uma semana acima.</div>
         </div>
+    </div>
+  </div>
+</div>
+
+<div id="modal-optin-competicao" class="modal-overlay" style="z-index: 100050;">
+  <div class="modal-content" style="max-width: 500px; border: 4px solid #3498db;">
+    <h2 style="color: #3498db; margin-bottom: 15px; font-size: 2rem;">⚔️ Nova Competição!</h2>
+    <p class="modal-description" style="font-size: 1.1rem; text-align: center; margin-bottom: 20px;">
+      Uma nova competição de equipes se inicia hoje. Você irá participar?
+    </p>
+    
+    <div style="background: rgba(231, 76, 60, 0.1); border-left: 4px solid #e74c3c; padding: 15px; border-radius: 8px; text-align: left; margin-bottom: 25px;">
+      <p style="margin-bottom: 10px; font-size: 0.95rem; color: #c0392b;"><strong>⚠️ ATENÇÃO:</strong></p>
+      <ul style="margin-left: 20px; font-size: 0.9rem; color: #333; line-height: 1.5;">
+        <li>Se escolher <strong>SIM</strong>: Você ganha <strong>10.000 moedas</strong> na hora! Mas deverá focar todos os dias (exceto na sua folga) para não prejudicar a média da equipe.</li>
+        <li>Se escolher <strong>NÃO</strong>: Você entra em modo descanso esta semana. Não poderá marcar o foco e o Jogo da Vantagem não contará pontos para a equipe.</li>
+      </ul>
+    </div>
+
+    <div style="display: flex; gap: 15px; justify-content: center;">
+      <button class="btn-cancelar" style="flex: 1; background-color: #95a5a6; margin-top: 0;" onclick="responderOptIn('nao')">Não participarei</button>
+      <button class="auth-btn" style="flex: 1; background-color: #2ecc71; margin-top: 0; font-size: 1.1rem;" onclick="responderOptIn('sim')">Sim, eu vou focar!</button>
+    </div>
+  </div>
+</div>
+
+<div id="modal-whatsapp-message" class="modal-overlay" style="z-index: 100050;">
+  <div class="modal-content" style="max-width: 500px; border: 4px solid #2ecc71; background-color: #ffffff;"> <h2 style="color: #2ecc71; margin-bottom: 15px; font-size: 1.8rem;">📱 Controle de Foco</h2>
+    <p class="modal-description" style="font-size: 1.1rem; text-align: center; margin-bottom: 20px; color: #333;"> Seu foco foi registrado! Agora, copie a mensagem abaixo e envie no grupo do WhatsApp <strong>"☀️ controle de foco"</strong> para manter o relatório atualizado.
+    </p>
+    
+    <textarea id="whatsapp-mensagem-textarea" class="painel-input" rows="12" readonly style="font-family: monospace; white-space: pre; resize: none; font-size: 0.85rem; line-height: 1.4; background-color: #f8f9fa; color: #2c3e50; border: 1px solid #ccc; border-radius: 8px; margin-bottom: 20px; padding: 10px;"></textarea> <div style="display: flex; gap: 15px; justify-content: center;">
+      <button class="btn-cancelar" style="flex: 1; background-color: #95a5a6; margin-top: 0;" onclick="fecharModalWhatsApp()">Pular</button>
+      <button class="auth-btn" style="flex: 2; background-color: #2ecc71; margin-top: 0; font-size: 1.1rem; display: flex; justify-content: center; align-items: center; gap: 8px;" onclick="copiarEFecharWhatsApp()">📋 Copiar Mensagem</button>
     </div>
   </div>
 </div>
