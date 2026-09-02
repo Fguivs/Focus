@@ -103,8 +103,9 @@
       <div id="info-semana"></div>
 	  
 	  <div class="botoes-info-container">
-        <button id="btn-instrucoes" class="botao-info">📜 Instruções</button>
+        <button id="btn-instrucoes" class="botao-info">📜 Manual</button>
         <button id="btn-advertencias" class="botao-info">⚠️ Advertências</button>
+		<button id="btn-deserto-instrucoes" class="botao-info">🌵 Instruções para o deserto</button>
       </div>
       </header>
 	  
@@ -233,10 +234,36 @@
         </div>
     </div>
 
-    <div id="secao-advertencias" class="secao-fullscreen hidden">
+        <div id="secao-advertencias" class="secao-fullscreen hidden">
       <button class="botao-fechar-secao">X</button>
       <div class="secao-conteudo">
         </div>
+    </div>
+
+    <div id="secao-deserto" class="secao-fullscreen hidden">
+      <button class="botao-fechar-secao">X</button>
+      <div class="secao-conteudo secao-conteudo-deserto">
+        <h1>🌵 Instruções para o Deserto</h1>
+
+        <div class="carrossel-wrapper deserto-carrossel-wrapper">
+          <div class="carrossel-controles">
+            <button class="controle-btn" onclick="mudarSlideDeserto(-1)">❮</button>
+            <button class="controle-btn" onclick="mudarSlideDeserto(1)">❯</button>
+          </div>
+
+          <div class="carrossel">
+            <div class="carrossel-container" id="carrossel-container-deserto">
+              <div class="deserto-slide"><p>Carregando instruções...</p></div>
+            </div>
+          </div>
+        </div>
+
+                <div class="carrossel-indicadores" id="carrossel-indicadores-deserto"></div>
+      </div>
+
+      <div id="deserto-visualizador-tela-cheia" class="deserto-visualizador hidden" onclick="fecharImagemTelaCheiaDeserto()">
+        <img id="deserto-imagem-tela-cheia" src="" alt="Imagem ampliada da etapa">
+      </div>
     </div>
 
     </header>
@@ -3378,28 +3405,6 @@
         <div id="historico-membros-lista-container">
             <div class="ociosos-placeholder">Selecione uma semana acima.</div>
         </div>
-    </div>
-  </div>
-</div>
-
-<div id="modal-optin-competicao" class="modal-overlay" style="z-index: 100050;">
-  <div class="modal-content" style="max-width: 500px; border: 4px solid #3498db;">
-    <h2 id="optin-titulo" style="color: #3498db; margin-bottom: 15px; font-size: 2rem;">⚔️ Nova Competição!</h2>
-    <p id="optin-desc" class="modal-description" style="font-size: 1.1rem; text-align: center; margin-bottom: 20px;">
-      Uma nova competição de equipes se inicia hoje. Você irá participar?
-    </p>
-    
-    <div style="background: rgba(231, 76, 60, 0.2); border-left: 4px solid #e74c3c; padding: 15px; border-radius: 8px; text-align: left; margin-bottom: 25px;">
-      <p class="optin-aviso-titulo"><strong>⚠️ ATENÇÃO:</strong></p>
-      <ul class="optin-aviso-texto">
-        <li id="optin-regra-sim">Se escolher <strong>SIM</strong>: Você ganha <strong>10.000 moedas</strong> na hora! Mas deverá focar todos os dias (exceto na sua folga) para não prejudicar a média da equipe.</li>
-        <li>Se escolher <strong>NÃO</strong>: Você entra em modo descanso esta semana. Não poderá marcar o foco e o Jogo da Vantagem não contará pontos para a equipe.</li>
-      </ul>
-    </div>
-
-    <div style="display: flex; gap: 15px; justify-content: center;">
-      <button class="btn-cancelar" style="flex: 1; background-color: #95a5a6; margin-top: 0;" onclick="responderOptIn('nao')">Não participarei</button>
-      <button class="auth-btn" style="flex: 1; background-color: #2ecc71; margin-top: 0; font-size: 1.1rem;" onclick="responderOptIn('sim')">Sim, eu vou focar!</button>
     </div>
   </div>
 </div>
