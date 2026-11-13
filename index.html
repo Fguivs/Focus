@@ -14,7 +14,7 @@
 <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <!-- Leaflet CSS & JS (Mapas) -->
-<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
 </head>
@@ -636,17 +636,15 @@
       </div>
     </div>
 	
-<div id="secao-ingresso-competicao" class="vantagem-container">
-      <h2><span class="ingresso-emoji-pulse">🎫</span> Ingresso da Competição</h2>
+<div id="secao-comprar-descanso" class="vantagem-container">
+      <h2><span class="ingresso-emoji-pulse">🏝️</span> Comprar Descanso</h2>
       <p class="vantagem-descricao">
-        Para participar na <strong>Competição de Equipes</strong> desta semana, você precisa garantir seu ingresso. Na <strong>segunda-feira</strong> ele é <strong>totalmente grátis</strong>! A partir de terça, ele passa a custar moedas, e o preço sobe a cada dia, já que a semana vai ficando mais curta para você competir. Sem o ingresso, seu foco diário não conta ponto para a sua equipe.
+        Precisa de uma pausa? Aqui você usa as suas <strong>moedas</strong> para garantir o seu foco. O foco comprado é marcado automaticamente e conta <strong>ponto para a sua equipe</strong>, mas não rende moedas. Atenção: se você não marcar o foco nem comprar descanso, no dia seguinte o site compra o foco perdido por <strong>💰 10.000 moedas</strong>. Quem não tiver moedas para repor o foco perdido será automaticamente <strong>removido do grupo</strong>.
       </p>
 
-      <div id="ingresso-tabela-precos" class="ingresso-tabela-precos"></div>
+      <div id="descanso-status-box" class="ingresso-status-box"></div>
 
-      <div id="ingresso-status-box" class="ingresso-status-box"></div>
-
-      <button id="btn-comprar-ingresso" class="auth-btn" disabled>Carregando...</button>
+      <div id="descanso-loja-grid"></div>
     </div>
 	
     <div class="grupos-container" id="grupos-container">
@@ -1503,6 +1501,7 @@
   <p class="vantagem-descricao" id="ociosos-descricao">
     A lista abaixo mostra os membros que focaram menos de 4 vezes nesta semana (de Segunda a Sábado).
   </p>
+  <div id="lista-expulsoes-pendentes"></div>
   <div id="lista-ociosos" class="ociosos-lista-container">
     <div class="ociosos-placeholder">Nenhum membro ocioso esta semana.</div>
   </div>
