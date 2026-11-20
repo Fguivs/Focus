@@ -1721,6 +1721,27 @@
   </div>
 </div>
   
+<div id="modal-permanencia" class="modal-overlay">
+  <div class="modal-content" style="max-width: 800px; width: 95%; max-height: 90vh; overflow-y: auto;">
+    <div class="painel-header">
+      <h2>⏳ Permanência dos Membros</h2>
+      <button class="painel-btn btn-fechar" onclick="closeModal('modal-permanencia')">Fechar</button>
+    </div>
+    <p class="permanencia-legenda">
+      Os dias mostram quanto tempo as moedas seguram cada membro no grupo <strong>se ele parar de focar a partir de hoje</strong>. Domingos, feriados, a folga e os descansos comprados não gastam moedas. Quem continua focando não perde dias. Para quem está com 7 dias ou menos, o botão <strong>📣 Alerta</strong> gera a imagem para enviar pelo WhatsApp.
+    </p>
+    <div id="permanencia-lista"></div>
+    <div id="permanencia-preview" class="hidden">
+      <img id="permanencia-preview-img" alt="Prévia do alerta">
+      <div class="permanencia-preview-acoes">
+        <button id="permanencia-btn-compartilhar" class="painel-btn btn-adicionar hidden" style="background-color: #25d366;">📤 Enviar pelo WhatsApp</button>
+        <button id="permanencia-btn-baixar" class="painel-btn btn-adicionar">⬇️ Baixar imagem</button>
+        <button class="painel-btn btn-fechar" onclick="document.getElementById('permanencia-preview').classList.add('hidden')">Fechar prévia</button>
+      </div>
+    </div>
+  </div>
+</div>
+
 <div id="control-panel-modal" class="modal-overlay">
   <div class="modal-content" style="max-width: 800px; width: 95%; max-height: 90vh; overflow-y: auto;">
     <div class="painel-header">
@@ -1745,6 +1766,14 @@
         </select>
         <button class="painel-btn btn-adicionar" style="background-color: #3498db;" onclick="agendarTrocaLideranca()">Agendar Troca</button>
       </div>
+    </div>
+
+        <div class="painel-section lider-geral-only">
+      <h3>⏳ Permanência dos Membros</h3>
+      <p style="font-size:0.9rem; margin-bottom:15px; color:#555;">
+        Veja por quantos dias as moedas de cada membro seguram o lugar dele no grupo, caso ele pare de focar, e gere as imagens de alerta para enviar pelo WhatsApp.
+      </p>
+      <button class="painel-btn btn-adicionar" style="background-color: #8e44ad;" onclick="abrirPainelPermanencia()">Abrir Painel de Permanência</button>
     </div>
 
     <div class="painel-section">
